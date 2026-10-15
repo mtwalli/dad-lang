@@ -60,7 +60,7 @@ Windows (amd64 and arm64) and the VS Code extension (`dad-lang.vsix`), publishes
 install scripts pick up the newest release automatically.
 
 ```sh
-git tag v0.3.0 && git push origin v0.3.0
+git tag v0.2.0 && git push origin v0.2.0
 ```
 
 ## Documentation site
@@ -87,3 +87,6 @@ tools/pygments-dad/ syntax highlighting for .dad code on the docs site
 examples/           .dad sample programs
 install.sh, install.ps1  installers that download the latest GitHub release
 ```
+
+## License
+[MIT](LICENSE)

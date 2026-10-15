@@ -18,7 +18,7 @@ macOS, Windows and Linux.
 
 ### Install it
 
-The extension needs the `dad` program, version 0.3.0 or newer. [Install Ḍād](install.md) first.
+The extension needs the `dad` program, version 0.2.0 or newer. [Install Ḍād](install.md) first.
 
 1. Download [`dad-lang.vsix`](https://github.com/mtwalli/dad-lang/releases/latest/download/dad-lang.vsix)
    from the latest release.

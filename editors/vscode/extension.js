@@ -169,7 +169,7 @@ function warnOld() {
   warnedOld = true;
   vscode.window
     .showWarningMessage(
-      "Ḍād: your `dad` is too old to report errors to the editor. Update it to v0.3.0 or newer.",
+      "Ḍād: your `dad` is too old to report errors to the editor. Update it to v0.2.0 or newer.",
       "How to update"
     )
     .then((choice) => {

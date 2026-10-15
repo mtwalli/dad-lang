@@ -2,8 +2,9 @@
   "name": "dad-lang",
   "displayName": "Ḍād (ضاد)",
   "description": "Support for the Ḍād Arabic programming language: highlighting, errors as you type, run button, snippets and keyword help.",
-  "version": "0.3.0",
+  "version": "0.2.0",
   "publisher": "mtwalli",
+  "license": "MIT",
   "icon": "images/icon.png",
   "repository": {
     "type": "git",

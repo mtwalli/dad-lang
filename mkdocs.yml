@@ -1,6 +1,7 @@
 site_name: Ḍād · ضاد
 site_description: A modern Arabic programming language for complete web apps — UI, server and data in one language.
 site_url: https://mtwalli.github.io/dad-lang/
+copyright: Ḍād is released under the <a href="https://github.com/mtwalli/dad-lang/blob/main/LICENSE">MIT License</a>
 repo_url: https://github.com/mtwalli/dad-lang
 repo_name: mtwalli/dad-lang
 edit_uri: edit/main/docs/

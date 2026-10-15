@@ -1,7 +1,7 @@
 name: Release
 
 # Push a version tag to publish a release, e.g.:
-#   git tag v0.3.0 && git push origin v0.3.0
+#   git tag v0.2.0 && git push origin v0.2.0
 on:
   push:
     tags: ["v*"]
@@ -12,6 +12,11 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      # Optional: add these repository secrets to also publish the extension to the
+      # VS Code Marketplace and Open VSX. Without them those steps are skipped.
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -35,7 +40,7 @@ jobs:
             CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
               -ldflags "-s -w -X main.version=$version" \
               -o "build/$name/dad$ext" ./cmd/dad
-            cp README.md "build/$name/"
+            cp README.md LICENSE "build/$name/"
             if [ "$os" = "windows" ]; then
               (cd build && zip -qr "../dist/$name.zip" "$name")
             else
@@ -52,7 +57,7 @@ jobs:
           node test/grammar.test.js
           DAD="../../build/dad" node test/extension.test.js
           node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("package.json"));p.version=process.argv[1];fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")' "$version"
-          npx --yes @vscode/vsce@3 package --no-dependencies --skip-license -o ../../dist/dad-lang.vsix
+          npx --yes @vscode/vsce@3 package --no-dependencies -o ../../dist/dad-lang.vsix
 
       - name: Checksums
         run: |
@@ -67,3 +72,11 @@ jobs:
           gh release create "$GITHUB_REF_NAME" dist/* \
             --title "Ḍād $GITHUB_REF_NAME" \
             --generate-notes
+
+      - name: Publish to the VS Code Marketplace
+        if: env.VSCE_PAT != ''
+        run: npx --yes @vscode/vsce@3 publish --packagePath dist/dad-lang.vsix --pat "$VSCE_PAT"
+
+      - name: Publish to Open VSX
+        if: env.OVSX_PAT != ''
+        run: npx --yes ovsx@0 publish dist/dad-lang.vsix --pat "$OVSX_PAT"
