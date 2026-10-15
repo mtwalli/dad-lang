@@ -31,6 +31,10 @@ func (d Diagnostic) String() string {
 
 // Tokenize lexes src completely. The token list always ends with EOF.
 func Tokenize(src string) ([]token.Token, []Diagnostic) {
+	// Windows line endings (and old Mac ones) become "\n", so multi-line strings
+	// have the same value whichever editor saved the file.
+	src = strings.ReplaceAll(src, "\r\n", "\n")
+	src = strings.ReplaceAll(src, "\r", "\n")
 	runes := []rune(src)
 	if len(runes) > 0 && runes[0] == 0xFEFF {
 		runes = runes[1:]

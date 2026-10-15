@@ -188,3 +188,23 @@ func TestPositionsCountRunes(t *testing.T) {
 		t.Errorf("got %q at %v, want س at 2:6", last.Value, last.Pos)
 	}
 }
+
+func TestWindowsLineEndings(t *testing.T) {
+	toks, diags := Tokenize("ثابت ن = \"\"\"أ\r\nب\"\"\"\r\nاطبع(ن)\r\n")
+	if len(diags) != 0 {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+	var str token.Token
+	for _, tk := range toks {
+		if tk.Kind == token.STRING {
+			str = tk
+		}
+	}
+	if str.Value != "أ\nب" {
+		t.Errorf("multi-line string = %q, want %q", str.Value, "أ\nب")
+	}
+	last := toks[len(toks)-2] // the token before EOF
+	if last.Pos.Line != 3 {
+		t.Errorf("line numbers are off: last token %v on line %d, want 3", last, last.Pos.Line)
+	}
+}

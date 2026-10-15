@@ -38,7 +38,8 @@ func golden(t *testing.T, srcPath, wantPath string) {
 	if runErr != nil {
 		t.Fatalf("%s: %v", srcPath, runErr)
 	}
-	if got != string(want) {
+	// Expected-output files may have Windows line endings after a checkout on Windows.
+	if got != strings.ReplaceAll(string(want), "\r\n", "\n") {
 		t.Errorf("%s output mismatch\n--- got\n%s\n--- want\n%s", srcPath, got, want)
 	}
 }

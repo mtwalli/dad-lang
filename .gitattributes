@@ -1,0 +1,7 @@
+# Keep LF line endings in the repository and in every checkout, including on Windows.
+# Golden test outputs and shell scripts depend on it; Ḍād itself accepts CRLF files.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.wasm binary
+*.vsix binary
