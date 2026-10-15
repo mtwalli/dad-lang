@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygments-dad"
+version = "0.1.0"
+description = "Pygments syntax highlighting for the Ḍād (ضاد) programming language"
+requires-python = ">=3.9"
+dependencies = ["Pygments>=2.15"]
+
+[project.entry-points."pygments.lexers"]
+dad = "dad_lexer:DadLexer"
+
+[tool.setuptools]
+py-modules = ["dad_lexer"]

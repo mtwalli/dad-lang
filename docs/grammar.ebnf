@@ -1,0 +1,98 @@
+(* Ḍād (ضاد) grammar — draft 0
+   Notation: ISO-ish EBNF. Keywords appear in Arabic; Latin punctuation forms shown,
+   Arabic forms (، ؛ ؟ ؟. ؟؟) are equivalent tokens produced by the lexer.
+   NL = newline (statement terminator). Newlines inside () [] are ignored. *)
+
+file            = { NL } , { import , terms } , { decl , terms } ;
+terms           = NL | ";" , { NL } ;
+
+import          = "استورد" , ident , { "," , ident } , "من" , string ;
+
+decl            = [ "خاص" ] , ( func_decl | type_decl | enum_decl | contract_decl
+                              | extension_decl | table_decl | route_decl
+                              | component_decl | binding ) ;
+
+(* ---------- declarations ---------- *)
+binding         = ( "ثابت" | "متغير" ) , ident , [ ":" , type ] , "=" , expr ;
+
+func_decl       = [ "خادم" ] , "دالة" , ident , params , [ ":" , type ] , body ;
+params          = "(" , [ param , { "," , param } ] , ")" ;
+param           = ident , ":" , type , [ "=" , expr ] ;
+body            = block | "=" , expr ;
+
+type_decl       = "نوع" , ident , params , [ ":" , type_list ] , [ member_block ] ;
+enum_decl       = "تعداد" , ident , "{" , { NL } , { variant , terms } , "}" ;
+variant         = ident , [ params ] ;
+contract_decl   = "عقد" , ident , "{" , { NL } , { func_sig , terms } , "}" ;
+func_sig        = "دالة" , ident , params , [ ":" , type ] ;
+extension_decl  = "امتداد" , type , member_block ;
+member_block    = "{" , { NL } , { decl , terms } , "}" ;
+
+table_decl      = "جدول" , ident , "{" , { NL } , { field , terms } , "}" ;
+field           = ident , ( ":" , type , [ "=" , expr ] | "=" , expr ) ;
+
+route_decl      = "مسار" , http_verb , string , [ params ] , body ;
+http_verb       = ident ;   (* contextual: جلب أرسل حدث احذف *)
+
+component_decl  = "مكون" , ident , params , block ;
+
+(* ---------- types ---------- *)
+type            = base_type , [ "?" ] ;
+base_type       = ident , [ "<" , type_list , ">" ]
+                | "[" , type , [ ":" , type ] , "]"          (* list / map *)
+                | "(" , [ type_list ] , ")" , "=>" , type ;  (* function *)
+type_list       = type , { "," , type } ;
+
+(* ---------- statements ---------- *)
+block           = "{" , { NL } , { stmt , terms } , [ stmt ] , "}" ;
+stmt            = binding
+                | "حالة" , ident , [ ":" , type ] , "=" , expr
+                | "لكل" , ident , ( "في" , expr
+                                  | "من" , expr , ( "إلى" | "حتى" ) , expr , [ "بخطوة" , expr ] ) , block
+                | "طالما" , expr , block
+                | "أرجع" , [ expr ]
+                | "توقف" | "تابع"
+                | "ارفع" , expr
+                | assignment
+                | expr ;
+assignment      = postfix , ( "=" | "+=" | "-=" | "*=" | "/=" ) , expr ;
+
+(* ---------- expressions (lowest → highest precedence) ---------- *)
+expr            = coalesce ;
+coalesce        = or_expr , { "??" , or_expr } ;
+or_expr         = and_expr , { ( "أو" | "||" ) , and_expr } ;
+and_expr        = equality , { ( "و" | "&&" ) , equality } ;
+equality        = comparison , { ( "==" | "!=" ) , comparison } ;
+comparison      = range , { ( "<" | ">" | "<=" | ">=" ) , range }
+                | range , "هو" , type                       (* type test *) ;
+range           = additive , [ ( ".." ) , additive ] ;
+additive        = multiplicative , { ( "+" | "-" ) , multiplicative } ;
+multiplicative  = cast , { ( "*" | "/" | "%" ) , cast } ;
+cast            = unary , [ "ك" , type ] ;
+unary           = ( "-" | "ليس" | "!" ) , unary | postfix ;
+postfix         = primary , { call_suffix | "." , ident | "?." , ident | "[" , expr , "]" } ;
+call_suffix     = args , [ lambda ] | lambda ;              (* trailing lambda *)
+args            = "(" , [ arg , { "," , arg } ] , ")" ;
+arg             = [ ident , ":" ] , expr ;
+
+primary         = number | string | "صح" | "خطأ" | "عدم" | "هذا"
+                | "هو"                                       (* implicit lambda param *)
+                | ident
+                | "(" , expr , ")"
+                | "[" , [ expr , { "," , expr } ] , "]"      (* list literal *)
+                | "[" , ( ":" | expr , ":" , expr , { "," , expr , ":" , expr } ) , "]"
+                | if_expr | match_expr | try_expr | lambda ;
+
+if_expr         = "إذا" , expr , block , [ "وإلا" , ( if_expr | block ) ] ;
+match_expr      = "طابق" , expr , "{" , { NL } , { case , terms } , "}" ;
+case            = pattern , "=>" , ( expr | block ) ;
+pattern         = "_" | literal | ident , [ "(" , [ ident , { "," , ident } ] , ")" ] ;
+try_expr        = "حاول" , block , "التقط" , ident , block ;
+lambda          = "{" , [ ident , { "," , ident } , "=>" ] , { NL } , { stmt , terms } , [ stmt ] , "}" ;
+
+(* ---------- lexical (see SPEC §2) ---------- *)
+ident           = letter , { letter | digit | "_" } ;
+number          = digits , [ ( "." | "٫" ) , digits ] ;   (* one digit script per literal *)
+string          = '"' , { char | interpolation } , '"'
+                | "«" , { char | interpolation } , "»" ;
+interpolation   = "{" , expr , "}" ;

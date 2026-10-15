@@ -1,0 +1,47 @@
+/* Ḍād code is Arabic: render code blocks right-to-left. */
+.language-dad,
+.language-dad pre,
+.language-dad code {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Keep mixed Arabic/Latin inline code readable in either direction. */
+.md-typeset :not(pre) > code {
+  unicode-bidi: plaintext;
+}
+
+/* Arabic glyphs need a little more room than Latin monospace. */
+.language-dad code {
+  font-size: 0.9em;
+  line-height: 1.9;
+  font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", sans-serif;
+}
+
+/* Move the copy button to the left edge for RTL blocks. */
+.language-dad .md-code__nav {
+  right: auto;
+  left: 0.5em;
+}
+
+/* Home page hero */
+.dad-hero {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+}
+.md-typeset .dad-hero h1.dad-title {
+  font-size: 3.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--md-primary-fg-color);
+}
+.dad-hero .dad-tagline {
+  font-size: 1.25rem;
+  direction: rtl;
+  margin: 0.4rem 0 0.2rem;
+}
+.dad-hero .dad-sub {
+  color: var(--md-default-fg-color--light);
+  margin-top: 0;
+}
