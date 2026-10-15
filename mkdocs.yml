@@ -48,6 +48,9 @@ plugins:
   - search:
       lang: [en, ar]
 
+hooks:
+  - overrides/hooks/cache_bust.py
+
 extra_css:
   - assets/dad.css
 
