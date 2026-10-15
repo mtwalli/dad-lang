@@ -1,8 +1,9 @@
 site_name: Ḍād · ضاد
 site_description: A modern Arabic programming language for complete web apps — UI, server and data in one language.
-# After creating the GitHub repository, set these two lines (replace YOUR-USER):
-# site_url: https://YOUR-USER.github.io/dad-lang/
-# repo_url: https://github.com/YOUR-USER/dad-lang
+site_url: https://mtwalli.github.io/dad-lang/
+repo_url: https://github.com/mtwalli/dad-lang
+repo_name: mtwalli/dad-lang
+edit_uri: edit/main/docs/
 
 docs_dir: docs
 
@@ -15,22 +16,22 @@ nav:
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
+  favicon: assets/favicon.svg
   font:
     text: IBM Plex Sans Arabic
     code: JetBrains Mono
-  icon:
-    logo: material/translate
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: teal
-      accent: amber
+      primary: custom
+      accent: custom
       toggle: { icon: material/weather-night, name: Dark mode }
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: teal
-      accent: amber
+      primary: custom
+      accent: custom
       toggle: { icon: material/weather-sunny, name: Light mode }
   features:
     - navigation.instant
@@ -39,6 +40,7 @@ theme:
     - toc.follow
     - search.highlight
     - content.code.copy
+    - navigation.footer
 
 plugins:
   - search:

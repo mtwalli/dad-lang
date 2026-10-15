@@ -1,6 +1,6 @@
 # Examples
 
-These sample programs live in the `examples/` folder of the repository.
+These sample programs live in the [`examples/`](https://github.com/mtwalli/dad-lang/tree/main/examples) folder of the repository.
 They tokenize with today's lexer; running them will be possible once the parser and code
 generator are built in Phase 1.
 

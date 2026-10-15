@@ -1,4 +1,113 @@
-/* Ḍād code is Arabic: render code blocks right-to-left. */
+/* ==========================================================================
+   Ḍād docs theme
+   Palette from Islamic manuscripts and Iznik tiles: lapis, gold leaf,
+   turquoise glaze and madder red. Display type: Aref Ruqaa (calligraphic).
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap");
+
+:root {
+  --dad-lapis: #1B2B6B;
+  --dad-lapis-deep: #121E4D;
+  --dad-lapis-bright: #2A47B8;
+  --dad-gold: #C9A04A;
+  --dad-gold-soft: #E3C77F;
+  --dad-gold-ink: #8A6420;
+  --dad-turquoise: #0E8F9A;
+  --dad-madder: #8E3B5E;
+  --dad-ink: #141A33;
+  --dad-display: "Aref Ruqaa", "Noto Naskh Arabic", "Geeza Pro", "Traditional Arabic", serif;
+  /* Eight-pointed star lattice, one 96px tile */
+  --dad-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23E3C77F' stroke-width='1'%3E%3Crect x='28' y='28' width='40' height='40'/%3E%3Cpath d='M48 19.7 76.3 48 48 76.3 19.7 48Z'/%3E%3Cpath d='M48 19.7V0M76.3 48H96M48 76.3V96M19.7 48H0M28 28 0 0M68 28 96 0M68 68l28 28M28 68 0 96'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ---------- Material colour hooks ---------- */
+
+[data-md-color-primary="custom"] {
+  --md-primary-fg-color: var(--dad-lapis);
+  --md-primary-fg-color--light: var(--dad-lapis-bright);
+  --md-primary-fg-color--dark: var(--dad-lapis-deep);
+  --md-primary-bg-color: #FFFFFF;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+}
+
+[data-md-color-accent="custom"] {
+  --md-accent-fg-color: var(--dad-turquoise);
+  --md-accent-fg-color--transparent: rgba(14, 143, 154, 0.1);
+  --md-accent-bg-color: #FFFFFF;
+}
+
+[data-md-color-scheme="default"] {
+  --md-default-fg-color: rgba(20, 26, 51, 0.88);
+  --md-default-fg-color--light: rgba(20, 26, 51, 0.62);
+  --md-default-fg-color--lighter: rgba(20, 26, 51, 0.32);
+  --md-default-fg-color--lightest: rgba(20, 26, 51, 0.1);
+  --md-typeset-a-color: var(--dad-lapis-bright);
+  --md-footer-bg-color: var(--dad-lapis-deep);
+  --md-footer-bg-color--dark: #0C1538;
+
+  --md-code-bg-color: #F3F5FB;
+  --md-code-fg-color: var(--dad-ink);
+  --md-code-hl-keyword-color: var(--dad-lapis-bright);
+  --md-code-hl-constant-color: var(--dad-turquoise);
+  --md-code-hl-number-color: var(--dad-turquoise);
+  --md-code-hl-string-color: var(--dad-gold-ink);
+  --md-code-hl-function-color: var(--dad-madder);
+  --md-code-hl-comment-color: #7A8099;
+  --md-code-hl-operator-color: #5A6180;
+  --md-code-hl-punctuation-color: #5A6180;
+  --md-code-hl-name-color: var(--dad-ink);
+  --md-code-hl-variable-color: var(--dad-ink);
+
+  --dad-principle-glyph: var(--dad-gold-ink);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 230;
+  --md-default-bg-color: #0E1430;
+  --md-default-bg-color--light: rgba(14, 20, 48, 0.54);
+  --md-default-fg-color: rgba(226, 231, 248, 0.86);
+  --md-default-fg-color--light: rgba(226, 231, 248, 0.6);
+  --md-default-fg-color--lighter: rgba(226, 231, 248, 0.3);
+  --md-default-fg-color--lightest: rgba(226, 231, 248, 0.1);
+  --md-typeset-a-color: #8FA6F2;
+  --md-accent-fg-color: #4FC7CF;
+  --md-footer-bg-color: #0A0F26;
+  --md-footer-bg-color--dark: #070B1C;
+
+  --md-code-bg-color: #151D42;
+  --md-code-fg-color: #DDE3F7;
+  --md-code-hl-keyword-color: #8FA6F2;
+  --md-code-hl-constant-color: #4FC7CF;
+  --md-code-hl-number-color: #4FC7CF;
+  --md-code-hl-string-color: var(--dad-gold-soft);
+  --md-code-hl-function-color: #E39BB8;
+  --md-code-hl-comment-color: #7C86AD;
+  --md-code-hl-operator-color: #A6AECB;
+  --md-code-hl-punctuation-color: #A6AECB;
+  --md-code-hl-name-color: #DDE3F7;
+  --md-code-hl-variable-color: #DDE3F7;
+
+  --dad-principle-glyph: var(--dad-gold-soft);
+}
+
+::selection {
+  background-color: rgba(201, 160, 74, 0.35);
+}
+
+/* ---------- Header logo: the letter itself ---------- */
+
+.dad-logo {
+  display: inline-block;
+  font-family: var(--dad-display);
+  font-size: 1.85rem;
+  line-height: 1;
+  color: var(--dad-gold-soft);
+  transform: translateY(-0.12rem);
+}
+
+/* ---------- Ḍād code: right-to-left ---------- */
+
 .language-dad,
 .language-dad pre,
 .language-dad code {
@@ -6,42 +115,363 @@
   text-align: right;
 }
 
-/* Keep mixed Arabic/Latin inline code readable in either direction. */
-.md-typeset :not(pre) > code {
-  unicode-bidi: plaintext;
-}
-
-/* Arabic glyphs need a little more room than Latin monospace. */
 .language-dad code {
   font-size: 0.9em;
   line-height: 1.9;
   font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", sans-serif;
 }
 
-/* Move the copy button to the left edge for RTL blocks. */
 .language-dad .md-code__nav {
   right: auto;
   left: 0.5em;
 }
 
-/* Home page hero */
+/* Mixed Arabic/Latin inline code reads correctly in either direction. */
+.md-typeset :not(pre) > code {
+  unicode-bidi: plaintext;
+}
+
+.md-typeset h1 {
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+}
+
+/* ==========================================================================
+   Home page
+   ========================================================================== */
+
 .dad-hero {
-  text-align: center;
-  padding: 1.5rem 0 0.5rem;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--dad-lapis);
+  background-image: var(--dad-tile);
+  background-size: 96px 96px;
+  color: #FFFFFF;
 }
-.md-typeset .dad-hero h1.dad-title {
-  font-size: 3.2rem;
+
+/* Fade the lattice out behind the text so it stays legible. */
+.dad-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      var(--dad-lapis) 0%,
+      rgba(27, 43, 107, 0.92) 42%,
+      rgba(27, 43, 107, 0.55) 100%);
+}
+
+.dad-hero__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  align-items: center;
+  gap: 2rem;
+  padding: 4.5rem 0.8rem 4rem;
+}
+
+.dad-hero__text.md-typeset {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.95rem;
+}
+
+.md-typeset h1.dad-hero__title {
+  margin: 0 0 1.4rem;
+  font-family: var(--dad-display);
   font-weight: 700;
-  line-height: 1.2;
+  font-size: clamp(2.3rem, 4.6vw, 3.5rem);
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: #FFFFFF;
+  text-align: left;
+}
+
+.dad-hero__lede {
+  max-width: 34em;
+  margin: 0 0 1.8rem;
+  line-height: 1.65;
+}
+
+.dad-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 2rem;
+}
+
+.md-typeset .dad-hero__actions .md-button {
   margin: 0;
-  color: var(--md-primary-fg-color);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.5);
+  border-radius: 0.3rem;
 }
-.dad-hero .dad-tagline {
-  font-size: 1.25rem;
+
+.md-typeset .dad-hero__actions .md-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #FFFFFF;
+}
+
+.md-typeset .dad-hero__actions .md-button--primary {
+  background-color: var(--dad-gold);
+  border-color: var(--dad-gold);
+  color: var(--dad-ink);
+}
+
+.md-typeset .dad-hero__actions .md-button--primary:hover {
+  background-color: var(--dad-gold-soft);
+  border-color: var(--dad-gold-soft);
+  color: var(--dad-ink);
+}
+
+.dad-hero a:focus-visible {
+  outline: 2px solid var(--dad-gold-soft);
+  outline-offset: 3px;
+}
+
+.md-typeset a.dad-hero__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.md-typeset a.dad-hero__status:hover {
+  color: #FFFFFF;
+}
+
+.dad-hero__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--dad-gold);
+  box-shadow: 0 0 0 0.25rem rgba(201, 160, 74, 0.25);
+}
+
+.dad-hero__glyph {
+  font-family: var(--dad-display);
+  font-size: clamp(10rem, 24vw, 20rem);
+  line-height: 1;
+  color: var(--dad-gold);
+  text-align: center;
   direction: rtl;
-  margin: 0.4rem 0 0.2rem;
+  user-select: none;
+  text-shadow: 0 0.035em 0 rgba(8, 14, 40, 0.35);
 }
-.dad-hero .dad-sub {
+
+/* The one orchestrated moment: the letter is inked right-to-left on load. */
+.dad-hero__glyph span {
+  display: inline-block;
+  padding: 0 0.08em;
+  animation: dad-ink 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+}
+
+@keyframes dad-ink {
+  from {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0.35;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dad-hero__glyph span {
+    animation: none;
+  }
+}
+
+/* ---------- Showcase: code + legend ---------- */
+
+.dad-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 2.2rem;
+  align-items: start;
+}
+
+.dad-showcase__code .highlight {
+  margin: 0;
+}
+
+.md-typeset .dad-legend {
+  margin: 0.4rem 0 0;
+}
+
+.md-typeset .dad-legend dt {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--md-code-hl-keyword-color);
+}
+
+.md-typeset .dad-legend dd {
+  margin: 0.2rem 0 1.3rem;
   color: var(--md-default-fg-color--light);
-  margin-top: 0;
+}
+
+/* ---------- Principles, keyed by keyword ---------- */
+
+.md-typeset .dad-principles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2.5rem;
+  margin: 1rem 0 0;
+}
+
+.md-typeset .dad-principles > div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 1.1rem 0;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.md-typeset .dad-principles dt {
+  margin: 0;
+  font-family: var(--dad-display);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  color: var(--dad-principle-glyph);
+}
+
+.md-typeset .dad-principles dd {
+  margin: 0;
+}
+
+.md-typeset .dad-principles dd strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: var(--md-default-fg-color);
+}
+
+/* ---------- Roadmap timeline (a real sequence: phases 0–5) ---------- */
+
+.md-typeset ol.dad-timeline {
+  counter-reset: phase -1;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 1.4rem 0 1.6rem;
+  padding: 0;
+}
+
+.md-typeset ol.dad-timeline li {
+  counter-increment: phase;
+  position: relative;
+  margin: 0;
+  padding: 2.4rem 0.8rem 0 0;
+}
+
+.md-typeset ol.dad-timeline li::before {
+  content: counter(phase, arabic-indic);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  border: 2px solid var(--md-default-fg-color--lighter);
+  background-color: var(--md-default-bg-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset ol.dad-timeline li::after {
+  content: "";
+  position: absolute;
+  top: 0.85rem;
+  left: 1.7rem;
+  right: 0;
+  height: 2px;
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+.md-typeset ol.dad-timeline li:last-child::after {
+  display: none;
+}
+
+.md-typeset ol.dad-timeline li.is-done::before {
+  border-color: var(--dad-turquoise);
+  background-color: var(--dad-turquoise);
+  color: #FFFFFF;
+}
+
+.md-typeset ol.dad-timeline li.is-done::after {
+  background-color: var(--dad-turquoise);
+}
+
+.md-typeset ol.dad-timeline li.is-next::before {
+  border-color: var(--dad-gold);
+  color: var(--dad-gold-ink);
+}
+
+[data-md-color-scheme="slate"] .md-typeset ol.dad-timeline li.is-next::before {
+  color: var(--dad-gold-soft);
+}
+
+.md-typeset ol.dad-timeline span {
+  display: block;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset ol.dad-timeline small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--md-default-fg-color--light);
+}
+
+/* ---------- Small screens ---------- */
+
+@media screen and (max-width: 59.984em) {
+  .dad-hero__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 2rem 0.8rem 2.6rem;
+  }
+
+  .dad-hero::before {
+    background: linear-gradient(180deg,
+        rgba(27, 43, 107, 0.55) 0%,
+        var(--dad-lapis) 45%);
+  }
+
+  .dad-hero__glyph {
+    order: -1;
+    font-size: 6.5rem;
+    line-height: 1.25;
+    margin-bottom: 0.6rem;
+  }
+
+  .dad-showcase,
+  .md-typeset .dad-principles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .md-typeset ol.dad-timeline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .md-typeset ol.dad-timeline li {
+    padding: 0.15rem 0 1.2rem 2.6rem;
+  }
+
+  .md-typeset ol.dad-timeline li::after {
+    top: 1.7rem;
+    bottom: 0;
+    left: 0.85rem;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
 }
