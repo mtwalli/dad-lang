@@ -1,0 +1,62 @@
+// Ḍād keywords and built-ins, with their English meaning, for hovers and completion.
+// The list of keywords must match internal/token/token.go (a Go test checks this).
+"use strict";
+
+const KEYWORDS = {
+  "ثابت": ["const", "A value that can't be reassigned: `ثابت اسم = \"سارة\"`"],
+  "متغير": ["var", "A value that can be reassigned: `متغير عدد = ٠`"],
+  "دالة": ["func", "Declares a function: `دالة مربع(س: صحيح) = س * س`"],
+  "نوع": ["type", "Declares a value type with fields: `نوع نقطة(س: عشري، ص: عشري)`"],
+  "تعداد": ["enum", "Declares an enum whose cases can carry data"],
+  "عقد": ["contract", "Declares a contract (interface) that types can fulfil"],
+  "امتداد": ["extension", "Adds methods to an existing type: `امتداد نص { … }`"],
+  "استورد": ["import", "Imports another module"],
+  "خاص": ["private", "Makes a declaration visible only inside its file or type"],
+  "إذا": ["if", "Condition. It is an expression, so it can produce a value"],
+  "وإلا": ["else", "The other branch of `إذا`"],
+  "طابق": ["match", "Matches a value against patterns. Must cover every case"],
+  "لكل": ["for", "Loop: `لكل س في قائمة { … }` or `لكل ع من ١ إلى ١٠ { … }`"],
+  "في": ["in", "Used in `لكل … في …` to loop over items"],
+  "من": ["from", "Start of a range: `من ١ إلى ١٠`"],
+  "إلى": ["to (inclusive)", "End of a range, included: `من ١ إلى ١٠` gives 1…10"],
+  "حتى": ["until (exclusive)", "End of a range, not included: `من ٠ حتى ١٠` gives 0…9"],
+  "بخطوة": ["step", "Step of a range: `من ٠ حتى ١٠ بخطوة ٢`"],
+  "طالما": ["while", "Loop while a condition is true"],
+  "أرجع": ["return", "Returns a value from a function"],
+  "توقف": ["break", "Leaves the current loop"],
+  "تابع": ["continue", "Skips to the next turn of the loop"],
+  "حاول": ["try", "Runs code that may raise a problem: `حاول { … } التقط خ { … }`"],
+  "التقط": ["catch", "Handles a problem raised inside `حاول`"],
+  "ارفع": ["throw", "Raises a problem: `ارفع مشكلة(\"…\")`"],
+  "صح": ["true", "Boolean true"],
+  "خطأ": ["false", "Boolean false"],
+  "عدم": ["null", "No value. Only optional types (`نص؟`) can hold it"],
+  "و": ["and", "Logical and (also `&&`)"],
+  "أو": ["or", "Logical or (also `||`)"],
+  "ليس": ["not", "Logical not (also `!`)"],
+  "هو": ["it / is", "Inside a lambda: the single argument (`{ هو * ٢ }`). Between values: a type test (`ش هو دائرة`)"],
+  "ك": ["as", "Converts a value to a type: `عدد ك عشري`"],
+  "هذا": ["this", "The current value inside a type's method or an extension"],
+  "خادم": ["server", "Marks a function that runs on the server (Phase 3)"],
+  "مكون": ["component", "Declares an interface component (Phase 2)"],
+  "حالة": ["state", "Reactive state inside a component (Phase 2)"],
+  "جدول": ["table", "Declares a database table (Phase 3)"],
+  "مسار": ["route", "Declares a web route (Phase 3)"],
+};
+
+const BUILTINS = {
+  "اطبع": ["print", "Prints values to the output: `اطبع(\"مرحبا\")`"],
+  "مشكلة": ["Problem", "Creates a problem to raise: `ارفع مشكلة(\"رسالة\")`"],
+  "جذر": ["sqrt", "Square root"],
+  "مطلق": ["abs", "Absolute value"],
+  "أدنى": ["min", "The smallest of its arguments"],
+  "أقصى": ["max", "The largest of its arguments"],
+  "صحيح": ["Int", "Whole-number type"],
+  "عشري": ["Float", "Decimal-number type"],
+  "نص": ["String", "Text type"],
+  "منطقي": ["Bool", "صح or خطأ"],
+  "قائمة": ["List", "List type: `[١، ٢، ٣]`"],
+  "قاموس": ["Map", "Map type: `[\"أ\": ١]`"],
+};
+
+module.exports = { KEYWORDS, BUILTINS };

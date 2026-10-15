@@ -1,0 +1,165 @@
+{
+  "name": "dad-lang",
+  "displayName": "Ḍād (ضاد)",
+  "description": "Support for the Ḍād Arabic programming language: highlighting, errors as you type, run button, snippets and keyword help.",
+  "version": "0.3.0",
+  "publisher": "mtwalli",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mtwalli/dad-lang"
+  },
+  "homepage": "https://mtwalli.github.io/dad-lang/editor/",
+  "bugs": {
+    "url": "https://github.com/mtwalli/dad-lang/issues"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters"
+  ],
+  "keywords": [
+    "arabic",
+    "dad",
+    "ضاد",
+    "عربي",
+    "rtl"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "dad",
+        "aliases": [
+          "Ḍād",
+          "ضاد",
+          "dad"
+        ],
+        "extensions": [
+          ".dad"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/file.svg",
+          "dark": "./images/file.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "dad",
+        "scopeName": "source.dad",
+        "path": "./syntaxes/dad.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.dad.codeblock",
+        "path": "./syntaxes/markdown-dad.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.dad": "dad"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "dad",
+        "path": "./snippets/dad.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "dad.run",
+        "title": "Run Ḍād File (شغّل)",
+        "category": "Ḍād",
+        "icon": "$(play)"
+      },
+      {
+        "command": "dad.check",
+        "title": "Check Ḍād File (افحص)",
+        "category": "Ḍād"
+      },
+      {
+        "command": "dad.showVersion",
+        "title": "Show Installed Version",
+        "category": "Ḍād"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "dad.run",
+          "when": "editorLangId == dad",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "dad.run",
+          "when": "editorLangId == dad",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "dad.run",
+          "when": "resourceExtname == .dad",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "dad.run",
+          "when": "editorLangId == dad"
+        },
+        {
+          "command": "dad.check",
+          "when": "editorLangId == dad"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "dad.run",
+        "key": "ctrl+shift+enter",
+        "mac": "cmd+shift+enter",
+        "when": "editorTextFocus && editorLangId == dad"
+      }
+    ],
+    "configuration": {
+      "title": "Ḍād",
+      "properties": {
+        "dad.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Path to the `dad` program. Leave empty to find it on your `PATH` or in the default install folder (`~/.dad/bin`)."
+        },
+        "dad.checkOnType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check the file for errors as you type. When off, files are checked when opened and saved."
+        },
+        "dad.saveBeforeRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save the file before running it."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[dad]": {
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.unicodeHighlight.invisibleCharacters": true,
+        "editor.wordSeparators": "`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?،؛؟«»",
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.encoding": "utf8"
+      }
+    }
+  }
+}

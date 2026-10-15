@@ -30,7 +30,7 @@ working end-to-end, crudely), then deepen each layer.
 | **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output ✅ (`dad run`) |
 | **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser |
 | **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end |
-| **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified |
+| **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified (VS Code extension and playground ✅, language server next) |
 | **5. Distribution** | GoReleaser + GitHub Actions; Homebrew, winget, `.deb`/`.rpm`, `install.sh`; Arabic tutorial site | One-line install on macOS, Windows, Linux |
 
 ## Phase 1 breakdown (in progress)

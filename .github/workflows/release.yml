@@ -1,7 +1,7 @@
 name: Release
 
 # Push a version tag to publish a release, e.g.:
-#   git tag v0.1.0 && git push origin v0.1.0
+#   git tag v0.3.0 && git push origin v0.3.0
 on:
   push:
     tags: ["v*"]
@@ -17,6 +17,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - run: go test ./...
 
       - name: Build binaries
@@ -39,6 +42,20 @@ jobs:
               tar -C build -czf "dist/$name.tar.gz" "$name"
             fi
           done
+
+      - name: Test and package the VS Code extension
+        run: |
+          set -eu
+          version="${GITHUB_REF_NAME#v}"
+          go build -o build/dad ./cmd/dad
+          cd editors/vscode
+          node test/grammar.test.js
+          DAD="../../build/dad" node test/extension.test.js
+          node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("package.json"));p.version=process.argv[1];fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")' "$version"
+          npx --yes @vscode/vsce@3 package --no-dependencies --skip-license -o ../../dist/dad-lang.vsix
+
+      - name: Checksums
+        run: |
           (cd dist && sha256sum * > checksums.txt)
           cp install.sh install.ps1 dist/
           ls -l dist

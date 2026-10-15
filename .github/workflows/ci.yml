@@ -16,8 +16,18 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - run: go vet ./...
       - run: go test ./...
       - name: Build the playground (WebAssembly)
         if: matrix.os == 'ubuntu-latest'
         run: GOOS=js GOARCH=wasm go build -o /tmp/dad.wasm ./cmd/wasm
+      - name: Test the VS Code extension
+        shell: bash
+        run: |
+          go build -o dad-test-bin.exe ./cmd/dad
+          cd editors/vscode
+          node test/grammar.test.js
+          DAD="../../dad-test-bin.exe" node test/extension.test.js

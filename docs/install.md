@@ -125,12 +125,14 @@ To see how Ḍād reads your code, print its tokens:
 dad tokens hello.dad     # or: ضاد رموز hello.dad
 ```
 
+For highlighting, errors as you type and a Run button, set up your [editor](editor.md).
+
 ## Commands
 
 | Command | Arabic | What it does |
 |---|---|---|
 | `dad run <file>` | `ضاد شغل <ملف>` | Run a program (`dad <file>` also works) |
-| `dad check <file>` | `ضاد فحص <ملف>` | Report errors and warnings in a file |
+| `dad check <file>` | `ضاد فحص <ملف>` | Report errors and warnings in a file (`--json` for tools) |
 | `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |
 | `dad version` | `ضاد إصدار` | Print the installed version |
 | `dad help` | `ضاد مساعدة` | List the commands |

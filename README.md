@@ -42,6 +42,9 @@ Then run a program: `dad run examples/01-hello.dad` (or `ضاد شغل …`). No
 [browser playground](https://mtwalli.github.io/dad-lang/playground/).
 Full guide: [mtwalli.github.io/dad-lang/install](https://mtwalli.github.io/dad-lang/install/).
 
+For VS Code, install `dad-lang.vsix` from the latest release (Extensions view → … → Install from
+VSIX). See [editors/vscode](editors/vscode) and the [editor guide](https://mtwalli.github.io/dad-lang/editor/).
+
 ## Build & test
 Requires Go 1.24+.
 
@@ -53,11 +56,11 @@ go build -o dad ./cmd/dad
 
 ## Releasing
 Push a version tag; `.github/workflows/release.yml` builds binaries for macOS, Linux and
-Windows (amd64 and arm64), publishes them with `checksums.txt` as a GitHub release, and the
+Windows (amd64 and arm64) and the VS Code extension (`dad-lang.vsix`), publishes them with `checksums.txt` as a GitHub release, and the
 install scripts pick up the newest release automatically.
 
 ```sh
-git tag v0.1.0 && git push origin v0.1.0
+git tag v0.3.0 && git push origin v0.3.0
 ```
 
 ## Documentation site
@@ -72,9 +75,13 @@ mkdocs serve        # preview at http://127.0.0.1:8000
 ## Layout
 ```
 cmd/dad/            CLI (ضاد / dad)
-cmd/wasm/           the lexer compiled to WebAssembly for the docs playground
+cmd/wasm/           the toolchain compiled to WebAssembly for the docs playground
 internal/token/     token kinds and keywords
 internal/lexer/     Arabic-aware lexer + tests
+internal/ast/       syntax tree
+internal/parser/    parser with Arabic error messages
+internal/interp/    interpreter behind `dad run`
+editors/vscode/     VS Code extension (tests: node test/grammar.test.js; DAD=… node test/extension.test.js)
 docs/               spec, grammar, roadmap (also the docs site source)
 tools/pygments-dad/ syntax highlighting for .dad code on the docs site
 examples/           .dad sample programs

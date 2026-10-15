@@ -2,7 +2,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -19,6 +21,7 @@ const usage = `ضاد — لغة برمجة عربية
 الاستخدام:
   ضاد شغل <ملف.dad>      شغّل البرنامج
   ضاد فحص <ملف.dad>      افحص الملف واعرض الأخطاء والتنبيهات
+                         (--json لإخراج يقرؤه المحرر، و«-» للقراءة من الدخل القياسي)
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
   ضاد إصدار              اعرض رقم الإصدار
   ضاد مساعدة             اعرض هذه الرسالة
@@ -26,6 +29,7 @@ const usage = `ضاد — لغة برمجة عربية
 Usage (ASCII aliases):
   dad run <file.dad>       run a program (also: dad <file.dad>)
   dad check <file.dad>     check a file and report errors and warnings
+                           (--json for editors; "-" reads the source from stdin)
   dad tokens <file.dad>    print the tokens in a file
   dad version
   dad help
@@ -43,6 +47,10 @@ func main() {
 	case "شغل", "run":
 		os.Exit(withFile("شغل", cmdRun))
 	case "فحص", "check":
+		args := os.Args[2:]
+		if len(args) == 2 && args[0] == "--json" {
+			os.Exit(runWith(args[1], cmdCheckJSON))
+		}
 		os.Exit(withFile("فحص", cmdCheck))
 	case "رموز", "tokens":
 		os.Exit(withFile("رموز", cmdTokens))
@@ -71,7 +79,13 @@ func withFile(name string, run func(path, src string) int) int {
 func runFile(path string) int { return runWith(path, cmdRun) }
 
 func runWith(path string, run func(path, src string) int) int {
-	src, err := os.ReadFile(path)
+	var src []byte
+	var err error
+	if path == "-" {
+		src, err = io.ReadAll(os.Stdin)
+	} else {
+		src, err = os.ReadFile(path)
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "تعذرت قراءة الملف «%s»: %v\n", path, err)
 		return 1
@@ -125,4 +139,29 @@ func cmdTokens(path, src string) int {
 		return 1
 	}
 	return 0
+}
+
+// jsonDiag is one problem in the output of "dad check --json", read by editor extensions.
+// Line and column are 1-based and count characters (Unicode code points).
+type jsonDiag struct {
+	Line    int    `json:"line"`
+	Col     int    `json:"col"`
+	Message string `json:"message"`
+	Warning bool   `json:"warning"`
+}
+
+func cmdCheckJSON(_ string, src string) int {
+	_, diags := parser.ParseFile(src)
+	out := struct {
+		Diagnostics []jsonDiag `json:"diagnostics"`
+	}{Diagnostics: []jsonDiag{}}
+	for _, d := range diags {
+		out.Diagnostics = append(out.Diagnostics, jsonDiag{d.Pos.Line, d.Pos.Col, d.Msg, d.Warning})
+	}
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(out); err != nil {
+		return 1
+	}
+	return 0 // problems are reported in the JSON, not through the exit code
 }
