@@ -538,26 +538,94 @@
   align-items: stretch;
 }
 
-.dad-play__editor {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 24rem;
-  resize: vertical;
-  padding: 0.9rem 1rem;
+/* The editor is a transparent textarea over a highlighted copy of the same text.
+   Both must share every metric that affects layout: font, size, line height,
+   padding, border, wrapping and direction. Colours only, never bold. */
+.dad-play__code {
+  position: relative;
+  display: grid;
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 0.3rem;
   background-color: var(--md-code-bg-color);
-  color: var(--md-code-fg-color);
-  font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", monospace;
-  font-size: 0.8rem;
-  line-height: 1.9;
-  tab-size: 2;
 }
 
-.dad-play__editor:focus-visible {
+.dad-play__code > .dad-play__editor,
+.md-typeset .dad-play__code > pre.dad-play__hl,
+.md-typeset .dad-play__code > pre.dad-play__hl > code {
+  grid-area: 1 / 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 0;
+  border-radius: 0.3rem;
+  font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", monospace;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.9;
+  letter-spacing: normal;
+  tab-size: 2;
+  text-align: right;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: normal;
+  font-variant-ligatures: none;
+  font-feature-settings: normal;
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.md-typeset .dad-play__code > pre.dad-play__hl {
+  padding: 0;
+  overflow: hidden;
+  background: none;
+  color: var(--md-code-fg-color);
+  pointer-events: none;
+}
+
+.md-typeset .dad-play__code > pre.dad-play__hl > code {
+  display: block;
+  background: none;
+  color: inherit;
+  box-shadow: none;
+}
+
+.dad-play__editor {
+  position: relative;
+  min-height: 24rem;
+  overflow: hidden;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--md-code-fg-color);
+  -webkit-text-fill-color: transparent;
+}
+
+.dad-play__editor::selection {
+  background-color: rgba(201, 160, 74, 0.35);
+}
+
+.dad-play__code:focus-within {
   outline: 2px solid var(--md-accent-fg-color);
   outline-offset: 1px;
 }
+
+.dad-play__editor:focus-visible {
+  outline: none;
+}
+
+.hl-kw, .hl-decl { color: var(--md-code-hl-keyword-color); }
+.hl-const, .hl-num { color: var(--md-code-hl-number-color); }
+.hl-str, .hl-esc { color: var(--md-code-hl-string-color); }
+.hl-esc { text-decoration: underline dotted; }
+.hl-interp { color: var(--md-code-hl-keyword-color); }
+.hl-com { color: var(--md-code-hl-comment-color); }
+.hl-fn, .hl-builtin { color: var(--md-code-hl-function-color); }
+.hl-type, .hl-this { color: var(--md-code-hl-constant-color); }
+.hl-op { color: var(--md-code-hl-operator-color); }
+.hl-bad { background-color: #C2410C; }
+
 
 .dad-play__output {
   display: flex;
@@ -731,7 +799,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .dad-play__editor {
+  .dad-play__code > .dad-play__editor {
     min-height: 16rem;
   }
+}
+
+/* No copy button on the playground's highlighted layer: it sits under the editor. */
+.dad-play__code .md-code__nav,
+.dad-play__code .md-clipboard {
+  display: none;
 }

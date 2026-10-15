@@ -15,6 +15,117 @@
     "mistakes": "// ثلاث مشكلات: كلمة محجوزة بلا همزة، أرقام مختلطة، ومحرف اتجاه خفي بعد «اسم»\nاذا عمر > ١8 {\n  ثابت اسم\u202e = \"سارة\"\n}"
 };
 
+
+  /* ---------- Syntax highlighting for the editor ----------
+     The textarea's text is transparent; a <pre> behind it shows the same text in colour.
+     The rules follow editors/vscode/syntaxes/dad.tmLanguage.json. */
+
+  var KW = {};
+  function kw(cls, words) { words.split(" ").forEach(function (w) { KW[w] = cls; }); }
+  kw("hl-kw", "إذا وإلا طابق لكل في من إلى حتى بخطوة طالما أرجع توقف تابع حاول التقط ارفع");
+  kw("hl-decl", "ثابت متغير دالة نوع تعداد عقد امتداد استورد خاص خادم مكون حالة جدول مسار");
+  kw("hl-const", "صح خطأ عدم");
+  kw("hl-op", "و أو ليس هو ك");
+  kw("hl-this", "هذا");
+  kw("hl-type", "صحيح عشري نص منطقي قائمة قاموس");
+  var BUILTINS = { "اطبع": 1, "مشكلة": 1, "جذر": 1, "مطلق": 1, "أدنى": 1, "أقصى": 1 };
+  var NAMES_TYPE = { "نوع": 1, "تعداد": 1, "عقد": 1, "امتداد": 1, "مكون": 1, "جدول": 1 };
+
+  var WORD = /[\p{L}\p{Mn}_][\p{L}\p{Mn}\p{Nd}_]*/uy;
+  var NUM = /[0-9٠-٩](?:[0-9٠-٩_٬]*[0-9٠-٩])?(?:[.٫][0-9٠-٩](?:[0-9٠-٩_٬]*[0-9٠-٩])?)?/y;
+  var OP = /=>|[?؟][.?؟]|\.\.|==|!=|<=|>=|[-+*\/]=|&&|\|\||[-+*\/%<>=!?؟:]/y;
+  var CALL_AFTER = /\s*\(/y;
+  var BIDI = /[‪-‮⁦-⁩‎‏؜]/;
+
+  function esc(t) {
+    return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function span(cls, t) { return '<span class="' + cls + '">' + esc(t) + "</span>"; }
+
+  function sticky(re, src, i) { re.lastIndex = i; var m = re.exec(src); return m ? m[0] : null; }
+
+  // Highlights code; `stop` ends at an unmatched "}" (used inside {…} in strings).
+  function highlightCode(src, i, stop) {
+    var out = "";
+    var prevWord = "";
+    var depth = 0;
+    while (i < src.length) {
+      var c = src[i];
+      var two = src.substr(i, 2);
+      if (stop && c === "}" && depth === 0) break;
+      if (two === "//") {
+        var nl = src.indexOf("\n", i);
+        if (nl < 0) nl = src.length;
+        out += span("hl-com", src.slice(i, nl)); i = nl; continue;
+      }
+      if (two === "/*") {
+        var end = src.indexOf("*/", i + 2);
+        end = end < 0 ? src.length : end + 2;
+        out += span("hl-com", src.slice(i, end)); i = end; continue;
+      }
+      if (c === '"' || c === "«") {
+        var r = highlightString(src, i);
+        out += r.html; i = r.end; prevWord = ""; continue;
+      }
+      var w = sticky(WORD, src, i);
+      if (w) {
+        var cls = KW[w];
+        if (!cls) {
+          if (prevWord === "دالة") cls = "hl-fn";
+          else if (NAMES_TYPE[prevWord]) cls = "hl-type";
+          else if (sticky(CALL_AFTER, src, i + w.length) !== null) cls = BUILTINS[w] ? "hl-builtin" : "hl-fn";
+        }
+        out += cls ? span(cls, w) : esc(w);
+        prevWord = w; i += w.length; continue;
+      }
+      var n = sticky(NUM, src, i);
+      if (n) { out += span("hl-num", n); i += n.length; prevWord = ""; continue; }
+      var o = sticky(OP, src, i);
+      if (o) { out += span("hl-op", o); i += o.length; continue; }
+      if (BIDI.test(c)) { out += span("hl-bad", c); i++; continue; }
+      if (c === "{") depth++;
+      if (c === "}") depth--;
+      if (!/\s/.test(c)) prevWord = "";
+      out += esc(c); i++;
+    }
+    return { html: out, end: i };
+  }
+
+  function highlightString(src, i) {
+    var triple = src.substr(i, 3) === '"""';
+    var close = triple ? '"""' : src[i] === "«" ? "»" : '"';
+    var open = triple ? '"""' : src[i];
+    var out = span("hl-str", open);
+    i += open.length;
+    var buf = "";
+    while (i < src.length) {
+      var c = src[i];
+      if (!triple && c === "\n") break;
+      if (src.substr(i, close.length) === close) {
+        out += span("hl-str", buf + close); return { html: out, end: i + close.length };
+      }
+      if (c === "\\" && i + 1 < src.length) {
+        out += span("hl-str", buf); buf = "";
+        out += span("hl-esc", src.substr(i, 2)); i += 2; continue;
+      }
+      if (c === "{") {
+        out += span("hl-str", buf); buf = "";
+        var inner = highlightCode(src, i + 1, true);
+        out += span("hl-interp", "{") + inner.html;
+        i = inner.end;
+        if (src[i] === "}") { out += span("hl-interp", "}"); i++; }
+        continue;
+      }
+      buf += c; i++;
+    }
+    return { html: out + span("hl-str", buf), end: i };
+  }
+
+  function highlight(src) {
+    // A trailing newline needs a character after it, or the <pre> is one line shorter.
+    return highlightCode(src, 0, false).html + "\n ";
+  }
+
   var booting = null;
 
   function loadScript(src) {
@@ -106,6 +217,16 @@
     var tabOut = document.getElementById("dad-tab-out");
     var tabTokens = document.getElementById("dad-tab-tokens");
     var timer = null;
+    var hl = document.getElementById("dad-hl");
+    var hlPre = hl.parentNode;
+
+    // Grow the editor with its content so the coloured copy never needs its own scrollbar.
+    function paint() {
+      hl.innerHTML = highlight(src.value);
+      src.style.height = "auto";
+      src.style.height = Math.max(src.scrollHeight + 2, hlPre.scrollHeight) + "px";
+    }
+    src.addEventListener("input", paint);
 
     function showTab(which) {
       var isOut = which === "out";
@@ -140,12 +261,14 @@
 
     function load(name) {
       src.value = SAMPLES[name];
+      paint();
       out.textContent = "اضغط «Run» لتشغيل البرنامج.";
       out.classList.add("is-empty");
       check();
     }
 
     src.value = SAMPLES[sample.value];
+    paint();
     status.textContent = "Loading Ḍād…";
 
     boot().then(function () {
