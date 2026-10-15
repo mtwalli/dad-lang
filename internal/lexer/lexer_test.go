@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dad-lang/dad/internal/token"
+	"github.com/mtwalli/dad-lang/internal/token"
 )
 
 func kinds(toks []token.Token) []token.Kind {

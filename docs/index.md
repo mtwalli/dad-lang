@@ -82,4 +82,4 @@ hide:
   <li><span>Installers</span><small>macOS, Windows and Linux</small></li>
 </ol>
 
-[Read the full roadmap](ROADMAP.md){ .md-button }
+[Read the full roadmap](ROADMAP.md){ .md-button } [Read the specification](SPEC.md){ .md-button }

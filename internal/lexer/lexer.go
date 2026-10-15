@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dad-lang/dad/internal/token"
+	"github.com/mtwalli/dad-lang/internal/token"
 )
 
 // Diagnostic is an error or warning found while lexing. Messages are in Arabic.

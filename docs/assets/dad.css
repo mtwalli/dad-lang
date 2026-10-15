@@ -121,6 +121,19 @@
   font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", sans-serif;
 }
 
+/* Terminal output that is mostly Arabic */
+.dad-out,
+.dad-out pre,
+.dad-out code {
+  direction: rtl;
+  text-align: right;
+}
+
+.dad-out code {
+  white-space: pre-wrap;
+}
+
+.dad-out .md-code__nav,
 .language-dad .md-code__nav {
   right: auto;
   left: 0.5em;
@@ -473,5 +486,176 @@
     right: auto;
     width: 2px;
     height: auto;
+  }
+}
+
+/* ==========================================================================
+   Playground
+   ========================================================================== */
+
+.dad-play__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.8rem;
+  margin: 1.2rem 0 0.8rem;
+  font-size: 0.75rem;
+}
+
+.dad-play__bar select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 0.3rem;
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font: inherit;
+}
+
+.dad-play__status {
+  margin-left: auto;
+  color: var(--md-default-fg-color--light);
+}
+
+.dad-play__status.is-ready::before {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background-color: var(--dad-turquoise);
+  vertical-align: 0.05rem;
+}
+
+.dad-play__status.is-error {
+  color: #C2410C;
+}
+
+.dad-play__panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.dad-play__editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 24rem;
+  resize: vertical;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.3rem;
+  background-color: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
+  font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", monospace;
+  font-size: 0.8rem;
+  line-height: 1.9;
+  tab-size: 2;
+}
+
+.dad-play__editor:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 1px;
+}
+
+.dad-play__output {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.md-typeset ul.dad-play__diags {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.md-typeset ul.dad-play__diags li {
+  margin: 0 0 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.3rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  border-inline-start: 3px solid transparent;
+}
+
+.md-typeset ul.dad-play__diags li.is-error {
+  background-color: rgba(194, 65, 12, 0.08);
+  border-inline-start-color: #C2410C;
+}
+
+.md-typeset ul.dad-play__diags li.is-warning {
+  background-color: rgba(201, 160, 74, 0.12);
+  border-inline-start-color: var(--dad-gold);
+}
+
+.md-typeset ul.dad-play__diags li.dad-play__ok {
+  background-color: rgba(14, 143, 154, 0.08);
+  border-inline-start-color: var(--dad-turquoise);
+  direction: rtl;
+}
+
+.dad-play__tokens {
+  flex: 1;
+  min-height: 12rem;
+  max-height: 30rem;
+  overflow: auto;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.3rem;
+}
+
+.dad-play__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.2rem 0;
+}
+
+.dad-play__ln {
+  min-width: 1.6rem;
+  font-size: 0.65rem;
+  color: var(--md-default-fg-color--lighter);
+}
+
+.tok {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", monospace;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  background-color: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
+  unicode-bidi: isolate;
+  cursor: default;
+}
+
+.tok--keyword { color: var(--md-code-hl-keyword-color); font-weight: 600; }
+.tok--number  { color: var(--md-code-hl-number-color); }
+.tok--string  { color: var(--md-code-hl-string-color); }
+.tok--symbol  { color: var(--md-code-hl-operator-color); }
+.tok--illegal { color: #FFFFFF; background-color: #C2410C; }
+
+.dad-play__legend {
+  margin-top: 0.8rem;
+  font-size: 0.7rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.dad-play__legend .tok {
+  margin-right: 0.2rem;
+}
+
+@media screen and (max-width: 59.984em) {
+  .dad-play__panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dad-play__editor {
+    min-height: 16rem;
   }
 }

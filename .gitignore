@@ -4,3 +4,7 @@
 .DS_Store
 /site/
 __pycache__/
+*.egg-info/
+build/
+# Built by the docs workflow
+/docs/assets/playground/
