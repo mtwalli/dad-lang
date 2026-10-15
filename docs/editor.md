@@ -18,22 +18,27 @@ macOS, Windows and Linux.
 
 ### Install it
 
-The extension needs the `dad` program, version 0.2.0 or newer. [Install Ḍād](install.md) first.
+The extension needs the `dad` program, version 0.1.4 or newer. [Install Ḍād](install.md) first.
 
-1. Download [`dad-lang.vsix`](https://github.com/mtwalli/dad-lang/releases/latest/download/dad-lang.vsix)
-   from the latest release.
-2. In VS Code, open the Extensions view (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>, or
+1. In VS Code, open the Extensions view (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>, or
    <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> on a Mac).
-3. Open the **…** menu at the top of the view and choose **Install from VSIX…**, then pick the
-   downloaded file.
+2. Search for **Ḍād** (or `mtwalli.dad-lang`) and click **Install**.
+
+[Open it on the Marketplace](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang){ .md-button }
 
 Or from a terminal:
 
 ```sh
-code --install-extension dad-lang.vsix
+code --install-extension mtwalli.dad-lang
 ```
 
-To update, install the newer `.vsix` the same way.
+VS Code updates the extension automatically.
+
+??? note "Installing without the Marketplace"
+    Each [release](https://github.com/mtwalli/dad-lang/releases/latest) also has the extension
+    as [`dad-lang.vsix`](https://github.com/mtwalli/dad-lang/releases/latest/download/dad-lang.vsix).
+    Download it, then in the Extensions view open the **…** menu, choose
+    **Install from VSIX…** and pick the file.
 
 ### Use it
 

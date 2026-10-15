@@ -78,7 +78,7 @@ hide:
   <li class="is-next"><span>Core language</span><small>Parser and <code>dad run</code> done; type checker next</small></li>
   <li><span>Interface</span><small>Components and reactive state</small></li>
   <li><span>Server and data</span><small>Server functions and SQLite tables</small></li>
-  <li><span>Tooling</span><small>Editor support and a web playground</small></li>
+  <li class="is-next"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a> and <a href="playground/">web playground</a> done; language server next</small></li>
   <li><span>Installers</span><small>macOS, Windows and Linux</small></li>
 </ol>
 

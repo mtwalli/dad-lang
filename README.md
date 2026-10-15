@@ -1,5 +1,7 @@
 # ضاد · Ḍād
 
+[![VS Code extension](https://img.shields.io/visual-studio-marketplace/v/mtwalli.dad-lang?label=VS%20Code%20extension)](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang)
+
 **لغة برمجة عربية حديثة لبناء تطبيقات الويب كاملة — الواجهة والخادم والبيانات — بلغة واحدة.**
 
 A modern Arabic-keyword programming language for building complete web apps (UI, server and
@@ -42,8 +44,8 @@ Then run a program: `dad run examples/01-hello.dad` (or `ضاد شغل …`). No
 [browser playground](https://mtwalli.github.io/dad-lang/playground/).
 Full guide: [mtwalli.github.io/dad-lang/install](https://mtwalli.github.io/dad-lang/install/).
 
-For VS Code, install `dad-lang.vsix` from the latest release (Extensions view → … → Install from
-VSIX). See [editors/vscode](editors/vscode) and the [editor guide](https://mtwalli.github.io/dad-lang/editor/).
+For VS Code, install [Ḍād from the Marketplace](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang)
+(search "Ḍād" in the Extensions view). See [editors/vscode](editors/vscode) and the [editor guide](https://mtwalli.github.io/dad-lang/editor/).
 
 ## Build & test
 Requires Go 1.24+.

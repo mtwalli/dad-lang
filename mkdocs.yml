@@ -61,6 +61,7 @@ extra_javascript:
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
   - attr_list
   - md_in_html
   - tables
@@ -79,3 +80,12 @@ markdown_extensions:
 
 exclude_docs: |
   grammar.ebnf
+
+extra:
+  social:
+    - icon: material/microsoft-visual-studio-code
+      link: https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang
+      name: Ḍād for VS Code
+    - icon: fontawesome/brands/github
+      link: https://github.com/mtwalli/dad-lang
+      name: Ḍād on GitHub

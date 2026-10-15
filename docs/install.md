@@ -125,7 +125,7 @@ To see how Ḍād reads your code, print its tokens:
 dad tokens hello.dad     # or: ضاد رموز hello.dad
 ```
 
-For highlighting, errors as you type and a Run button, set up your [editor](editor.md).
+For highlighting, errors as you type and a Run button, install the [Ḍād extension for VS Code](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang) (or search for **Ḍād** in the Extensions view). The [editor guide](editor.md) has the details.
 
 ## Commands
 
