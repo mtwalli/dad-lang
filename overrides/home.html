@@ -1,0 +1,31 @@
+{% extends "main.html" %}
+
+{#- Home page: full-width hero above the normal content area. -#}
+{% block tabs %}
+  {{ super() }}
+  <section class="dad-hero">
+    <div class="dad-hero__inner md-grid">
+      <div class="dad-hero__text md-typeset">
+        <h1 class="dad-hero__title" lang="ar" dir="rtl">لغة الضاد… للويب كلّه</h1>
+        <p class="dad-hero__lede">
+          Ḍād is a programming language with Arabic keywords. The interface, the server
+          and the database live in one file, and the compiler splits them for you.
+        </p>
+        <div class="dad-hero__actions">
+          <a href="{{ 'SPEC/' | url }}" class="md-button md-button--primary">Read the specification</a>
+          <a href="{{ 'examples/' | url }}" class="md-button">See examples</a>
+        </div>
+        <a class="dad-hero__status" href="{{ 'ROADMAP/' | url }}">
+          <span class="dad-hero__dot" aria-hidden="true"></span>
+          Phase 0 of 5: specification and lexer done
+        </a>
+      </div>
+      <div class="dad-hero__glyph" aria-hidden="true"><span>ض</span></div>
+    </div>
+  </section>
+{% endblock %}
+
+{#- No automatic page title: the hero carries the heading. -#}
+{% block content %}
+  {{ page.content }}
+{% endblock %}
