@@ -264,4 +264,4 @@ Pages are right-to-left by default.
 2. Keyword spellings: `نوع` vs `بنية` for value types; `عقد` vs `واجهة` for contracts.
 3. Library method names (`حول`/map, `رشح`/filter, `اختزل`/reduce) — want a naming guide?
 4. Should Latin-letter identifiers produce a style warning in Arabic-first projects?
-5. Integer division: `/` on two `صحيح` yields `صحيح` (Kotlin) or `عشري` (Python)?
+5. ~~Integer division~~ Decided: `/` on two `صحيح` yields `صحيح`, as in Kotlin (`٧ / ٢` is `٣`). Convert with `ك عشري` for a fraction.

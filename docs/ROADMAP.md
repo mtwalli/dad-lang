@@ -27,20 +27,22 @@ working end-to-end, crudely), then deepen each layer.
 | Phase | Goal | Done when |
 |---|---|---|
 | **0. Specification** | `docs/SPEC.md`, `docs/grammar.ebnf`, sample programs, lexer | Keywords agreed; all examples tokenize ✅ (lexer done) |
-| **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output |
+| **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output ✅ (`dad run`) |
 | **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser |
 | **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end |
 | **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified |
 | **5. Distribution** | GoReleaser + GitHub Actions; Homebrew, winget, `.deb`/`.rpm`, `install.sh`; Arabic tutorial site | One-line install on macOS, Windows, Linux |
 
-## Phase 1 breakdown (next)
-1. AST node definitions (`internal/ast`)
-2. Parser for declarations/statements/expressions + Arabic error reporting with line/column
+## Phase 1 breakdown (in progress)
+1. ✅ AST node definitions (`internal/ast`)
+2. ✅ Parser for declarations/statements/expressions + Arabic error reporting with line/column
    in Arabic-Indic digits (`internal/parser`)
-3. Name resolution and type checker (`internal/check`)
-4. JS code generator (`internal/codegen/js`)
-5. `dad run file.dad` — compile and execute via embedded engine
-6. Golden tests: each example has expected output in `testdata/`
+3. ✅ `dad run file.dad` — a tree-walking interpreter (`internal/interp`) so programs run
+   today, in the terminal and in the [playground](playground.md)
+4. ✅ Golden tests: each example has expected output in `examples/output/`
+5. Name resolution and type checker (`internal/check`)
+6. JS code generator (`internal/codegen/js`); `dad run` switches to it once it passes the
+   same golden tests. The interpreter stays as the reference implementation.
 
 ## Costs to know about
 - macOS signed/notarized installer: Apple Developer Program, $99/year (can postpone via Homebrew).

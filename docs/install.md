@@ -1,10 +1,10 @@
 # Install Ḍād
 
 !!! note "What works today"
-    Ḍād is in its first phase. The `dad` tool can **check** a Ḍād file and show its
-    **tokens**, with errors and warnings in Arabic. Running programs comes in Phase 1
-    (see the [roadmap](ROADMAP.md)). You can also [try it in your browser](playground.md)
-    without installing anything.
+    `dad run` runs Ḍād programs: values, functions, lambdas, types, enums, matching,
+    optionals and errors. Tables, components and routes (`جدول`, `مكون`, `مسار`) come in
+    Phases 2 and 3 (see the [roadmap](ROADMAP.md)). You can also
+    [run code in your browser](playground.md) without installing anything.
 
 ## Install
 
@@ -65,7 +65,39 @@ Save this as `hello.dad`:
 اطبع("مرحبا يا {اسم}!")
 ```
 
-Check it:
+Run it from the folder where you saved it:
+
+```sh
+dad run hello.dad        # or: ضاد شغل hello.dad
+```
+
+``` { .text .dad-out }
+مرحبا يا العالم!
+```
+
+`dad hello.dad` works too. Any `.dad` file runs the same way, for example the
+[examples](examples.md) in the repository:
+
+```sh
+git clone https://github.com/mtwalli/dad-lang
+cd dad-lang
+dad run examples/03-shapes.dad
+```
+
+### When something goes wrong
+
+Errors found while running stop the program and point to the line, in Arabic:
+
+```dad
+ثابت أ = ١٠
+اطبع(أ / ٠)
+```
+
+``` { .text .dad-out }
+hello.dad: خطأ أثناء التشغيل [السطر ٢، العمود ٨]: مشكلة لم تُعالَج: قسمة على صفر
+```
+
+To find mistakes without running anything, use `check`:
 
 ```sh
 dad check hello.dad      # or: ضاد فحص hello.dad
@@ -97,6 +129,7 @@ dad tokens hello.dad     # or: ضاد رموز hello.dad
 
 | Command | Arabic | What it does |
 |---|---|---|
+| `dad run <file>` | `ضاد شغل <ملف>` | Run a program (`dad <file>` also works) |
 | `dad check <file>` | `ضاد فحص <ملف>` | Report errors and warnings in a file |
 | `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |
 | `dad version` | `ضاد إصدار` | Print the installed version |

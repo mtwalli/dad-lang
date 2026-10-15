@@ -18,7 +18,7 @@ compiler is written in Go.
 ```
 
 ## Status
-Phase 0: the specification and lexer are done. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Phase 1: the parser and interpreter are done, so `dad run file.dad` runs programs. The type checker and JS code generator are next. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 - [docs/SPEC.md](docs/SPEC.md): language specification (draft)
 - [docs/grammar.ebnf](docs/grammar.ebnf): grammar
@@ -38,7 +38,7 @@ irm https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.ps1 | iex
 
 With Go: `go install github.com/mtwalli/dad-lang/cmd/dad@latest`
 
-Then try it: `dad check examples/01-hello.dad` (or `ضاد فحص …`). No install needed for the
+Then run a program: `dad run examples/01-hello.dad` (or `ضاد شغل …`). No install needed for the
 [browser playground](https://mtwalli.github.io/dad-lang/playground/).
 Full guide: [mtwalli.github.io/dad-lang/install](https://mtwalli.github.io/dad-lang/install/).
 

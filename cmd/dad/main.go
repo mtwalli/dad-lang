@@ -4,8 +4,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/parser"
 )
 
 // version is set at build time with -ldflags "-X main.version=…".
@@ -14,12 +17,14 @@ var version = "dev"
 const usage = `ضاد — لغة برمجة عربية
 
 الاستخدام:
+  ضاد شغل <ملف.dad>      شغّل البرنامج
   ضاد فحص <ملف.dad>      افحص الملف واعرض الأخطاء والتنبيهات
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
   ضاد إصدار              اعرض رقم الإصدار
   ضاد مساعدة             اعرض هذه الرسالة
 
 Usage (ASCII aliases):
+  dad run <file.dad>       run a program (also: dad <file.dad>)
   dad check <file.dad>     check a file and report errors and warnings
   dad tokens <file.dad>    print the tokens in a file
   dad version
@@ -31,7 +36,12 @@ func main() {
 		fmt.Print(usage)
 		os.Exit(2)
 	}
-	switch os.Args[1] {
+	cmd := os.Args[1]
+	// "شغّل" with a shadda is the same command as "شغل".
+	cmd = strings.ReplaceAll(cmd, "ّ", "")
+	switch cmd {
+	case "شغل", "run":
+		os.Exit(withFile("شغل", cmdRun))
 	case "فحص", "check":
 		os.Exit(withFile("فحص", cmdCheck))
 	case "رموز", "tokens":
@@ -41,6 +51,9 @@ func main() {
 	case "مساعدة", "help", "-h", "--help":
 		fmt.Print(usage)
 	default:
+		if strings.HasSuffix(cmd, ".dad") && len(os.Args) == 2 {
+			os.Exit(runFile(cmd))
+		}
 		fmt.Fprintf(os.Stderr, "أمر غير معروف «%s»\n\n%s", os.Args[1], usage)
 		os.Exit(2)
 	}
@@ -52,7 +65,12 @@ func withFile(name string, run func(path, src string) int) int {
 		fmt.Fprintf(os.Stderr, "الاستخدام: ضاد %s <ملف.dad>\n", name)
 		return 2
 	}
-	path := os.Args[2]
+	return runWith(os.Args[2], run)
+}
+
+func runFile(path string) int { return runWith(path, cmdRun) }
+
+func runWith(path string, run func(path, src string) int) int {
 	src, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "تعذرت قراءة الملف «%s»: %v\n", path, err)
@@ -61,14 +79,38 @@ func withFile(name string, run func(path, src string) int) int {
 	return run(path, string(src))
 }
 
-func cmdCheck(path, src string) int {
-	toks, diags := lexer.Tokenize(src)
+func printDiags(path string, diags []lexer.Diagnostic) {
 	for _, d := range diags {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", path, d)
 	}
-	if lexer.HasErrors(diags) {
+}
+
+func cmdRun(path, src string) int {
+	file, diags := parser.ParseFile(src)
+	printDiags(path, diags)
+	if file == nil {
 		return 1
 	}
+	in := interp.New(os.Stdout)
+	err := in.Run(file)
+	if len(in.Notices) > 0 {
+		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الجداول والمكونات والمسارات تأتي في المرحلتين ٢ و٣.\n",
+			strings.Join(in.Notices, "، "))
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s: %s\n", path, err)
+		return 1
+	}
+	return 0
+}
+
+func cmdCheck(path, src string) int {
+	file, diags := parser.ParseFile(src)
+	printDiags(path, diags)
+	if file == nil {
+		return 1
+	}
+	toks, _ := lexer.Tokenize(src)
 	fmt.Printf("✓ %s: لا أخطاء (%s رمزاً)\n", path, lexer.ToArabicDigits(fmt.Sprint(len(toks))))
 	return 0
 }
@@ -78,9 +120,7 @@ func cmdTokens(path, src string) int {
 	for _, t := range toks {
 		fmt.Println(t)
 	}
-	for _, d := range diags {
-		fmt.Fprintf(os.Stderr, "%s: %s\n", path, d)
-	}
+	printDiags(path, diags)
 	if lexer.HasErrors(diags) {
 		return 1
 	}

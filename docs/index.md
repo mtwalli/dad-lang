@@ -75,7 +75,7 @@ hide:
 
 <ol class="dad-timeline">
   <li class="is-done"><span>Specification</span><small>Keywords, grammar and the Arabic-aware lexer</small></li>
-  <li class="is-next"><span>Core language</span><small>Parser, type checker, <code>dad run</code></small></li>
+  <li class="is-next"><span>Core language</span><small>Parser and <code>dad run</code> done; type checker next</small></li>
   <li><span>Interface</span><small>Components and reactive state</small></li>
   <li><span>Server and data</span><small>Server functions and SQLite tables</small></li>
   <li><span>Tooling</span><small>Editor support and a web playground</small></li>
