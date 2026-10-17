@@ -320,7 +320,24 @@ type (
 		From  string
 	}
 
-	// Unsupported is a full-stack declaration (جدول، مكون، مسار، حالة) that
+	// TableDecl is a database table: «جدول مهمة { عنوان: نص، منجزة = خطأ }».
+	// A field has a type, a default value, or both.
+	TableDecl struct {
+		At
+		Name   string
+		Fields []*Param
+	}
+
+	// RouteDecl is a public web route: «مسار جلب "/api/مهام/{رقم}" = …».
+	// Method is the HTTP method (GET, POST, PUT, DELETE); {name} in the path binds a value.
+	RouteDecl struct {
+		At
+		Method string
+		Path   string
+		Body   Expr // *Block, or an expression for "= expr" bodies
+	}
+
+	// Unsupported is a full-stack declaration (مكون، حالة) that
 	// parses but cannot run yet.
 	Unsupported struct {
 		At
@@ -357,6 +374,8 @@ func (*ContractDecl) stmtNode()  {}
 func (*ExtensionDecl) stmtNode() {}
 func (*Import) stmtNode()        {}
 func (*Unsupported) stmtNode()   {}
+func (*TableDecl) stmtNode()     {}
+func (*RouteDecl) stmtNode()     {}
 
 // File is a parsed source file.
 type File struct {

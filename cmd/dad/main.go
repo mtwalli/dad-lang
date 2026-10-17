@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/interp"
@@ -22,6 +23,8 @@ const usage = `ضاد — لغة برمجة عربية
   ضاد شغل <ملف.dad>      شغّل البرنامج
   ضاد فحص <ملف.dad>      افحص الملف واعرض الأخطاء والتنبيهات
                          (--json لإخراج يقرؤه المحرر، و«-» للقراءة من الدخل القياسي)
+  ضاد تطوير <ملف.dad>    شغّل الخادم على http://localhost:8080 مع إعادة التحميل
+                         (--port لاختيار منفذ آخر)
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
   ضاد إصدار              اعرض رقم الإصدار
   ضاد مساعدة             اعرض هذه الرسالة
@@ -30,6 +33,8 @@ Usage (ASCII aliases):
   dad run <file.dad>       run a program (also: dad <file.dad>)
   dad check <file.dad>     check a file and report errors and warnings
                            (--json for editors; "-" reads the source from stdin)
+  dad dev <file.dad>       serve routes and server functions on localhost:8080,
+                           reloading when the file changes (--port to change it)
   dad tokens <file.dad>    print the tokens in a file
   dad version
   dad help
@@ -52,6 +57,8 @@ func main() {
 			os.Exit(runWith(args[1], cmdCheckJSON))
 		}
 		os.Exit(withFile("فحص", cmdCheck))
+	case "تطوير", "dev":
+		os.Exit(cmdDev(os.Args[2:]))
 	case "رموز", "tokens":
 		os.Exit(withFile("رموز", cmdTokens))
 	case "إصدار", "version", "--version":
@@ -106,10 +113,19 @@ func cmdRun(path, src string) int {
 		return 1
 	}
 	in := interp.New(os.Stdout)
-	err := in.Run(file)
+	store, err := openStore(path)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	in.Store = store
+	err = in.Run(file)
 	if len(in.Notices) > 0 {
-		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الجداول والمكونات والمسارات تأتي في المرحلتين 2 و3.\n",
+		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الواجهات تأتي في المرحلة 2.\n",
 			strings.Join(in.Notices, "، "))
+	}
+	if len(in.Routes()) > 0 || len(in.ServerFunctions()) > 0 {
+		fmt.Fprintf(os.Stderr, "ملاحظة: للمسارات ودوال الخادم شغّل «ضاد تطوير %s».\n", filepath.Base(path))
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", path, err)

@@ -228,6 +228,17 @@ func (in *Interp) callMethod(recv Value, name string, ci *callInfo) Value {
 		if name == "نسخة" {
 			return &Struct{Type: r.Type, Vals: in.copyWith(r.Type.Fields, r.Vals, ci)}
 		}
+		if r.Type.Table {
+			if v, ok := in.recordMethod(r, name, ci); ok {
+				return v
+			}
+		}
+	case *StructType:
+		if r.Table {
+			if v, ok := in.tableMethod(r, name, ci); ok {
+				return v
+			}
+		}
 	case *EnumVal:
 		if name == "نسخة" && len(r.Vals) > 0 {
 			return &EnumVal{Variant: r.Variant, Vals: in.copyWith(r.Variant.Fields, r.Vals, ci)}

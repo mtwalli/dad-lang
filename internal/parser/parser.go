@@ -7,6 +7,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
 	"github.com/mtwalli/dad-lang/internal/lexer"
@@ -187,7 +188,11 @@ func (p *parser) parseStmt() ast.Stmt {
 		return &ast.ExtensionDecl{At: ast.At{Pos: t.Pos}, Type: typ, Methods: p.parseMembers()}
 	case token.IMPORT:
 		return p.parseImport()
-	case token.TABLE, token.COMPONENT, token.ROUTE, token.STATE:
+	case token.TABLE:
+		return p.parseTable()
+	case token.ROUTE:
+		return p.parseRoute()
+	case token.COMPONENT, token.STATE:
 		return p.parseUnsupported()
 	case token.FOR:
 		return p.parseFor()
@@ -340,6 +345,69 @@ func (p *parser) parseImport() ast.Stmt {
 	p.expect(token.FROM, "من")
 	im.From = p.expect(token.STRING, "نص").Value
 	return im
+}
+
+// parseTable reads «جدول اسم { حقل: نوع  حقل = قيمة  حقل: نوع = قيمة }».
+func (p *parser) parseTable() ast.Stmt {
+	t := p.next()
+	d := &ast.TableDecl{At: ast.At{Pos: t.Pos}, Name: p.expectIdent()}
+	p.expect(token.LBRACE, "{")
+	p.skipNL()
+	for !p.at(token.RBRACE) && !p.at(token.EOF) {
+		f := &ast.Param{At: ast.At{Pos: p.cur().Pos}, Name: p.expectIdent()}
+		if f.Name == "رقم" {
+			p.failf(f.Pos, "«رقم» يُضاف تلقائياً لكل جدول؛ اختر اسماً آخر للحقل")
+		}
+		if p.accept(token.COLON) {
+			f.Type = p.parseType()
+		}
+		if p.accept(token.ASSIGN) {
+			f.Default = p.withLambdas(p.parseExpr)
+		}
+		if f.Type == nil && f.Default == nil {
+			p.failf(f.Pos, "الحقل «%s» يحتاج نوعاً أو قيمة افتراضية، مثل: «%s: نص» أو «%s = 0»", f.Name, f.Name, f.Name)
+		}
+		d.Fields = append(d.Fields, f)
+		if !p.accept(token.COMMA) {
+			p.endStmt()
+		}
+		p.skipNL()
+	}
+	p.expect(token.RBRACE, "}")
+	return d
+}
+
+// routeMethods maps the Arabic method words to HTTP methods.
+var routeMethods = map[string]string{
+	"جلب": "GET", "أرسل": "POST", "عدل": "PUT", "احذف": "DELETE",
+	"GET": "GET", "POST": "POST", "PUT": "PUT", "DELETE": "DELETE",
+}
+
+// parseRoute reads «مسار جلب "/api/مهام" = تعبير» or «مسار أرسل "/api/مهام" { … }».
+func (p *parser) parseRoute() ast.Stmt {
+	t := p.next()
+	d := &ast.RouteDecl{At: ast.At{Pos: t.Pos}}
+	mt := p.cur()
+	method, ok := routeMethods[mt.Value]
+	if mt.Kind != token.IDENT || !ok {
+		p.failf(mt.Pos, "توقعت طريقة المسار: «جلب» أو «أرسل» أو «عدّل» أو «احذف»، لكن وجدت «%s»", describe(mt))
+	}
+	p.next()
+	d.Method = method
+	pt := p.expect(token.STRING, "مسار مثل \"/api/مهام\"")
+	d.Path = pt.Value
+	if !strings.HasPrefix(d.Path, "/") {
+		p.failf(pt.Pos, "المسار يبدأ بـ «/»، مثل: \"/api/مهام\"")
+	}
+	switch {
+	case p.accept(token.ASSIGN):
+		d.Body = p.parseExpr()
+	case p.at(token.LBRACE):
+		d.Body = p.parseBlock()
+	default:
+		p.failf(p.cur().Pos, "توقعت «=» أو «{» بعد المسار")
+	}
+	return d
 }
 
 // parseUnsupported reads a full-stack declaration that cannot run yet and

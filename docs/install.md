@@ -133,6 +133,7 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
 | Command | Arabic | What it does |
 |---|---|---|
 | `dad run <file>` | `ضاد شغل <ملف>` | Run a program (`dad <file>` also works) |
+| `dad dev <file>` | `ضاد تطوير <ملف>` | Serve routes and server functions on `localhost:8080`, reloading on save (`--port` to change it). See [Server and data](server.md) |
 | `dad check <file>` | `ضاد فحص <ملف>` | Report errors and warnings in a file (`--json` for tools) |
 | `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |
 | `dad version` | `ضاد إصدار` | Print the installed version |

@@ -12,6 +12,7 @@ nav:
   - Home: index.md
   - Install: install.md
   - Editor: editor.md
+  - Server and data: server.md
   - Playground: playground.md
   - Language specification: SPEC.md
   - Grammar: grammar.md

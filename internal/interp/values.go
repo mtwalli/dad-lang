@@ -60,6 +60,7 @@ type StructType struct {
 	Fields  []*ast.Param
 	Methods map[string]*ast.FuncDecl
 	Env     *Env
+	Table   bool // declared with جدول: records are stored, and the last field is رقم
 }
 
 type Struct struct {

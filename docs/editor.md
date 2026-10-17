@@ -143,6 +143,7 @@ Any editor works with the `dad` command in a terminal:
 ```sh
 dad check file.dad    # errors and warnings
 dad run file.dad      # run it
+dad dev file.dad      # serve its routes and server functions
 ```
 
 Editors that read TextMate grammars, such as the JetBrains IDEs through their TextMate Bundles

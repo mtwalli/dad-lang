@@ -20,7 +20,7 @@ compiler is written in Go.
 ```
 
 ## Status
-Phase 1: the parser and interpreter are done, so `dad run file.dad` runs programs. The type checker and JS code generator are next. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Phase 1: the parser and interpreter are done, so `dad run file.dad` runs programs. Phase 3 has started: tables (`جدول`), server functions (`خادم`) and routes (`مسار`) work, and `dad dev file.dad` serves them with live reload. The type checker and the UI layer are next. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 - [docs/SPEC.md](docs/SPEC.md): language specification (draft)
 - [docs/grammar.ebnf](docs/grammar.ebnf): grammar
@@ -82,7 +82,7 @@ internal/token/     token kinds and keywords
 internal/lexer/     Arabic-aware lexer + tests
 internal/ast/       syntax tree
 internal/parser/    parser with Arabic error messages
-internal/interp/    interpreter behind `dad run`
+internal/interp/    interpreter behind `dad run` and `dad dev`, tables and storage
 tools/font/         builds Ḍād Mono, the coding font (python3 tools/font/build.py)
 fonts/, fonts-src/  the built font and its sources
 editors/vscode/     VS Code extension (tests: node test/grammar.test.js; DAD=… node test/extension.test.js)

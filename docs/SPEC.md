@@ -243,9 +243,15 @@ One file = one module. Everything not marked `خاص` is exported.
   منجزة = خطأ
 }
 ```
-Generates the SQLite schema, migrations and a typed API:
-`مهمة.أنشئ(...)`, `مهمة.الكل()`, `مهمة.حيث { هو.منجزة }`, `م.احفظ()`, `م.احذف()`.
-Query lambdas are compiled to SQL, not run in memory.
+A table is a value type with a hidden id field `رقم` (`صحيح`, 0 until the record is saved;
+declaring a field with that name is an error). Every field needs a type or a default.
+Its API: `مهمة.أنشئ(...)`, `مهمة.الكل()`, `مهمة.حيث { هو.منجزة }`, `مهمة.بالرقم(ر)`,
+`مهمة.عدد()`, `م.احفظ()`, `م.احذف()`. `م.نسخة(...)` keeps the id, so a changed copy saves
+over the original.
+
+*Implemented (v0.1.13):* rows are stored in `.dad/<program>.json` next to the program, behind a
+storage interface. *Planned:* SQLite (schema and migrations generated from the table),
+with query lambdas compiled to SQL instead of run in memory. Programs don't change.
 
 ### 5.2 Server — `خادم`
 ```dad
@@ -254,11 +260,21 @@ Query lambdas are compiled to SQL, not run in memory.
 Callable directly from UI code. The compiler generates a typed endpoint plus the client call;
 the server code never ships to the browser. Server functions are implicitly asynchronous.
 
+*Implemented:* `dad dev` serves each server function at `POST /_dad/call/<name>`, with the
+arguments as a JSON object keyed by parameter name. Arguments are converted to the
+parameter types; errors return 400 with `{"خطأ": "…"}`.
+
 ### 5.3 Explicit routes — `مسار`
 For public APIs that other programs call:
 ```dad
 مسار جلب "/api/مهام" = مهمة.الكل()
+مسار جلب "/api/مهام/{رقم}" = مهمة.بالرقم(رقم)
+مسار أرسل "/api/مهام" { أرجع مهمة.أنشئ(عنوان: البيانات["عنوان"]) }
 ```
+Methods: `جلب` GET, `أرسل` POST, `عدل` PUT, `احذف` DELETE. The path starts with `/`.
+`{name}` segments are bound as variables (digits become `صحيح`); the JSON request body is
+`البيانات`. The body is an expression or a block; the result is sent as JSON, and a `جلب`
+route that returns `عدم` answers 404. See the [server guide](server.md).
 
 ### 5.4 UI — `مكون` and `حالة`
 Compose/SwiftUI style: components are functions; UI elements (`عمود`, `صف`, `عنوان`,

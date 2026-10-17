@@ -2,8 +2,10 @@
 //
 // It covers the core language: bindings, functions and lambdas, value types
 // (نوع), enums (تعداد) with exhaustive matching, optionals, errors, ranges,
-// lists, maps and extensions. The full-stack layer (جدول، مكون، خادم، مسار)
-// arrives with the JavaScript/SQLite back end in later phases.
+// lists, maps and extensions. It also runs the server half of the full-stack
+// layer: tables (جدول) through a Store, server functions (خادم) and routes
+// (مسار), which "dad dev" serves through the API in server.go. Components
+// (مكون، حالة) arrive with the UI layer in Phase 2.
 package interp
 
 import (
@@ -77,14 +79,20 @@ type Interp struct {
 	// MaxSteps stops runaway programs (0 means no limit).
 	MaxSteps int64
 	// Notices lists declarations that were skipped because they belong to
-	// later phases (جدول، مكون، مسار).
+	// later phases (مكون، حالة).
 	Notices []string
+	// Store keeps the rows of every جدول. New uses an in-memory store; dad run
+	// and dad dev use a JSON file next to the program.
+	Store Store
 
-	steps    int64
-	depth    int
-	globals  *Env
-	ext      map[string]map[string]*Func
-	variants map[string]*Variant
+	steps     int64
+	depth     int
+	globals   *Env
+	ext       map[string]map[string]*Func
+	variants  map[string]*Variant
+	tables    []*StructType
+	routes    []*Route
+	serverFns []string
 }
 
 const maxDepth = 2000
@@ -96,6 +104,7 @@ func New(out io.Writer) *Interp {
 		globals:  newEnv(nil),
 		ext:      map[string]map[string]*Func{},
 		variants: map[string]*Variant{},
+		Store:    NewMemoryStore(),
 	}
 	in.installBuiltins()
 	return in
@@ -120,20 +129,8 @@ func (in *Interp) step(pos token.Pos) {
 // Run executes a parsed file.
 func (in *Interp) Run(file *ast.File) (err error) {
 	defer func() {
-		if r := recover(); r == nil {
-			return
-		} else if re, ok := r.(*RuntimeError); ok {
-			err = re
-		} else if t, ok := r.(thrown); ok {
-			err = &RuntimeError{Pos: t.pos, Msg: "مشكلة لم تُعالَج: " + problemMessage(t.val)}
-		} else if _, ok := r.(returnSig); ok {
-			err = &RuntimeError{Msg: "«أرجع» مستخدمة خارج دالة"}
-		} else if _, ok := r.(breakSig); ok {
-			err = &RuntimeError{Msg: "«توقف» مستخدمة خارج حلقة"}
-		} else if _, ok := r.(continueSig); ok {
-			err = &RuntimeError{Msg: "«تابع» مستخدمة خارج حلقة"}
-		} else {
-			panic(r)
+		if r := recover(); r != nil {
+			err = in.recovered(r)
 		}
 	}()
 
@@ -151,6 +148,23 @@ func (in *Interp) Run(file *ast.File) (err error) {
 	return nil
 }
 
+// recovered turns a panic from the interpreter into an error; other panics go on.
+func (in *Interp) recovered(r any) error {
+	switch x := r.(type) {
+	case *RuntimeError:
+		return x
+	case thrown:
+		return &RuntimeError{Pos: x.pos, Msg: "مشكلة لم تُعالَج: " + problemMessage(x.val)}
+	case returnSig:
+		return &RuntimeError{Msg: "«أرجع» مستخدمة خارج دالة"}
+	case breakSig:
+		return &RuntimeError{Msg: "«توقف» مستخدمة خارج حلقة"}
+	case continueSig:
+		return &RuntimeError{Msg: "«تابع» مستخدمة خارج حلقة"}
+	}
+	panic(r)
+}
+
 func problemMessage(v Value) string {
 	if p, ok := v.(*Problem); ok {
 		return p.Message
@@ -163,6 +177,13 @@ func (in *Interp) declare(s ast.Stmt, env *Env) bool {
 	switch d := s.(type) {
 	case *ast.FuncDecl:
 		in.defineName(env, d.Name, &Func{Name: d.Name, Params: d.Params, Body: d.Body, Env: env, Result: d.Result}, d.Pos)
+		if d.Server {
+			in.serverFns = append(in.serverFns, d.Name)
+		}
+	case *ast.TableDecl:
+		in.declareTable(d, env)
+	case *ast.RouteDecl:
+		in.routes = append(in.routes, &Route{Method: d.Method, Path: d.Path, Pos: d.Pos, body: d.Body, env: env})
 	case *ast.TypeDecl:
 		st := &StructType{Name: d.Name, Fields: d.Fields, Methods: map[string]*ast.FuncDecl{}, Env: env}
 		for _, m := range d.Methods {

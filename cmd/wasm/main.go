@@ -127,7 +127,7 @@ func run(_ js.Value, args []js.Value) (ret any) {
 			res.Output = out.String()
 			if len(in.Notices) > 0 {
 				res.Notices = append(res.Notices, "لم يُشغَّل "+strings.Join(in.Notices, "، ")+
-					" — الجداول والمكونات والمسارات تأتي في المرحلتين 2 و3.")
+					" — الواجهات تأتي في المرحلة 2.")
 			}
 		}
 	}

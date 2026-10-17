@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ضاد — وضع التطوير</title>
+<style>
+:root {
+  --bg: #f7f5f0; --card: #ffffff; --ink: #1d2433; --muted: #6b7280; --line: #e5e1d8;
+  --accent: #0f766e; --accent-ink: #ffffff; --bad: #b42318; --bad-bg: #fef3f2; --code: #f1eee7;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14171f; --card: #1c2029; --ink: #e8e6e1; --muted: #9aa1ad; --line: #2c313c;
+    --accent: #2dd4bf; --accent-ink: #062b27; --bad: #f97066; --bad-bg: #2a1614; --code: #252a35; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 "Noto Kufi Arabic", "Segoe UI", Tahoma, system-ui, sans-serif; }
+header { padding: 20px 16px 8px; max-width: 980px; margin: 0 auto; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+header h1 { margin: 0; font-size: 22px; }
+header .file { color: var(--muted); direction: ltr; unicode-bidi: isolate; }
+header .live { margin-inline-start: auto; font-size: 13px; color: var(--muted); }
+header .live::before { content: "●"; color: var(--accent); margin-inline-end: 6px; }
+main { max-width: 980px; margin: 0 auto; padding: 8px 16px 40px; display: grid; gap: 16px; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow: hidden; }
+h2 { margin: 0 0 12px; font-size: 17px; }
+h3 { margin: 0 0 8px; font-size: 15px; }
+.empty { color: var(--muted); margin: 0; }
+.error { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); white-space: pre-wrap; }
+code, .mono { font-family: "Dad Mono", ui-monospace, Menlo, Consolas, monospace; }
+.table-wrap { overflow-x: auto; margin-bottom: 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: start; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+.fn { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.fn:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.fn form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+label { display: grid; gap: 2px; font-size: 13px; color: var(--muted); }
+input { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 160px; }
+button { font: inherit; padding: 6px 16px; border-radius: 8px; border: 0; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+pre.result { background: var(--code); border-radius: 8px; padding: 8px 12px; margin: 8px 0 0; white-space: pre-wrap; word-break: break-word; }
+pre.result.bad { color: var(--bad); }
+.routes li { margin-bottom: 4px; }
+.path { direction: ltr; unicode-bidi: isolate; }
+.method { display: inline-block; min-width: 4.5em; font-size: 12px; font-weight: 700; color: var(--accent); }
+a { color: var(--accent); }
+footer { color: var(--muted); font-size: 13px; text-align: center; padding-bottom: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ضاد — وضع التطوير</h1>
+  <span class="file" id="file"></span>
+  <span class="live">يُحدَّث تلقائياً عند حفظ الملف</span>
+</header>
+<main>
+  <section id="error" class="error" hidden></section>
+  <section><h2>دوال الخادم</h2><div id="functions"></div></section>
+  <section><h2>الجداول</h2><div id="tables"></div></section>
+  <section><h2>المسارات</h2><div id="routes"></div></section>
+</main>
+<footer id="data"></footer>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const el = (tag, props, ...kids) => {
+  const e = document.createElement(tag);
+  Object.assign(e, props || {});
+  for (const k of kids) e.append(k);
+  return e;
+};
+// Values are shown the way Ḍād prints them: «نص»، صح، خطأ، عدم.
+const dad = (v) => {
+  if (v === null || v === undefined) return "عدم";
+  if (v === true) return "صح";
+  if (v === false) return "خطأ";
+  if (typeof v === "string") return "«" + v + "»";
+  if (Array.isArray(v)) {
+    const items = v.map(dad);
+    return items.some((x) => x.length > 40) ? "[\n  " + items.join("،\n  ") + "\n]" : "[" + items.join("، ") + "]";
+  }
+  if (typeof v === "object") {
+    const keys = Object.keys(v).filter((k) => k !== "رقم");
+    if ("رقم" in v) keys.push("رقم"); // the id goes last, as in the table
+    return "(" + keys.map((k) => k + ": " + dad(v[k])).join("، ") + ")";
+  }
+  return String(v);
+};
+const cell = (v) => v === null || v === undefined ? "—" : typeof v === "string" ? v : dad(v);
+// Keeps the parts of a path in order when they mix Latin and Arabic.
+const ltrPath = (p) => p.replaceAll("/", "/\u200E");
+let last = "";
+const results = {}; // keeps call results across refreshes
+
+function renderTables(tables) {
+  const box = $("tables");
+  box.replaceChildren();
+  if (!tables.length) { box.append(el("p", { className: "empty", textContent: "لا توجد جداول في البرنامج." })); return; }
+  for (const t of tables) {
+    const head = el("tr", {}, ...t.fields.map((f) => el("th", { textContent: f })));
+    const rows = t.rows.map((r) => el("tr", {}, ...t.fields.map((f) =>
+      el("td", { className: typeof r[f] === "number" ? "mono" : "", textContent: cell(r[f]) }))));
+    box.append(el("h3", { textContent: `${t.name} (${t.rows.length})` }));
+    if (!rows.length) box.append(el("p", { className: "empty", textContent: "لا توجد سجلات بعد." }));
+    else box.append(el("div", { className: "table-wrap" }, el("table", {}, el("thead", {}, head), el("tbody", {}, ...rows))));
+  }
+}
+
+function argValue(p, raw) {
+  if (p.type === "نص") return raw;
+  if (raw.trim() === "") return undefined;
+  try { return JSON.parse(raw); } catch { return raw; }
+}
+
+function renderFunctions(fns) {
+  const box = $("functions");
+  box.replaceChildren();
+  if (!fns.length) { box.append(el("p", { className: "empty", textContent: "لا توجد دوال معلَّمة بـ«خادم»." })); return; }
+  for (const f of fns) {
+    const inputs = f.params.map((p) => {
+      const input = el("input", { name: p.name, placeholder: p.type === "نص" ? "" : "JSON", dir: "auto" });
+      return { p, input, label: el("label", {}, `${p.name}: ${p.type}${p.optional ? " (اختياري)" : ""}`, input) };
+    });
+    const out = el("pre", { className: "result", hidden: !(f.name in results) });
+    if (f.name in results) { out.textContent = results[f.name].text; out.classList.toggle("bad", results[f.name].bad); }
+    const form = el("form", {}, ...inputs.map((i) => i.label), el("button", { type: "submit", textContent: "استدعِ" }));
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const args = {};
+      for (const { p, input } of inputs) {
+        const v = argValue(p, input.value);
+        if (v !== undefined) args[p.name] = v;
+      }
+      const res = await fetch("/_dad/call/" + encodeURIComponent(f.name), {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(args),
+      });
+      const data = await res.json();
+      const bad = !res.ok;
+      results[f.name] = { text: bad ? data["خطأ"] : dad(data.result), bad };
+      refresh(true);
+    });
+    box.append(el("div", { className: "fn" }, el("h3", { className: "mono", textContent: `${f.name}(${f.params.map((p) => p.name).join("، ")})` }), form, out));
+  }
+}
+
+function renderRoutes(routes) {
+  const box = $("routes");
+  box.replaceChildren();
+  if (!routes.length) { box.append(el("p", { className: "empty", textContent: "لا توجد مسارات." })); return; }
+  box.append(el("ul", { className: "routes" }, ...routes.map((r) => {
+    const path = r.method === "GET" && !r.path.includes("{")
+      ? el("a", { href: r.path, target: "_blank", className: "mono path", textContent: ltrPath(r.path) })
+      : el("span", { className: "mono path", textContent: ltrPath(r.path) });
+    return el("li", {}, el("span", { className: "method", textContent: r.method }), path);
+  })));
+}
+
+async function refresh(force) {
+  try {
+    const text = await (await fetch("/_dad/info")).text();
+    if (!force && text === last) return;
+    last = text;
+    const info = JSON.parse(text);
+    $("file").textContent = info.file;
+    document.title = `${info.file} — ضاد`;
+    $("error").hidden = !info.error;
+    $("error").textContent = info.error || "";
+    renderFunctions(info.functions);
+    renderTables(info.tables);
+    renderRoutes(info.routes);
+    $("data").replaceChildren(...(info.data
+      ? ["البيانات محفوظة في ", el("bdi", { dir: "ltr", className: "mono", textContent: ltrPath(info.data) })]
+      : ["البيانات في الذاكرة فقط"]));
+  } catch {
+    $("error").hidden = false;
+    $("error").textContent = "انقطع الاتصال بـ«ضاد تطوير». هل أُوقف الخادم؟";
+  }
+}
+refresh(true);
+setInterval(refresh, 1000);
+</script>
+</body>
+</html>

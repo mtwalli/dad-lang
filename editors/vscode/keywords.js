@@ -37,11 +37,11 @@ const KEYWORDS = {
   "هو": ["it", "Inside a lambda, its single argument: `{ هو * 2 }`"],
   "ك": ["as", "Converts a value to a type: `عدد ك عشري`. `(7 / 2) ك صحيح` gives 3"],
   "هذا": ["this", "The current value inside a type's method or an extension"],
-  "خادم": ["server", "Marks a function that runs on the server (Phase 3)"],
+  "خادم": ["server", "Marks a function the browser may call. `dad dev` serves it at `/_dad/call/<name>`"],
   "مكون": ["component", "Declares an interface component (Phase 2)"],
   "حالة": ["state", "Reactive state inside a component (Phase 2)"],
-  "جدول": ["table", "Declares a database table (Phase 3)"],
-  "مسار": ["route", "Declares a web route (Phase 3)"],
+  "جدول": ["table", "Declares a table of saved records with a hidden id `رقم`: `مهمة.أنشئ(…)`, `.الكل()`, `.حيث { … }`, `.بالرقم(1)`, `م.احفظ()`, `م.احذف()`"],
+  "مسار": ["route", "Declares a public web route: `مسار جلب \"/api/مهام/{رقم}\" = مهمة.بالرقم(رقم)`. Methods: جلب, أرسل, عدل, احذف"],
 };
 
 const BUILTINS = {

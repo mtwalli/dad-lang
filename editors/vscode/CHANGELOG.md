@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Hovers for `جدول`, `خادم` and `مسار` describe what they do now that they work with `dad dev`.
+
 - Run shows the output in a new **Ḍād** panel next to the terminal: right to left, in Ḍād Mono,
   with errors in red, and it stays until the next run. **Run again** and **Stop** are in the
   panel. Before, the output disappeared when the program finished.
