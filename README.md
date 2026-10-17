@@ -83,6 +83,8 @@ internal/lexer/     Arabic-aware lexer + tests
 internal/ast/       syntax tree
 internal/parser/    parser with Arabic error messages
 internal/interp/    interpreter behind `dad run`
+tools/font/         builds Ḍād Mono, the coding font (python3 tools/font/build.py)
+fonts/, fonts-src/  the built font and its sources
 editors/vscode/     VS Code extension (tests: node test/grammar.test.js; DAD=… node test/extension.test.js)
 docs/               spec, grammar, roadmap (also the docs site source)
 tools/pygments-dad/ syntax highlighting for .dad code on the docs site

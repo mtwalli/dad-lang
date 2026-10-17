@@ -1,3 +1,5 @@
 test/**
 .gitignore
 *.vsix
+scripts/**
+fonts/*.woff

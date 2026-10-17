@@ -9,6 +9,11 @@ const fs = require("fs");
 const os = require("os");
 
 const DAD = process.env.DAD;
+
+// A throwaway home folder, so installing the font never touches a real font folder.
+const HOME = require("fs").mkdtempSync(require("path").join(require("os").tmpdir(), "dad-home-"));
+process.env.HOME = HOME;
+delete process.env.XDG_DATA_HOME;
 if (!DAD) {
   console.error("Set DAD to the path of a dad binary built from this repository.");
   process.exit(2);
@@ -60,6 +65,7 @@ const on = (name) => (fn) => {
 const diagSets = new Map();
 const terminals = [];
 const messages = [];
+const answers = []; // replies to the next information messages, in order
 const config = { path: DAD, checkOnType: true, saveBeforeRun: true };
 const commands = {};
 
@@ -132,7 +138,7 @@ const vscode = {
   window: {
     activeTextEditor: null,
     showWarningMessage: (m) => (messages.push(m), Promise.resolve()),
-    showInformationMessage: (m) => (messages.push(m), Promise.resolve()),
+    showInformationMessage: (m) => (messages.push(m), Promise.resolve(answers.shift())),
     showErrorMessage: (m) => (messages.push(m), Promise.resolve()),
     createTerminal: (opts) => {
       const t = { opts, shown: false, disposed: false, show() { this.shown = true; }, dispose() { this.disposed = true; } };
@@ -159,7 +165,14 @@ Module._resolveFilename = function (req, ...rest) {
 require.cache.vscode = { id: "vscode", filename: "vscode", loaded: true, exports: vscode };
 
 const ext = require("../extension");
-ext.activate({ subscriptions: [] });
+const state = {};
+const context = {
+  subscriptions: [],
+  extensionPath: path.join(__dirname, ".."),
+  globalState: { get: (k) => state[k], update: (k, v) => ((state[k] = v), Promise.resolve()) },
+};
+ext.activate(context);
+const font = require("../font");
 
 // ---------- tests ----------
 
@@ -174,7 +187,7 @@ const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
 
 test("registers the commands", () => {
-  for (const id of ["dad.run", "dad.check", "dad.showVersion"]) assert.ok(commands[id], id);
+  for (const id of ["dad.run", "dad.check", "dad.showVersion", "dad.installFont"]) assert.ok(commands[id], id);
 });
 
 test("a clean file has no problems", async () => {
@@ -245,6 +258,46 @@ test("a missing dad shows one helpful warning", async () => {
   await wait(300);
   assert.strictEqual(messages.filter((m) => /couldn't find/.test(m)).length, 1);
   config.path = DAD;
+});
+
+test("the font is set for .dad files", () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"), "utf8"));
+  assert.match(pkg.contributes.configurationDefaults["[dad]"]["editor.fontFamily"], /^'Dad Mono'/);
+  for (const f of font.FILES) assert.ok(fs.existsSync(path.join(__dirname, "../fonts", f)), f);
+});
+
+test("offers Ḍād Mono once and installs it for the user", async () => {
+  if (process.platform === "win32") return; // would write to the real registry
+  font._reset();
+  const before = messages.length;
+  answers.push("Install font", undefined); // install, then dismiss the "reload" message
+  events.open.forEach((fn) => fn(makeDoc("ثابت أ = 1", "/tmp/f1.dad")));
+  await wait(200);
+  const dest = font.userFontDir();
+  assert.ok(dest.startsWith(HOME), "installs under the test home folder");
+  for (const f of font.FILES) assert.ok(fs.existsSync(path.join(dest, f)), "installed " + f);
+  assert.ok(font.isInstalled());
+  const asked = messages.slice(before).filter((m) => /Install Ḍād Mono\?/.test(m));
+  assert.strictEqual(asked.length, 1);
+  assert.ok(messages.slice(before).some((m) => /is installed in/.test(m)));
+  events.open.forEach((fn) => fn(makeDoc("ثابت ب = 2", "/tmp/f2.dad")));
+  await wait(100);
+  assert.strictEqual(messages.slice(before).filter((m) => /Install Ḍād Mono\?/.test(m)).length, 1);
+});
+
+test("\"Don't ask again\" is remembered", async () => {
+  if (process.platform === "win32") return;
+  fs.rmSync(font.userFontDir(), { recursive: true, force: true });
+  font._reset();
+  answers.push("Don't ask again");
+  events.open.forEach((fn) => fn(makeDoc("ثابت أ = 1", "/tmp/f3.dad")));
+  await wait(100);
+  assert.strictEqual(state["dad.fontPrompt"], "never");
+  font._reset();
+  const before = messages.length;
+  events.open.forEach((fn) => fn(makeDoc("ثابت أ = 1", "/tmp/f4.dad")));
+  await wait(100);
+  assert.strictEqual(messages.length, before, "no second prompt");
 });
 
 (async () => {

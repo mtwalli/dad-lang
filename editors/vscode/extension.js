@@ -8,6 +8,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { KEYWORDS, BUILTINS } = require("./keywords");
+const font = require("./font");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -317,9 +318,13 @@ function activate(context) {
     vscode.commands.registerCommand("dad.run", run),
     vscode.commands.registerCommand("dad.check", runCheckCommand),
     vscode.commands.registerCommand("dad.showVersion", showVersion),
+    vscode.commands.registerCommand("dad.installFont", () => font.installCommand(context)),
     vscode.languages.registerHoverProvider(selector, hoverProvider),
     vscode.languages.registerCompletionItemProvider(selector, completionProvider),
-    vscode.workspace.onDidOpenTextDocument((doc) => check(doc)),
+    vscode.workspace.onDidOpenTextDocument((doc) => {
+      check(doc);
+      font.maybeOffer(context, doc);
+    }),
     vscode.workspace.onDidSaveTextDocument((doc) => check(doc)),
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (e.document.languageId === "dad" && cfg().get("checkOnType", true)) scheduleCheck(e.document, 300);
@@ -341,6 +346,7 @@ function activate(context) {
     })
   );
   vscode.workspace.textDocuments.forEach(check);
+  font.maybeOffer(context, vscode.workspace.textDocuments.find((d) => d.languageId === "dad"));
 }
 
 function deactivate() {

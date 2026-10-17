@@ -62,6 +62,47 @@ Open any `.dad` file, or a folder that contains some.
 If VS Code says it can't find `dad`, run `which dad` (macOS and Linux) or `where dad`
 (Windows) in a terminal and put the result in `dad.path`.
 
+## Ḍād Mono, the coding font
+
+Ḍād has its own coding font, **Ḍād Mono** (installed as "Dad Mono"). Its Arabic is
+geometric Kufi, sized and weighted to sit on the same line as the Latin letters, digits
+and symbols. Every code block on this site uses it.
+
+<p class="dad-font-sample" dir="rtl" lang="ar">إذا عدد > 10 { اطبع("كبير") }</p>
+
+**In VS Code** the extension sets Ḍād Mono for `.dad` files. The first time you open one, it
+offers to install the font for you: choose **Install font**, then reload VS Code. You can
+also run **Ḍād: Install the Ḍād Mono Font** from the Command Palette at any time.
+Other files keep your usual font.
+
+**Elsewhere** (terminal, other editors), download and install it yourself:
+
+[Ḍād Mono Regular](assets/fonts/DadMono-Regular.ttf){ .md-button }
+[Ḍād Mono Bold](assets/fonts/DadMono-Bold.ttf){ .md-button }
+
+=== "macOS"
+
+    Double-click each file and choose **Install Font**.
+
+=== "Windows"
+
+    Right-click each file and choose **Install** (or **Install for all users**).
+
+=== "Linux"
+
+    ```sh
+    mkdir -p ~/.local/share/fonts
+    cp DadMono-*.ttf ~/.local/share/fonts/
+    fc-cache -f
+    ```
+
+Then pick **Dad Mono** as the font in the app. To use it for all files in VS Code, set
+`editor.fontFamily` to `'Dad Mono', monospace`.
+
+The Arabic comes from Noto Kufi Arabic and the Latin from DejaVu Sans Mono. Ḍād Mono is free
+under the SIL Open Font License ([license](assets/fonts/LICENSE.txt)). To rebuild it, run
+`python3 tools/font/build.py`.
+
 ## Right-to-left text in code editors
 
 No mainstream code editor has a true right-to-left mode. VS Code lays out each line with the

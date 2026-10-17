@@ -89,6 +89,11 @@
         "command": "dad.showVersion",
         "title": "Show Installed Version",
         "category": "Ḍād"
+      },
+      {
+        "command": "dad.installFont",
+        "title": "Install the Ḍād Mono Font",
+        "category": "Ḍād"
       }
     ],
     "menus": {
@@ -159,7 +164,8 @@
         "editor.wordSeparators": "`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?،؛؟«»",
         "editor.tabSize": 2,
         "editor.insertSpaces": true,
-        "files.encoding": "utf8"
+        "files.encoding": "utf8",
+        "editor.fontFamily": "'Dad Mono', Menlo, Monaco, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace"
       }
     }
   }

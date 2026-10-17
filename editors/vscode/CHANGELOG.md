@@ -2,6 +2,9 @@
 
 ## Next release
 
+- Ḍād Mono, the coding font for Ḍād, is bundled and set for `.dad` files. The extension offers
+  to install it once, and **Ḍād: Install the Ḍād Mono Font** installs it any time.
+
 - Numbers are written with the digits 0-9 only. Arabic-Indic and Persian digits outside text
   are highlighted as mistakes, and `dad check` shows the number written correctly.
 

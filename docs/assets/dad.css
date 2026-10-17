@@ -1,10 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap");
+
+/* ---------- Ḍād Mono: the coding font (tools/font/build.py) ---------- */
+
+@font-face {
+  font-family: "Dad Mono";
+  src: url("fonts/DadMono-Regular.woff") format("woff"),
+       url("fonts/DadMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Dad Mono";
+  src: url("fonts/DadMono-Bold.woff") format("woff"),
+       url("fonts/DadMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Every code block, inline code and the playground use Ḍād Mono. */
+html body {
+  --md-code-font-family: "Dad Mono", "JetBrains Mono", SFMono-Regular, Consolas, Menlo, monospace;
+}
+
 /* ==========================================================================
    Ḍād docs theme
    Palette from Islamic manuscripts and Iznik tiles: lapis, gold leaf,
    turquoise glaze and madder red. Display type: Aref Ruqaa (calligraphic).
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap");
 
 :root {
   --dad-lapis: #1B2B6B;
@@ -808,4 +834,17 @@
 .dad-play__code .md-code__nav,
 .dad-play__code .md-clipboard {
   display: none;
+}
+
+/* A large sample of Ḍād Mono on the editor page. */
+.md-typeset .dad-font-sample {
+  margin: 1.2em 0;
+  padding: 0.6em 0.9em;
+  border-radius: 0.3rem;
+  background-color: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
+  font-family: var(--md-code-font-family);
+  font-size: 1.6rem;
+  line-height: 1.6;
+  text-align: right;
 }

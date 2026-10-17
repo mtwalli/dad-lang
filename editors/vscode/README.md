@@ -3,6 +3,8 @@
 Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming language with Arabic keywords.
 
 - **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, and Ḍād code blocks in Markdown.
+- **Ḍād Mono**, a coding font made for Ḍād: Kufi Arabic that sits with Latin letters and
+  digits. The extension uses it for `.dad` files and offers to install it the first time.
 - **Errors as you type**, in Arabic, with the exact word underlined.
 - **Run** the current file with the ▶ button in the editor title, or
   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac).
