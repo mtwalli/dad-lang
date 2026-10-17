@@ -23,6 +23,8 @@ const usage = `ضاد — لغة برمجة عربية
   ضاد شغل <ملف.dad>      شغّل البرنامج
   ضاد فحص <ملف.dad>      افحص الملف واعرض الأخطاء والتنبيهات
                          (--json لإخراج يقرؤه المحرر، و«-» للقراءة من الدخل القياسي)
+  ضاد نسق <ملف.dad>      نسّق الملف (المسافات والإزاحة) واحفظه
+                         (--check لعرض الملفات غير المنسّقة، و«-» للدخل القياسي)
   ضاد تطوير <ملف.dad>    شغّل الخادم على http://localhost:8080 مع إعادة التحميل
                          (--port لاختيار منفذ آخر)
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
@@ -33,6 +35,8 @@ Usage (ASCII aliases):
   dad run <file.dad>       run a program (also: dad <file.dad>)
   dad check <file.dad>     check a file and report errors and warnings
                            (--json for editors; "-" reads the source from stdin)
+  dad fmt <file.dad|dir>   format files in place (--check lists unformatted files;
+                           "-" formats stdin to stdout)
   dad dev <file.dad>       serve routes and server functions on localhost:8080,
                            reloading when the file changes (--port to change it)
   dad tokens <file.dad>    print the tokens in a file
@@ -57,6 +61,8 @@ func main() {
 			os.Exit(runWith(args[1], cmdCheckJSON))
 		}
 		os.Exit(withFile("فحص", cmdCheck))
+	case "نسق", "fmt", "format":
+		os.Exit(cmdFmt(os.Args[2:]))
 	case "تطوير", "dev":
 		os.Exit(cmdDev(os.Args[2:]))
 	case "رموز", "tokens":

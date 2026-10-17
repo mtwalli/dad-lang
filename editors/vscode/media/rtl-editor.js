@@ -192,16 +192,115 @@
   }
 
   src.addEventListener("input", edited);
+
+  // ---------- indentation ----------
+  const UNIT = "  ";
+  const CLOSERS = { "}": "{", ")": "(", "]": "[" };
+
+  /** Replaces src.value[start:end] with text (undoably) and selects [selStart, selEnd]. */
+  function replace(start, end, text, selStart, selEnd = selStart) {
+    src.setSelectionRange(start, end);
+    insert(text);
+    src.setSelectionRange(selStart, selEnd);
+    caretMoved();
+  }
+
+  function lineStartAt(pos) { return src.value.lastIndexOf("\n", pos - 1) + 1; }
+  function lineEndAt(pos) { const i = src.value.indexOf("\n", pos); return i < 0 ? src.value.length : i; }
+  function indentOf(line) { return (line.match(/^ */) || [""])[0]; }
+
+  /** The indentation of the line holding the bracket that ch at pos would close. */
+  function openerIndent(pos, ch) {
+    const want = CLOSERS[ch];
+    let depth = 0;
+    for (let i = pos - 1; i >= 0; i--) {
+      const c = src.value[i];
+      if (c in CLOSERS) depth++;
+      else if (c === "{" || c === "(" || c === "[") {
+        if (depth === 0) return c === want ? indentOf(src.value.slice(lineStartAt(i), lineEndAt(i))) : null;
+        depth--;
+      }
+    }
+    return null;
+  }
+
+  /** Indents (by = 1) or outdents (by = -1) every line touched by the selection. */
+  function shiftLines(by) {
+    const a = src.selectionStart, b = src.selectionEnd;
+    const start = lineStartAt(a);
+    const end = lineEndAt(b > a && src.value[b - 1] === "\n" ? b - 1 : b);
+    const lines = src.value.slice(start, end).split("\n");
+    let firstDelta = 0, total = 0;
+    const out = lines.map((l, i) => {
+      let next;
+      if (by > 0) next = l.trim() === "" ? l : UNIT + l;
+      else next = l.replace(new RegExp("^ {1," + UNIT.length + "}"), "");
+      if (i === 0) firstDelta = next.length - l.length;
+      total += next.length - l.length;
+      return next;
+    });
+    const text = out.join("\n");
+    if (text === src.value.slice(start, end)) return;
+    const selStart = Math.max(start, a + firstDelta);
+    replace(start, end, text, a === b ? selStart : start, a === b ? selStart : start + text.length);
+  }
+
   src.addEventListener("keydown", (e) => {
     const mod = e.metaKey || e.ctrlKey;
-    if (e.key === "Tab" && !mod) { e.preventDefault(); insert("  "); return; }
+    const a = src.selectionStart, b = src.selectionEnd;
+    const ls = lineStartAt(a);
+    const before = src.value.slice(ls, a);
+
+    if (e.key === "Tab" && !mod) {
+      e.preventDefault();
+      if (e.shiftKey) shiftLines(-1);
+      else if (src.value.slice(a, b).includes("\n")) shiftLines(1);
+      else insert(UNIT.slice(0, UNIT.length - (before.length % UNIT.length) || UNIT.length));
+      return;
+    }
+    if (mod && (e.key === "]" || e.key === "[")) { e.preventDefault(); shiftLines(e.key === "]" ? 1 : -1); return; }
+
     if (e.key === "Enter" && !mod && !e.altKey) {
-      // Keep the indentation of the current line, one level more after "{".
-      const before = src.value.slice(0, src.selectionStart);
-      const lineText = before.slice(before.lastIndexOf("\n") + 1);
-      let indent = (lineText.match(/^\s*/) || [""])[0];
-      if (/[{(\[]\s*$/.test(lineText)) indent += "  ";
-      e.preventDefault(); insert("\n" + indent); return;
+      e.preventDefault();
+      // Keep the line's indentation, one level more after an opening bracket.
+      // Between "{" and "}" the closing bracket goes on its own line.
+      const after = src.value.slice(b, lineEndAt(b));
+      const head = before.replace(/ +$/, "");
+      let indent = indentOf(before);
+      const opens = /[{(\[]$/.test(head);
+      if (opens) indent += UNIT;
+      const closer = after.trimStart()[0];
+      if (opens && closer && CLOSERS[closer] === head[head.length - 1]) {
+        const back = indent.slice(UNIT.length);
+        const text = "\n" + indent + "\n" + back;
+        const start = ls + head.length;
+        replace(start, b + (after.length - after.trimStart().length), text, start + 1 + indent.length);
+      } else {
+        replace(ls + head.length, b, "\n" + indent, ls + head.length + 1 + indent.length);
+      }
+      return;
+    }
+
+    if (e.key in CLOSERS && !mod && a === b && /^ *$/.test(before)) {
+      // A closing bracket at the start of a line lines up with its opening line.
+      const target = openerIndent(a, e.key);
+      if (target !== null && target !== before) {
+        e.preventDefault();
+        replace(ls, a, target + e.key, ls + target.length + 1);
+        return;
+      }
+    }
+
+    if (e.key === "Backspace" && !mod && a === b && before.length > 0 && /^ +$/.test(before)) {
+      // In the indentation, Backspace goes back one level.
+      e.preventDefault();
+      const n = before.length % UNIT.length || UNIT.length;
+      replace(a - n, a, "", a - n);
+      return;
+    }
+
+    if ((e.shiftKey && e.altKey && e.code === "KeyF") || (mod && e.shiftKey && e.code === "KeyI")) {
+      e.preventDefault(); flush(); vscode.postMessage({ type: "format" }); return;
     }
     if (mod && e.key === "Enter") { e.preventDefault(); vscode.postMessage({ type: "run" }); return; }
     if (mod && !e.shiftKey && e.key.toLowerCase() === "z") { e.preventDefault(); flush(); vscode.postMessage({ type: "undo" }); return; }
@@ -222,9 +321,7 @@
     const msg = event.data;
     if (msg.type === "update") {
       if (msg.text !== src.value && msg.text !== lastSent) {
-        const caret = Math.min(src.selectionStart, msg.text.length);
-        src.value = msg.text;
-        src.setSelectionRange(caret, caret);
+        keepCaret(src.value, msg.text);
       }
       lastSent = null;
       render();
@@ -239,6 +336,26 @@
       caretMoved();
     }
   });
+
+  /** Sets the new text, keeping the caret on its line and after the same code. */
+  function keepCaret(oldText, newText) {
+    const pos = src.selectionStart;
+    const oldStarts = lineStarts(oldText);
+    let line = oldText.slice(0, pos).split("\n").length - 1;
+    const oldLine = oldText.slice(oldStarts[line], pos);
+    const typed = oldLine.replace(/\s+/g, "").length; // code characters before the caret
+    src.value = newText;
+    const starts = lineStarts(newText);
+    line = Math.min(line, starts.length - 1);
+    const lineText = newText.slice(starts[line], newText.indexOf("\n", starts[line]) < 0 ? newText.length : newText.indexOf("\n", starts[line]));
+    let col = 0;
+    if (typed === 0) col = indentOf(lineText).length;
+    for (let seen = 0; seen < typed && col < lineText.length; col++) {
+      if (!/\s/.test(lineText[col])) seen++;
+    }
+    const caret = starts[line] + col;
+    src.setSelectionRange(caret, caret);
+  }
 
   const saved = vscode.getState();
   render();

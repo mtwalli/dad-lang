@@ -50,6 +50,7 @@ Open any `.dad` file, or a folder that contains some.
 | Run the file | Click ▶ in the editor title, or press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac) |
 | Run a file from the sidebar | Right-click it and choose **Run Ḍād File** |
 | See all problems | Open the Problems panel (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd>) |
+| Format the file | Save it (on by default), or press <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> on Linux). See [Formatting](#formatting) |
 | Insert a snippet | Type `دالة`, `لكل`, `طابق`, `func`, `for`, `match`… and press <kbd>Tab</kbd> |
 | Check which `dad` is used | Run **Ḍād: Show Installed Version** from the Command Palette |
 
@@ -60,6 +61,7 @@ Open any `.dad` file, or a folder that contains some.
 | `dad.path` | empty | Path to `dad`. Empty means find it on your `PATH` or in `~/.dad/bin`. |
 | `dad.checkOnType` | `true` | Check for errors as you type. Off means on open and save only. |
 | `dad.saveBeforeRun` | `true` | Save the file before running it. |
+| `dad.formatOnSave` | `true` | Format the file with `dad fmt` when you save it, in both editors. |
 
 If VS Code says it can't find `dad`, run `which dad` (macOS and Linux) or `where dad`
 (Windows) in a terminal and put the result in `dad.path`.
@@ -105,6 +107,45 @@ The Arabic comes from Noto Kufi Arabic and the Latin from DejaVu Sans Mono. Ḍ�
 under the SIL Open Font License ([license](assets/fonts/LICENSE.txt)). To rebuild it, run
 `python3 tools/font/build.py`.
 
+## Formatting
+
+`dad fmt` lays out Ḍād code one standard way, so every file reads the same and nobody argues
+about spaces:
+
+- Two spaces of indentation for each open bracket, worked out from the code.
+- One space around operators and after commas, none inside `( )` and `[ ]`, one inside
+  `{ }` on a single line.
+- Comments stay where they are, and comments on neighbouring lines are lined up.
+  Multi-line strings are not touched.
+- No spaces at the ends of lines, at most one blank line in a row, and one newline at the
+  end of the file.
+
+```dad
+// Before
+دالة مربع(س:صحيح){
+أرجع س*س
+      }
+اطبع( [1،2].حول {هو*2} )
+
+// After
+دالة مربع(س: صحيح) {
+  أرجع س * س
+}
+اطبع([1، 2].حول { هو * 2 })
+```
+
+Only spaces change, never the code: `dad fmt` checks that the result has exactly the same
+words and symbols. A file with errors is left as it is until you fix them.
+
+In VS Code, files are formatted when you save them (turn this off with `dad.formatOnSave`) and
+with **Format Document**. From a terminal:
+
+```sh
+dad fmt app.dad          # or: ضاد نسق app.dad
+dad fmt .                # every .dad file in this folder and below
+dad fmt --check .        # list files that aren't formatted, without changing them (for CI)
+```
+
 ## Right to left
 
 VS Code's text editor always starts lines at the left, and no setting changes that. So the
@@ -116,6 +157,17 @@ the message for the current line at the bottom) and Ḍād Mono.
 It edits VS Code's own copy of the file, so saving, undo, the unsaved-changes dot, Git and the
 Problems panel all work as usual. <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
 (<kbd>⌘</kbd>+<kbd>Enter</kbd>) or **▶ شغّل** runs the file.
+
+Indentation follows the code as you type:
+
+| Key | What it does |
+|---|---|
+| <kbd>Enter</kbd> | Keeps the line's indentation, one level more after `{`, `(` or `[`. Between `{` and `}` it puts the `}` on its own line |
+| `}` `)` `]` | At the start of a line, lines up with the line that opened the bracket |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | Indent or outdent the line, or every selected line |
+| <kbd>Ctrl</kbd>+<kbd>]</kbd> / <kbd>Ctrl</kbd>+<kbd>[</kbd> | The same, with <kbd>⌘</kbd> on a Mac |
+| <kbd>Backspace</kbd> | In the indentation, goes back one level |
+| <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> | Format the file |
 
 VS Code's own features that need its text editor are only in the text view: completion,
 keyword hovers, find and replace, multiple cursors and AI suggestions. To switch, use the

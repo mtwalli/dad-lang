@@ -2,6 +2,15 @@
 
 ## Next release
 
+- Formatting: **Format Document** and formatting on save (`dad.formatOnSave`, on by default)
+  lay out the file with `dad fmt`, in the text editor and the right-to-left editor. Update
+  `dad` to the release that adds `dad fmt`; an older one shows a note instead.
+
+- The right-to-left editor indents as you type: Enter adds a level after `{`, `(` or `[` and
+  puts `}` on its own line, a closing bracket lines up with its opening line, Tab and
+  Shift+Tab indent or outdent the selected lines, Backspace removes a level, and
+  Shift+Alt+F formats the file.
+
 - Run works when `dad.path` is a relative path such as `./bin/dad`.
 
 - Hovers for `جدول`, `خادم` and `مسار` describe what they do now that they work with `dad dev`.

@@ -84,6 +84,7 @@ internal/ast/       syntax tree
 internal/parser/    parser with Arabic error messages
 internal/interp/    interpreter behind `dad run` and `dad dev`, tables and storage
 internal/sqlitestore/ SQLite storage and migrations for tables
+internal/format/    the formatter behind `dad fmt`
 tools/font/         builds Ḍād Mono, the coding font (python3 tools/font/build.py)
 fonts/, fonts-src/  the built font and its sources
 editors/vscode/     VS Code extension (tests: node test/grammar.test.js; DAD=… node test/extension.test.js)

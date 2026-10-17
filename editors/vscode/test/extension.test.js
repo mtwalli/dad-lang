@@ -68,8 +68,9 @@ const on = (name) => (fn) => {
 const diagSets = new Map();
 const terminals = [];
 const messages = [];
+const statusMessages = [];
 const answers = []; // replies to the next information messages, in order
-const config = { path: DAD, checkOnType: true, saveBeforeRun: true };
+const config = { path: DAD, checkOnType: true, saveBeforeRun: true, formatOnSave: true };
 const commands = {};
 const executed = []; // commands the extension ran, with their arguments
 const applied = []; // workspace edits the extension applied
@@ -136,7 +137,12 @@ const vscode = {
     replace(uri, range, text) {
       this.edits.push({ uri, range, text });
     }
+    set(uri, edits) {
+      for (const e of edits) this.edits.push({ uri, range: e.range, text: e.newText });
+    }
   },
+  TextEdit: { replace: (range, newText) => ({ range, newText }) },
+  TextDocumentSaveReason: { Manual: 1, AfterDelay: 2, FocusOut: 3 },
   Uri,
   Diagnostic,
   DiagnosticSeverity: { Error: 0, Warning: 1 },
@@ -179,6 +185,7 @@ const vscode = {
     }),
     registerHoverProvider: (sel, p) => ((vscode._hover = p), { dispose() {} }),
     registerCompletionItemProvider: (sel, p) => ((vscode._completion = p), { dispose() {} }),
+    registerDocumentFormattingEditProvider: (sel, p) => ((vscode._formatter = p), { dispose() {} }),
     getDiagnostics: (uri) => diagnosticsByUri.get(uri.toString()) || [],
     onDidChangeDiagnostics: on("diagnosticsChanged"),
   },
@@ -208,6 +215,7 @@ const vscode = {
     onDidCloseTerminal: on("closeTerminal"),
     registerWebviewViewProvider: (id, provider) => ((viewProvider = provider), { dispose() {} }),
     registerCustomEditorProvider: (viewType, provider) => ((customProvider = { viewType, provider }), { dispose() {} }),
+    setStatusBarMessage: (m) => (statusMessages.push(m), { dispose() {} }),
   },
   workspace: {
     textDocuments: [],
@@ -217,6 +225,7 @@ const vscode = {
     onDidChangeTextDocument: on("change"),
     onDidCloseTextDocument: on("close"),
     onDidChangeConfiguration: on("config"),
+    onWillSaveTextDocument: on("willSave"),
     applyEdit: (edit) => (applied.push(edit), Promise.resolve(true)),
   },
 };
@@ -455,6 +464,63 @@ test("edits in the right-to-left editor go into VS Code's document", async () =>
   assert.deepStrictEqual(executed.at(-1).slice(0, 3), ["vscode.openWith", doc.uri, "default"]);
   await panel.send({ type: "undo" });
   assert.deepStrictEqual(executed.at(-1), ["undo"]);
+});
+
+// Applies TextEdits (from the formatter) to a document's text.
+function applyEdits(doc, edits) {
+  const lines = doc.getText().split("\n");
+  const offset = (p) => lines.slice(0, p.line).reduce((n, l) => n + l.length + 1, 0) + p.character;
+  let text = doc.getText();
+  for (const e of [...edits].reverse()) {
+    text = text.slice(0, offset(e.range.start)) + e.newText + text.slice(offset(e.range.end));
+  }
+  return text;
+}
+
+const messy = "دالة مربع(س: صحيح) {\nأرجع س*س\n      }\nاطبع( مربع(3) )\n";
+const tidy = "دالة مربع(س: صحيح) {\n  أرجع س * س\n}\nاطبع(مربع(3))\n";
+
+test("Format Document lays out the file with dad fmt", async () => {
+  const doc = makeDoc(messy, "/tmp/f1.dad");
+  const edits = await vscode._formatter.provideDocumentFormattingEdits(doc);
+  assert.strictEqual(edits.length, 1);
+  assert.strictEqual(applyEdits(doc, edits), tidy);
+  // Lines that don't change are not part of the edit.
+  assert.strictEqual(edits[0].range.start.line, 1);
+  assert.deepStrictEqual(await vscode._formatter.provideDocumentFormattingEdits(makeDoc(tidy, "/tmp/f2.dad")), []);
+});
+
+test("a file with errors is not formatted", async () => {
+  const before = statusMessages.length;
+  const edits = await vscode._formatter.provideDocumentFormattingEdits(makeDoc("دالة (\n", "/tmp/f3.dad"));
+  assert.deepStrictEqual(edits, []);
+  assert.ok(statusMessages.slice(before).some((m) => /fix the errors/.test(m)));
+});
+
+test("saving formats the file, unless turned off or auto-saving", async () => {
+  const save = (reason) => {
+    const waits = [];
+    events.willSave.forEach((fn) => fn({ document: makeDoc(messy, "/tmp/f4.dad"), reason, waitUntil: (p) => waits.push(p) }));
+    return waits;
+  };
+  const waits = save(vscode.TextDocumentSaveReason.Manual);
+  assert.strictEqual(waits.length, 1);
+  assert.strictEqual(applyEdits(makeDoc(messy), await waits[0]), tidy);
+  assert.strictEqual(save(vscode.TextDocumentSaveReason.AfterDelay).length, 0);
+  config.formatOnSave = false;
+  assert.strictEqual(save(vscode.TextDocumentSaveReason.Manual).length, 0);
+  config.formatOnSave = true;
+});
+
+test("Shift+Alt+F in the right-to-left editor formats the document", async () => {
+  const doc = makeDoc(messy, "/tmp/rtl3.dad");
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(doc, panel);
+  const before = applied.length;
+  await panel.send({ type: "format" });
+  assert.strictEqual(applied.length, before + 1);
+  const e = applied.at(-1).edits[0];
+  assert.strictEqual(applyEdits(doc, [{ range: e.range, newText: e.text }]), tidy);
 });
 
 (async () => {

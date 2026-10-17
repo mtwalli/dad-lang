@@ -9,13 +9,14 @@ const crypto = require("crypto");
 const VIEW_TYPE = "dad.rtlEditor";
 
 class RtlEditorProvider {
-  constructor(context, runFile) {
+  constructor(context, runFile, formatDocument) {
     this.context = context;
     this.runFile = runFile;
+    this.formatDocument = formatDocument;
   }
 
-  static register(context, runFile) {
-    return vscode.window.registerCustomEditorProvider(VIEW_TYPE, new RtlEditorProvider(context, runFile), {
+  static register(context, runFile, formatDocument) {
+    return vscode.window.registerCustomEditorProvider(VIEW_TYPE, new RtlEditorProvider(context, runFile, formatDocument), {
       webviewOptions: { retainContextWhenHidden: true },
       supportsMultipleEditorsPerDocument: true,
     });
@@ -54,6 +55,9 @@ class RtlEditorProvider {
         break;
       case "run":
         await this.runFile(document.uri);
+        break;
+      case "format":
+        if (this.formatDocument) await this.formatDocument(document);
         break;
       case "undo":
       case "redo":

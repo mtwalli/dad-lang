@@ -9,6 +9,8 @@ Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming languag
 - **Ḍād Mono**, a coding font made for Ḍād: Kufi Arabic that sits with Latin letters and
   digits. The extension uses it for `.dad` files and offers to install it the first time.
 - **Errors as you type**, in Arabic, with the exact word underlined.
+- **Formatting** with `dad fmt` on save and with **Format Document**, and indentation that
+  follows the code as you type in the right-to-left editor.
 - **Run** the current file, with the output shown right to left in the **Ḍād** panel until the next run. Use the ▶ button in the editor title, or
   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac).
 - **Keyword help**: hover a keyword to see what it means in English.

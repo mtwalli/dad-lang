@@ -11,6 +11,7 @@ const { KEYWORDS, BUILTINS } = require("./keywords");
 const font = require("./font");
 const { RtlEditorProvider, VIEW_TYPE } = require("./rtlEditor");
 const { OutputView } = require("./outputView");
+const formatter = require("./formatter");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -327,6 +328,7 @@ function activate(context) {
   context.subscriptions.push(panel.disposable);
   const selector = { language: "dad" };
   const cfg = () => vscode.workspace.getConfiguration("dad");
+  const fmt = formatter.register(context, dadPath, activeDadUri);
 
   context.subscriptions.push(
     diagnostics,
@@ -334,7 +336,7 @@ function activate(context) {
     vscode.commands.registerCommand("dad.check", runCheckCommand),
     vscode.commands.registerCommand("dad.showVersion", showVersion),
     vscode.commands.registerCommand("dad.installFont", () => font.installCommand(context)),
-    RtlEditorProvider.register(context, run),
+    RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc)),
     vscode.commands.registerCommand("dad.openRightToLeft", (uri) => reopen(uri, VIEW_TYPE)),
     vscode.commands.registerCommand("dad.openAsText", (uri) => reopen(uri, "default")),
     vscode.languages.registerHoverProvider(selector, hoverProvider),
