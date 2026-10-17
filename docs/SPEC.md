@@ -81,6 +81,14 @@ Arabic and Latin forms are interchangeable (digits are the exception: always `0-
 Other operators: `+ - * / % == != < > <= >= = += -= *= /= => . .. :`
 Logical: `و` / `&&`, `أو` / `||`, `ليس` / `!`.
 
+`/` always gives a decimal, as in school maths: `7 / 2` is `3.5` and `6 / 2` is `3.0`. For a
+whole number, convert the result: `(7 / 2) ك صحيح` is `3` (the fraction is dropped). `%` is the
+remainder of whole numbers: `7 % 2` is `1`.
+
+`و` and `ك` are separate words in Ḍād, even though Arabic writing joins them to the next word.
+Write `أ و ب` and `س ك عشري`. A joined form such as `وب` is read as a name; when that is an
+error, the message suggests the fix: `هل تقصد «و ب»؟`.
+
 > RTL note: `<`, `>`, `(`, `)`, `[`, `]`, `{`, `}` are Unicode *mirrored* characters — in an RTL
 > line they display flipped, so `أ < ب` still reads correctly right-to-left. Editor support must
 > be validated early (Phase 4).
@@ -109,7 +117,8 @@ Logical: `و` / `&&`, `أو` / `||`, `ليس` / `!`.
 | `صح` / `خطأ` | `true` / `false` | |
 | `عدم` | `null` / `nil` | |
 | `و` / `أو` / `ليس` | `&&` / `||` / `!` | |
-| `هو` | `it` / `is` | implicit lambda parameter, and type test (see 4.7) |
+| `هو` | `it` | the implicit lambda parameter: `{ هو * 2 }` |
+| `من نوع` | `is` | type test: `ش من نوع دائرة` (see 4.7) |
 | `ك` | `as` | conversion |
 | `هذا` | `this` / `self` | |
 | `خادم` | — | marks a function that runs on the server |
@@ -194,7 +203,7 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
   اطبع(بريد.طول)              // smart cast: بريد is نص here
 }
 
-إذا ش هو دائرة { اطبع(ش.قطر) }   // `هو` after an expression = type test + smart cast
+إذا ش من نوع دائرة { اطبع(ش.قطر) }   // type test + smart cast
 ```
 There is no force-unwrap. Use `؟؟` with a default, or `؟؟ ارفع مشكلة("...")`.
 
@@ -266,10 +275,12 @@ Pages are right-to-left by default.
 ```
 
 ## 6. Open questions (please decide)
-1. `هو` doing double duty ("it" and type test) — natural Arabic, unambiguous for the parser,
-   but is it confusing for learners?
+1. ~~`هو` doing double duty~~ Decided: `هو` only means "it" in lambdas; the type test is
+   `من نوع` (`ش من نوع دائرة`). Writing `ش هو دائرة` is an error that shows the new form.
 2. Keyword spellings: `نوع` vs `بنية` for value types; `عقد` vs `واجهة` for contracts.
 3. Library method names (`حول`/map, `رشح`/filter, `اختزل`/reduce) — want a naming guide?
 4. Should Latin-letter identifiers produce a style warning in Arabic-first projects?
-5. ~~Integer division~~ Decided: `/` on two `صحيح` yields `صحيح`, as in Kotlin (`7 / 2` is `3`). Convert with `ك عشري` for a fraction.
+5. ~~Integer division~~ Decided: `/` always gives a decimal (`7 / 2` is `3.5`), as in school maths. `(7 / 2) ك صحيح` gives `3`.
 6. ~~Digits~~ Decided: `0-9` only, in code and in output (see 2.5).
+7. ~~`و` and `ك` joined to the next word~~ Decided: they stay separate words; a joined form
+   such as `وب` is an error that suggests `و ب` (see 2.8).

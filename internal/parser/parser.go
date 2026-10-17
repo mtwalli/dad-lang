@@ -101,9 +101,22 @@ func describe(t token.Token) string {
 	return t.Kind.String()
 }
 
+// attachedHint explains a name like «وب» or «كعشري»: in Arabic writing و and ك join the
+// next word, but in Ḍād they are separate keywords and need a space.
+func attachedHint(t token.Token) string {
+	if t.Kind != token.IDENT {
+		return ""
+	}
+	r := []rune(t.Value)
+	if len(r) < 2 || (r[0] != 'و' && r[0] != 'ك') {
+		return ""
+	}
+	return fmt.Sprintf(" — هل تقصد «%c %s»؟", r[0], string(r[1:]))
+}
+
 func (p *parser) expect(k token.Kind, what string) token.Token {
 	if !p.at(k) {
-		p.failf(p.cur().Pos, "توقعت «%s» لكن وجدت «%s»", what, describe(p.cur()))
+		p.failf(p.cur().Pos, "توقعت «%s» لكن وجدت «%s»%s", what, describe(p.cur()), attachedHint(p.cur()))
 	}
 	return p.next()
 }
@@ -127,7 +140,7 @@ func (p *parser) endStmt() {
 		p.next()
 	case token.RBRACE, token.EOF:
 	default:
-		p.failf(p.cur().Pos, "توقعت نهاية السطر لكن وجدت «%s»", describe(p.cur()))
+		p.failf(p.cur().Pos, "توقعت نهاية السطر لكن وجدت «%s»%s", describe(p.cur()), attachedHint(p.cur()))
 	}
 }
 
@@ -493,7 +506,7 @@ func precedence(k token.Kind) int {
 		return 3
 	case token.EQ, token.NEQ:
 		return 4
-	case token.LT, token.GT, token.LE, token.GE, token.IT:
+	case token.LT, token.GT, token.LE, token.GE:
 		return 5
 	case token.RANGE:
 		return 6
@@ -509,15 +522,24 @@ func (p *parser) parseBinary(minPrec int) ast.Expr {
 	left := p.parseCast()
 	for {
 		t := p.cur()
+		if t.Kind == token.IT {
+			// «هو» means "it" (in lambdas); the type test is «من نوع».
+			p.failf(t.Pos, "لفحص النوع اكتب «من نوع»، مثل: «ش من نوع دائرة»")
+		}
+		if t.Kind == token.FROM && p.peek(1).Kind == token.TYPE { // "x من نوع T": type test
+			if 5 < minPrec {
+				return left
+			}
+			p.next()
+			p.next()
+			left = &ast.TypeTest{At: ast.At{Pos: t.Pos}, X: left, Type: p.parseType()}
+			continue
+		}
 		pr := precedence(t.Kind)
 		if pr == 0 || pr < minPrec {
 			return left
 		}
 		p.next()
-		if t.Kind == token.IT { // "x هو T": type test
-			left = &ast.TypeTest{At: ast.At{Pos: t.Pos}, X: left, Type: p.parseType()}
-			continue
-		}
 		right := p.parseBinary(pr + 1)
 		if t.Kind == token.RANGE {
 			left = &ast.RangeExpr{At: ast.At{Pos: t.Pos}, From: left, To: right, Inclusive: true}

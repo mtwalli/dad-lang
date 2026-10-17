@@ -56,3 +56,32 @@ func TestTrailingLambdaNotInConditions(t *testing.T) {
 		t.Fatal(diags)
 	}
 }
+
+func TestAttachedWawAndKafHint(t *testing.T) {
+	cases := []struct{ src, hint string }{
+		{"إذا أ وب { 1 }", "«و ب»"},
+		{"ثابت ن = س كعشري", "«ك عشري»"},
+	}
+	for _, c := range cases {
+		_, diags := parser.ParseFile(c.src)
+		if len(diags) == 0 || !strings.Contains(diags[0].Msg, "هل تقصد "+c.hint) {
+			t.Errorf("%q: want a hint %s, got %v", c.src, c.hint, diags)
+		}
+	}
+}
+
+func TestTypeTestIsMinNaw(t *testing.T) {
+	if _, diags := parser.ParseFile("إذا ش من نوع دائرة { 1 }"); len(diags) != 0 {
+		t.Errorf("«من نوع» should parse: %v", diags)
+	}
+	_, diags := parser.ParseFile("إذا ش هو دائرة { 1 }")
+	if len(diags) == 0 || !strings.Contains(diags[0].Msg, "من نوع") {
+		t.Errorf("«هو» as a type test should point to «من نوع», got %v", diags)
+	}
+	// «هو» still means "it" in a lambda, and «من» still starts a range.
+	for _, src := range []string{"ثابت ك2 = [1، 2].حول { هو * 2 }", "لكل ع من 1 إلى 3 { اطبع(ع) }", "ثابت م = (من 1 إلى 3)"} {
+		if _, diags := parser.ParseFile(src); len(diags) != 0 {
+			t.Errorf("%q: %v", src, diags)
+		}
+	}
+}

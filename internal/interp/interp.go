@@ -692,10 +692,12 @@ func (in *Interp) binop(op token.Kind, a, b Value, pos token.Pos) Value {
 		case token.STAR:
 			return ia * ib
 		case token.SLASH:
+			// Division always gives a decimal, as in school maths: 7 / 2 = 3.5.
+			// For a whole result: (7 / 2) ك صحيح.
 			if ib == 0 {
 				in.raise(pos, "قسمة على صفر")
 			}
-			return ia / ib
+			return float64(ia) / float64(ib)
 		case token.PERCENT:
 			if ib == 0 {
 				in.raise(pos, "قسمة على صفر")
