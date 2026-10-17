@@ -72,7 +72,10 @@ class OutputView {
     this.post({ type: "start", file: path.basename(file) });
     let child;
     try {
-      child = cp.spawn(exe, ["run", file], { cwd: path.dirname(file), windowsHide: true });
+      // The program runs in its own folder, so a relative path to dad (a setting
+      // like "./bin/dad") is resolved first, the same way «Check» finds it.
+      const cmd = /[\\/]/.test(exe) && !path.isAbsolute(exe) ? path.resolve(exe) : exe;
+      child = cp.spawn(cmd, ["run", file], { cwd: path.dirname(file), windowsHide: true });
     } catch (err) {
       this.post({ type: "chunk", stream: "err", text: err.message + "\n" });
       this.post({ type: "done", code: -1, ms: 0 });

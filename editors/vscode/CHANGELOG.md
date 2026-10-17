@@ -2,6 +2,8 @@
 
 ## Next release
 
+- Run works when `dad.path` is a relative path such as `./bin/dad`.
+
 - Hovers for `جدول`, `خادم` and `مسار` describe what they do now that they work with `dad dev`.
 
 - Run shows the output in a new **Ḍād** panel next to the terminal: right to left, in Ḍād Mono,
