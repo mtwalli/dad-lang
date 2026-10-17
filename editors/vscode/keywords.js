@@ -40,7 +40,7 @@ const KEYWORDS = {
   "خادم": ["server", "Marks a function the browser may call. `dad dev` serves it at `/_dad/call/<name>`"],
   "مكون": ["component", "Declares an interface component (Phase 2)"],
   "حالة": ["state", "Reactive state inside a component (Phase 2)"],
-  "جدول": ["table", "Declares a table of saved records with a hidden id `رقم`: `مهمة.أنشئ(…)`, `.الكل()`, `.حيث { … }`, `.بالرقم(1)`, `م.احفظ()`, `م.احذف()`"],
+  "جدول": ["table", "Declares a table of records saved in SQLite with a hidden id `رقم`: `مهمة.أنشئ(…)`, `.الكل()`, `.حيث { … }`, `.بالرقم(1)`, `م.احفظ()`, `م.احذف()`"],
   "مسار": ["route", "Declares a public web route: `مسار جلب \"/api/مهام/{رقم}\" = مهمة.بالرقم(رقم)`. Methods: جلب, أرسل, عدل, احذف"],
 };
 

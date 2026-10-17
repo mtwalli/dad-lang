@@ -29,7 +29,7 @@ working end-to-end, crudely), then deepen each layer.
 | **0. Specification** | `docs/SPEC.md`, `docs/grammar.ebnf`, sample programs, lexer | Keywords agreed; all examples tokenize ✅ (lexer done) |
 | **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output ✅ (`dad run`) |
 | **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser |
-| **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end (server half ✅ in the interpreter with JSON storage; SQLite and the UI half next) |
+| **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end (server half ✅ with SQLite; the UI half next) |
 | **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified (VS Code extension and playground ✅, language server next) |
 | **5. Distribution** | GoReleaser + GitHub Actions; Homebrew, winget, `.deb`/`.rpm`, `install.sh`; Arabic tutorial site | One-line install on macOS, Windows, Linux |
 
@@ -46,11 +46,12 @@ working end-to-end, crudely), then deepen each layer.
 
 ## Phase 3 breakdown (in progress)
 1. ✅ Parse `جدول`, `خادم` and `مسار`
-2. ✅ Tables in the interpreter, behind a `Store` interface: memory (playground, tests) and
-   a JSON file (`.dad/<program>.json`)
+2. ✅ Tables in the interpreter, behind a `Store` interface: memory for the playground and
+   tests, SQLite for `dad run` and `dad dev`
 3. ✅ `dad dev`: routes with `{params}`, server functions at `/_dad/call/<name>`, a dev page,
    live reload that keeps the data
-4. SQLite store (`modernc.org/sqlite`), with migrations generated from table changes
+4. ✅ SQLite store (`modernc.org/sqlite`, `.dad/<program>.db`): migrations from table changes,
+   simple `حيث` lambdas compiled to SQL, earlier JSON data imported
 5. Typed client calls from `مكون` code once Phase 2 lands
 
 ## Costs to know about

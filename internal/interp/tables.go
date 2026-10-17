@@ -35,7 +35,16 @@ type Route struct {
 }
 
 func (in *Interp) declareTable(d *ast.TableDecl, env *Env) {
-	fields := append([]*ast.Param{}, d.Fields...)
+	var fields []*ast.Param
+	for _, f := range d.Fields {
+		if f.Type == nil {
+			// «منجزة = خطأ»: the column's type comes from the default.
+			c := *f
+			c.Type = literalType(f.Default)
+			f = &c
+		}
+		fields = append(fields, f)
+	}
 	fields = append(fields, &ast.Param{
 		At:      d.At,
 		Name:    idField,
@@ -45,6 +54,80 @@ func (in *Interp) declareTable(d *ast.TableDecl, env *Env) {
 	st := &StructType{Name: d.Name, Fields: fields, Methods: map[string]*ast.FuncDecl{}, Env: env, Table: true}
 	in.tables = append(in.tables, st)
 	in.defineName(env, d.Name, st, d.Pos)
+	if m, ok := in.Store.(Migrator); ok {
+		if err := m.Prepare(d.Name, in.schema(st)); err != nil {
+			in.fail(d.Pos, "%v", err)
+		}
+	}
+}
+
+// literalType is the type of a literal default, or nil when it isn't one.
+func literalType(e ast.Expr) *ast.TypeRef {
+	name := ""
+	switch x := e.(type) {
+	case *ast.BoolLit:
+		name = "منطقي"
+	case *ast.IntLit:
+		name = "صحيح"
+	case *ast.FloatLit:
+		name = "عشري"
+	case *ast.StrLit:
+		name = "نص"
+	case *ast.Unary:
+		if x.Op == token.MINUS {
+			return literalType(x.X)
+		}
+	}
+	if name == "" {
+		return nil
+	}
+	return &ast.TypeRef{At: ast.At{Pos: e.P()}, Kind: ast.NamedType, Name: name}
+}
+
+// schema describes a table's fields (without the id) for the store.
+func (in *Interp) schema(t *StructType) []Field {
+	var out []Field
+	for _, f := range t.Fields[:len(t.Fields)-1] {
+		fd := Field{Name: f.Name, Kind: fieldKind(f.Type), Optional: f.Type == nil || f.Type.Optional}
+		if f.Default != nil && isConstant(f.Default) {
+			fd.Default, fd.HasDefault = in.ToJSON(in.eval(f.Default, t.Env)), true
+		}
+		out = append(out, fd)
+	}
+	return out
+}
+
+// isConstant reports whether a default is made only of literals, so the store
+// can use its value when it adds a column.
+func isConstant(e ast.Expr) bool {
+	switch x := e.(type) {
+	case *ast.IntLit, *ast.FloatLit, *ast.BoolLit, *ast.NullLit:
+		return true
+	case *ast.StrLit:
+		for _, p := range x.Parts {
+			if p.Expr != nil {
+				return false
+			}
+		}
+		return true
+	case *ast.Unary:
+		return x.Op == token.MINUS && isConstant(x.X)
+	case *ast.ListLit:
+		for _, el := range x.Elems {
+			if !isConstant(el) {
+				return false
+			}
+		}
+		return true
+	case *ast.MapLit:
+		for i := range x.Keys {
+			if !isConstant(x.Keys[i]) || !isConstant(x.Values[i]) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 // tableMethod runs a method called on a table, such as «مهمة.الكل()».
@@ -144,6 +227,10 @@ func (in *Interp) loadRows(t *StructType, pos token.Pos) []Value {
 	if err != nil {
 		in.fail(pos, "تعذرت قراءة البيانات: %v", err)
 	}
+	return in.recordsFromRows(t, rows, pos)
+}
+
+func (in *Interp) recordsFromRows(t *StructType, rows []Row, pos token.Pos) []Value {
 	out := make([]Value, 0, len(rows))
 	for _, row := range rows {
 		out = append(out, in.recordFromRow(t, row, pos))
@@ -156,6 +243,9 @@ func (in *Interp) recordFromRow(t *StructType, row Row, pos token.Pos) *Struct {
 	vals := make([]Value, len(t.Fields))
 	for i, f := range t.Fields {
 		raw, ok := row[f.Name]
+		if raw == nil && f.Default != nil && (f.Type == nil || !f.Type.Optional) {
+			ok = false // a column added or brought back after the row was saved
+		}
 		switch {
 		case ok:
 			vals[i] = in.convert(in.FromJSON(raw, f.Type), f.Type, pos, "الحقل «"+f.Name+"»")

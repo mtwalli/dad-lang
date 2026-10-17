@@ -248,3 +248,66 @@ func normalizeJSON(v any) any {
 	}
 	return v
 }
+
+// ---------------------------------------------------------------- optional store features
+
+// Field describes one column of a table for stores that keep a schema.
+type Field struct {
+	Name       string
+	Kind       string // "int", "float", "text", "bool" or "json"
+	Optional   bool
+	Default    any // the default as plain data, when it is a literal
+	HasDefault bool
+}
+
+// Migrator is a store with a schema. Prepare is called for every جدول when a
+// program starts; it creates the table or brings it up to date with the fields.
+type Migrator interface {
+	Prepare(table string, fields []Field) error
+}
+
+// Querier is a store that can filter, count and look up rows itself, so the
+// interpreter doesn't read the whole table for «حيث», «عدد» or «بالرقم».
+type Querier interface {
+	Where(table string, c *Cond) ([]Row, error)
+	Count(table string) (int64, error)
+	Get(table string, id int64) (Row, bool, error)
+}
+
+// Cond is a filter built from a «حيث» lambda.
+//
+//	Op "and", "or": L and R
+//	Op "not":       L
+//	Op "true":      Field is صح
+//	Op "eq", "ne", "lt", "le", "gt", "ge": Field compared with Value
+type Cond struct {
+	Op    string
+	Field string
+	Value any
+	L, R  *Cond
+}
+
+// String shows a condition in a readable form, for tests and debugging.
+func (c *Cond) String() string {
+	switch c.Op {
+	case "and", "or":
+		return "(" + c.L.String() + " " + c.Op + " " + c.R.String() + ")"
+	case "not":
+		return "not " + c.L.String()
+	case "true":
+		return c.Field
+	}
+	return fmt.Sprintf("%s %s %#v", c.Field, c.Op, c.Value)
+}
+
+// TableNames lists the tables in the data file.
+func (s *FileStore) TableNames() ([]string, error) {
+	s.mem.mu.Lock()
+	defer s.mem.mu.Unlock()
+	var out []string
+	for name := range s.mem.tables {
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out, nil
+}

@@ -92,7 +92,7 @@ func TestDevServer(t *testing.T) {
 	}
 
 	// The data file is written next to the program.
-	if _, err := os.Stat(filepath.Join(filepath.Dir(path), ".dad", "app.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(filepath.Dir(path), ".dad", "app.db")); err != nil {
 		t.Errorf("data file: %v", err)
 	}
 

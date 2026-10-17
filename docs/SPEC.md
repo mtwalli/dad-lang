@@ -249,9 +249,13 @@ Its API: `مهمة.أنشئ(...)`, `مهمة.الكل()`, `مهمة.حيث { ه�
 `مهمة.عدد()`, `م.احفظ()`, `م.احذف()`. `م.نسخة(...)` keeps the id, so a changed copy saves
 over the original.
 
-*Implemented (v0.1.13):* rows are stored in `.dad/<program>.json` next to the program, behind a
-storage interface. *Planned:* SQLite (schema and migrations generated from the table),
-with query lambdas compiled to SQL instead of run in memory. Programs don't change.
+A field with a literal default and no type takes the default's type (`منجزة = خطأ` is `منطقي`).
+
+*Implemented:* `dad run` and `dad dev` store tables in SQLite (`.dad/<program>.db`), one SQL
+table per `جدول` and one column per field. Migrations follow the declaration: added fields are
+filled with their default, removed fields are hidden but kept, and type changes convert every
+value or are refused. `حيث` lambdas that compare fields with values or variables (joined by
+`و`، `أو`، `ليس`) are compiled to SQL; other lambdas run on every row with the same result.
 
 ### 5.2 Server — `خادم`
 ```dad

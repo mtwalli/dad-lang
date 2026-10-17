@@ -120,6 +120,7 @@ func cmdRun(path, src string) int {
 	}
 	in.Store = store
 	err = in.Run(file)
+	storeNotes(store)
 	if len(in.Notices) > 0 {
 		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الواجهات تأتي في المرحلة 2.\n",
 			strings.Join(in.Notices, "، "))

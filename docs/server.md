@@ -38,14 +38,40 @@ Records are values, like any other type: change one with `نسخة` and save the
 
 ### Where the data goes
 
-`dad run` and `dad dev` keep a program's tables in `.dad/<name>.json` next to it, so
-`todo.dad` saves to `.dad/todo.json`. The data is still there the next time you run the program.
-Delete the file to start fresh. Add `.dad/` to your `.gitignore` if you don't want to commit it.
-The playground keeps tables in memory only.
+`dad run` and `dad dev` keep a program's tables in a SQLite database, `.dad/<name>.db` next to
+the program, so `todo.dad` saves to `.dad/todo.db`. The data is still there the next time you
+run the program. Delete the `.dad` folder to start fresh, and add `.dad/` to your `.gitignore`
+if you don't want to commit it. Any SQLite tool can open the file; each `جدول` is a table with
+a column per field. The playground keeps tables in memory only.
 
-!!! note "JSON now, SQLite later"
-    This first version stores tables in a JSON file, which is fine while you develop and for
-    small apps. A later version moves them to SQLite. Your Ḍād code stays the same.
+If you used an earlier version, its `.dad/<name>.json` file is copied into the database the
+first time you run the program, keeping the ids, and then renamed to `.json.imported`.
+
+### Changing a table
+
+When you change a `جدول` and run the program again, the database follows:
+
+| Change | What happens |
+|---|---|
+| Add a field | Saved records get its default. A field with no default can only be added while the table is empty, unless its type is optional (`نص؟`) |
+| Remove a field | Its column is kept but hidden. Add the field back and its data comes back |
+| Change a field's type | Every value is converted, as `ك` would. If some can't be (say `"أحمد"` to `صحيح`), nothing changes and the error lists those records |
+
+Renaming a field looks like removing one and adding another, so the old values stay in the
+hidden column.
+
+### Fast queries
+
+Simple `حيث` conditions run inside the database instead of reading every record. A condition
+counts as simple when it compares fields with values or variables, joined by `و`, `أو` and `ليس`:
+
+```dad
+مهمة.حيث { هو.منجزة }
+مهمة.حيث { ليس هو.منجزة و هو.أولوية >= حد }
+```
+
+Anything else, such as `{ هو.عنوان.يحتوي("خبز") }` or `{ هو.أولوية * 2 > 3 }`, still works the
+same; it just reads every record. `بالرقم` and `عدد` always ask the database directly.
 
 ## Server functions — `خادم`
 

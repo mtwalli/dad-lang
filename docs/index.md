@@ -77,7 +77,7 @@ hide:
   <li class="is-done"><span>Specification</span><small>Keywords, grammar and the Arabic-aware lexer</small></li>
   <li class="is-next"><span>Core language</span><small>Parser and <code>dad run</code> done; type checker next</small></li>
   <li><span>Interface</span><small>Components and reactive state</small></li>
-  <li class="is-next"><span>Server and data</span><small>Tables, server functions, routes and <a href="server/"><code>dad dev</code></a> work; SQLite next</small></li>
+  <li class="is-next"><span>Server and data</span><small>Tables, server functions, routes and <a href="server/"><code>dad dev</code></a> work, with SQLite; the interface next</small></li>
   <li class="is-next"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a> and <a href="playground/">web playground</a> done; language server next</small></li>
   <li><span>Installers</span><small>macOS, Windows and Linux</small></li>
 </ol>

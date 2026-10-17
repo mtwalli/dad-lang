@@ -17,23 +17,51 @@ import (
 
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/parser"
+	"github.com/mtwalli/dad-lang/internal/sqlitestore"
 )
 
 //go:embed devpage.html
 var devPage []byte
 
-// dataPath is where a program's tables are kept: .dad/<name>.json next to it.
+// dataPath is where a program's tables are kept: .dad/<name>.db next to it.
 func dataPath(path string) string {
 	base := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-	return filepath.Join(filepath.Dir(path), ".dad", base+".json")
+	return filepath.Join(filepath.Dir(path), ".dad", base+".db")
 }
 
-// openStore opens the data file for a program, or keeps data in memory for stdin.
+// openStore opens the database for a program, or keeps data in memory for stdin.
+// Data from the JSON file earlier versions wrote (.dad/<name>.json) is moved
+// into a new database.
 func openStore(path string) (interp.Store, error) {
 	if path == "-" {
 		return interp.NewMemoryStore(), nil
 	}
-	return interp.OpenFileStore(dataPath(path))
+	db := dataPath(path)
+	_, statErr := os.Stat(db)
+	st, err := sqlitestore.Open(db)
+	if err != nil {
+		return nil, err
+	}
+	old := strings.TrimSuffix(db, ".db") + ".json"
+	if _, err := os.Stat(old); err == nil && os.IsNotExist(statErr) {
+		if err := st.ImportJSON(old); err != nil {
+			return nil, err
+		}
+	}
+	return st, nil
+}
+
+// storeNotes prints what the store has to say about migrations, once.
+func storeNotes(store interp.Store) {
+	st, ok := store.(*sqlitestore.Store)
+	if !ok {
+		return
+	}
+	for _, n := range st.Notes {
+		fmt.Fprintln(os.Stderr, "ملاحظة: "+n)
+	}
+	st.Notes = nil
+	st.FinishImport()
 }
 
 // devServer runs one Ḍād program as a web server and reloads it when the file changes.
@@ -83,6 +111,7 @@ func (s *devServer) load() {
 		s.err = err.Error()
 		fmt.Fprintf(os.Stderr, "%s: %s\n", s.path, err)
 	}
+	storeNotes(s.store)
 	if s.version == 1 && len(in.Notices) > 0 {
 		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الواجهات تأتي في المرحلة 2.\n", strings.Join(in.Notices, "، "))
 	}
@@ -211,7 +240,7 @@ func (s *devServer) info(w http.ResponseWriter) {
 		"functions": []interp.ServerFunc{},
 		"tables":    []interp.TableInfo{},
 	}
-	if fs, ok := s.store.(*interp.FileStore); ok {
+	if fs, ok := s.store.(interface{ Path() string }); ok {
 		out["data"] = fs.Path()
 	}
 	if s.in != nil {
