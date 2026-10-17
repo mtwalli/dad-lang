@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <rect x="0.5" y="0.5" width="15" height="15" rx="3.5" fill="#1B2B6B"/>
-  <text x="8" y="12.5" text-anchor="middle" font-family="'Geeza Pro','Segoe UI','Noto Naskh Arabic','DejaVu Sans',sans-serif" font-size="11" font-weight="700" fill="#E0BC66">ض</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="16" height="16"><defs>
+<linearGradient id="bgf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A3F94"/><stop offset="1" stop-color="#141C4C"/></linearGradient>
+<radialGradient id="glowf" cx="0.5" cy="0.45" r="0.55"><stop offset="0" stop-color="#3B56C4" stop-opacity=".55"/><stop offset="1" stop-color="#3B56C4" stop-opacity="0"/></radialGradient>
+<linearGradient id="goldf" gradientUnits="userSpaceOnUse" x1="40" y1="30" x2="70" y2="100"><stop offset="0" stop-color="#F6DD95"/><stop offset=".55" stop-color="#D9B45F"/><stop offset="1" stop-color="#B8903E"/></linearGradient>
+<linearGradient id="turqf" gradientUnits="userSpaceOnUse" x1="62" y1="24" x2="80" y2="46"><stop offset="0" stop-color="#6FE3E8"/><stop offset="1" stop-color="#21AEB8"/></linearGradient>
+<linearGradient id="rimf" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="128" y2="128"><stop offset="0" stop-color="#F6DD95"/><stop offset=".5" stop-color="#D9B45F"/><stop offset="1" stop-color="#B8903E"/></linearGradient>
+</defs><path d="M127.50 64.00 L110.93 83.44 L108.90 108.90 L83.44 110.93 L64.00 127.50 L44.56 110.93 L19.10 108.90 L17.07 83.44 L0.50 64.00 L17.07 44.56 L19.10 19.10 L44.56 17.07 L64.00 0.50 L83.44 17.07 L108.90 19.10 L110.93 44.56 Z" fill="url(#bgf)" stroke="url(#rimf)" stroke-width="5" stroke-linejoin="round"/><g fill="none" stroke="url(#goldf)" stroke-width="12.75" stroke-linejoin="round"><path d="M78.88 77.08 L91.12 77.08 A13.26 13.26 0 0 0 91.12 50.56 L78.88 50.56 A13.26 13.26 0 0 0 78.88 77.08 Z"/><path d="M26.86 66.88 L26.86 77.08 A19.38 15.30 0 0 0 65.62 77.08 L65.62 63.82" stroke-linecap="butt"/></g><path d="M85.00 29.75 L91.53 36.28 L85.00 42.81 L78.47 36.28 Z" fill="url(#turqf)"/></svg>
