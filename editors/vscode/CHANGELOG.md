@@ -3,8 +3,12 @@
 ## Next release
 
 - Formatting: **Format Document** and formatting on save (`dad.formatOnSave`, on by default)
-  lay out the file with `dad fmt`, in the text editor and the right-to-left editor. Update
+  lay out the file with `dad fmt`, in the text editor and the right-to-left editor. The
+  style follows the Kotlin conventions: four spaces, `{` at the end of the line, `}` on its
+  own line, one statement per line. Update
   `dad` to the release that adds `dad fmt`; an older one shows a note instead.
+
+- `.dad` files use four spaces per level.
 
 - The right-to-left editor indents as you type: Enter adds a level after `{`, `(` or `[` and
   puts `}` on its own line, a closing bracket lines up with its opening line, Tab and

@@ -109,33 +109,41 @@ under the SIL Open Font License ([license](assets/fonts/LICENSE.txt)). To rebuil
 
 ## Formatting
 
-`dad fmt` lays out Ḍād code one standard way, so every file reads the same and nobody argues
-about spaces:
+`dad fmt` lays out Ḍād code one standard way, following the
+[Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html), so every
+file reads the same and nobody argues about spaces:
 
-- Two spaces of indentation for each open bracket, worked out from the code.
+- Four spaces of indentation for each level, worked out from the code.
+- A block that spans lines opens with `{` at the end of its first line and closes with `}`
+  on a line of its own. `} وإلا {` and `} التقط خ {` stay on one line. A short block can stay
+  on one line: `إذا ب == 0 { ارفع مشكلة("…") }`.
+- One statement per line: `؛` between statements becomes a new line.
 - One space around operators and after commas, none inside `( )` and `[ ]`, one inside
-  `{ }` on a single line.
-- Comments stay where they are, and comments on neighbouring lines are lined up.
-  Multi-line strings are not touched.
-- No spaces at the ends of lines, at most one blank line in a row, and one newline at the
-  end of the file.
+  `{ }` on a single line. Lambda parameters stay on the first line: `{ أ، ب =>`.
+- Lines longer than 100 columns are split at their outermost `(` or `[`, one argument per line.
+- A blank line before and after a declaration that spans lines (a function, type, table…),
+  at most one blank line in a row, no spaces at line ends, one newline at the end of the file.
+- Comments stay with their code. Multi-line strings are not touched.
 
 ```dad
 // Before
 دالة مربع(س:صحيح){
 أرجع س*س
       }
-اطبع( [1،2].حول {هو*2} )
+اطبع( [1،2].حول {هو*2} )؛ اطبع(مربع(3))
 
 // After
 دالة مربع(س: صحيح) {
-  أرجع س * س
+    أرجع س * س
 }
+
 اطبع([1، 2].حول { هو * 2 })
+اطبع(مربع(3))
 ```
 
-Only spaces change, never the code: `dad fmt` checks that the result has exactly the same
-words and symbols. A file with errors is left as it is until you fix them.
+Only the layout changes, never the code: `dad fmt` checks that the result has exactly the
+same words and symbols (a `؛` and a new line count as the same) and that it still reads
+without errors. A file with errors is left as it is until you fix them.
 
 In VS Code, files are formatted when you save them (turn this off with `dad.formatOnSave`) and
 with **Format Document**. From a terminal:
@@ -162,7 +170,7 @@ Indentation follows the code as you type:
 
 | Key | What it does |
 |---|---|
-| <kbd>Enter</kbd> | Keeps the line's indentation, one level more after `{`, `(` or `[`. Between `{` and `}` it puts the `}` on its own line |
+| <kbd>Enter</kbd> | Keeps the line's indentation, one level (four spaces) more after `{`, `(` or `[`. Between `{` and `}` it puts the `}` on its own line |
 | `}` `)` `]` | At the start of a line, lines up with the line that opened the bracket |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | Indent or outdent the line, or every selected line |
 | <kbd>Ctrl</kbd>+<kbd>]</kbd> / <kbd>Ctrl</kbd>+<kbd>[</kbd> | The same, with <kbd>⌘</kbd> on a Mac |

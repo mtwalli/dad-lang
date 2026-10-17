@@ -219,7 +219,7 @@
         "editor.unicodeHighlight.ambiguousCharacters": false,
         "editor.unicodeHighlight.invisibleCharacters": true,
         "editor.wordSeparators": "`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?،؛؟«»",
-        "editor.tabSize": 2,
+        "editor.tabSize": 4,
         "editor.insertSpaces": true,
         "files.encoding": "utf8",
         "editor.fontFamily": "'Dad Mono', Menlo, Monaco, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace"

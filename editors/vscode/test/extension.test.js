@@ -478,7 +478,7 @@ function applyEdits(doc, edits) {
 }
 
 const messy = "دالة مربع(س: صحيح) {\nأرجع س*س\n      }\nاطبع( مربع(3) )\n";
-const tidy = "دالة مربع(س: صحيح) {\n  أرجع س * س\n}\nاطبع(مربع(3))\n";
+const tidy = "دالة مربع(س: صحيح) {\n    أرجع س * س\n}\n\nاطبع(مربع(3))\n";
 
 test("Format Document lays out the file with dad fmt", async () => {
   const doc = makeDoc(messy, "/tmp/f1.dad");

@@ -8,7 +8,9 @@ hide:
 
 Write Ḍād and run it. Everything runs in your browser with the real Ḍād interpreter,
 compiled to WebAssembly. Press **Run**, or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
-(<kbd>⌘</kbd>+<kbd>Enter</kbd> on a Mac).
+(<kbd>⌘</kbd>+<kbd>Enter</kbd> on a Mac). **Format** (<kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd>,
+<kbd>Shift</kbd>+<kbd>Option</kbd>+<kbd>F</kbd> on a Mac) lays the code out like
+[`dad fmt`](editor.md#formatting).
 
 <div class="dad-play" id="dad-play">
   <div class="dad-play__bar">
@@ -21,6 +23,7 @@ compiled to WebAssembly. Press **Run**, or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
       <option value="mistakes">A file with mistakes</option>
     </select>
     <button type="button" class="md-button md-button--primary dad-play__run" id="dad-run" disabled>Run</button>
+    <button type="button" class="md-button dad-play__run" id="dad-format" disabled title="Format the code (Shift+Alt+F)">Format</button>
     <span class="dad-play__status" id="dad-status" role="status">Loading Ḍād…</span>
   </div>
   <div class="dad-play__panes">

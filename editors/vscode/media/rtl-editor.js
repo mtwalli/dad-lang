@@ -194,7 +194,7 @@
   src.addEventListener("input", edited);
 
   // ---------- indentation ----------
-  const UNIT = "  ";
+  const UNIT = "    "; // four spaces, as dad fmt
   const CLOSERS = { "}": "{", ")": "(", "]": "[" };
 
   /** Replaces src.value[start:end] with text (undoably) and selects [selStart, selEnd]. */

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"syscall/js"
 
+	"github.com/mtwalli/dad-lang/internal/format"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
 	"github.com/mtwalli/dad-lang/internal/parser"
@@ -135,8 +136,24 @@ func run(_ js.Value, args []js.Value) (ret any) {
 	return string(out)
 }
 
+// formatSource lays out a program the standard way (dad fmt).
+func formatSource(_ js.Value, args []js.Value) any {
+	res := map[string]string{}
+	if len(args) > 0 {
+		out, err := format.Source(args[0].String())
+		if err != nil {
+			res["error"] = err.Error()
+		} else {
+			res["text"] = out
+		}
+	}
+	b, _ := json.Marshal(res)
+	return string(b)
+}
+
 func main() {
 	js.Global().Set("dadTokenize", js.FuncOf(tokenize))
+	js.Global().Set("dadFormat", js.FuncOf(formatSource))
 	js.Global().Set("dadRun", js.FuncOf(run))
 	js.Global().Call("dispatchEvent", js.Global().Get("Event").New("dad-ready"))
 	select {}
