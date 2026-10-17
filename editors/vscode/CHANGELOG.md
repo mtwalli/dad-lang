@@ -2,6 +2,10 @@
 
 ## Next release
 
+- Run shows the output in a new **Ḍād** panel next to the terminal: right to left, in Ḍād Mono,
+  with errors in red, and it stays until the next run. **Run again** and **Stop** are in the
+  panel. Before, the output disappeared when the program finished.
+
 - `.dad` files open in a right-to-left editor: lines start at the right, line numbers are on
   the right, with highlighting, problems and Ḍād Mono. **Ḍād: Reopen as Text** and
   **Ḍād: Reopen Right to Left** switch between it and VS Code's text editor.

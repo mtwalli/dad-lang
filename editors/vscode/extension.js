@@ -10,6 +10,7 @@ const path = require("path");
 const { KEYWORDS, BUILTINS } = require("./keywords");
 const font = require("./font");
 const { RtlEditorProvider, VIEW_TYPE } = require("./rtlEditor");
+const { OutputView } = require("./outputView");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -18,7 +19,7 @@ let diagnostics;
 let cachedPath = null;
 let warnedMissing = false;
 let warnedOld = false;
-let runTerminal = null;
+let output = null; // the Ḍād output panel
 const timers = new Map(); // document uri → debounce timer
 const pending = new Map(); // document uri → running check process
 
@@ -230,19 +231,11 @@ async function run(uri) {
     warnMissing();
     return;
   }
-  // The terminal runs dad directly (no shell), so file names never need quoting.
-  if (runTerminal) runTerminal.dispose();
-  runTerminal = vscode.window.createTerminal({
-    name: `ضاد: ${path.basename(file)}`,
-    shellPath: exe,
-    shellArgs: ["run", file],
-    cwd: path.dirname(file),
-    iconPath: new vscode.ThemeIcon("play"),
-    isTransient: true,
-  });
-  runTerminal.show(true);
+  // Output goes to the Ḍād panel: right to left, in Ḍād Mono, kept until the next run.
+  await output.run(exe, file);
 }
 
+/** A terminal that runs `dad run <file>` and keeps its output when the program ends. */
 /** Reopens a .dad file in the right-to-left editor or VS Code's text editor. */
 function reopen(uri, viewType) {
   const target = uri instanceof vscode.Uri ? uri : activeDadUri();
@@ -329,6 +322,9 @@ const completionProvider = {
 
 function activate(context) {
   diagnostics = vscode.languages.createDiagnosticCollection("dad");
+  const panel = OutputView.register(context);
+  output = panel.view;
+  context.subscriptions.push(panel.disposable);
   const selector = { language: "dad" };
   const cfg = () => vscode.workspace.getConfiguration("dad");
 
@@ -350,9 +346,6 @@ function activate(context) {
     vscode.workspace.onDidSaveTextDocument((doc) => check(doc)),
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (e.document.languageId === "dad" && cfg().get("checkOnType", true)) scheduleCheck(e.document, 300);
-    }),
-    vscode.window.onDidCloseTerminal((t) => {
-      if (t === runTerminal) runTerminal = null;
     }),
     vscode.workspace.onDidCloseTextDocument((doc) => {
       diagnostics.delete(doc.uri);

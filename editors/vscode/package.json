@@ -211,6 +211,24 @@
         ],
         "priority": "default"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "dad-panel",
+          "title": "Ḍād",
+          "icon": "images/file.svg"
+        }
+      ]
+    },
+    "views": {
+      "dad-panel": [
+        {
+          "type": "webview",
+          "id": "dad.output",
+          "name": "Output · المخرجات"
+        }
+      ]
+    }
   }
 }

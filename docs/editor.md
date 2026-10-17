@@ -10,8 +10,9 @@ macOS, Windows and Linux.
 - **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, comments, and Ḍād code blocks in Markdown.
 - **Errors as you type.** The same Arabic messages as `dad check`, with the exact word underlined
   and listed in the Problems panel.
-- **Run** the current file with the ▶ button in the editor title. The output appears in the
-  terminal panel.
+- **Run** the current file with the ▶ button in the editor title. The output appears right to
+  left in the **Ḍād** panel, next to the terminal, and stays there until the next run. The
+  panel has **Run again** and **Stop** buttons.
 - **Keyword help.** Hover a keyword to see what it means in English.
 - **Completion and snippets** for keywords, built-ins, functions, types, enums, loops and
   matching. Snippets answer to Arabic and English prefixes, so `دالة` and `func` both work.

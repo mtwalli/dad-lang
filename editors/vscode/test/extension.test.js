@@ -74,6 +74,31 @@ const commands = {};
 const executed = []; // commands the extension ran, with their arguments
 const applied = []; // workspace edits the extension applied
 let customProvider = null;
+let viewProvider = null; // the Ḍād output panel's provider
+let outputPanel = null; // its fake webview view, once VS Code "opens" the panel
+
+function fakeWebviewView() {
+  const v = {
+    posted: [],
+    handlers: [],
+    shown: 0,
+    webview: {
+      options: null,
+      html: "",
+      cspSource: "vscode-resource:",
+      asWebviewUri: (u) => u,
+      postMessage: (m) => (v.posted.push(m), Promise.resolve(true)),
+      onDidReceiveMessage: (fn) => (v.handlers.push(fn), { dispose() {} }),
+    },
+    onDidDispose: () => ({ dispose() {} }),
+    show() {
+      v.shown++;
+    },
+    send: (m) => v.handlers.forEach((fn) => fn(m)),
+    text: () => v.posted.filter((m) => m.type === "chunk").map((m) => m.text).join(""),
+  };
+  return v;
+}
 const diagnosticsByUri = new Map();
 
 function makeDoc(text, file = "/tmp/test.dad") {
@@ -131,6 +156,15 @@ const vscode = {
       Object.assign(this, { contents, range });
     }
   },
+  EventEmitter: class {
+    constructor() {
+      this.listeners = [];
+      this.event = (fn) => (this.listeners.push(fn), { dispose() {} });
+    }
+    fire(v) {
+      this.listeners.forEach((fn) => fn(v));
+    }
+  },
   ThemeIcon: class {
     constructor(id) {
       this.id = id;
@@ -150,7 +184,16 @@ const vscode = {
   },
   commands: {
     registerCommand: (id, fn) => ((commands[id] = fn), { dispose() {} }),
-    executeCommand: (...args) => (executed.push(args), Promise.resolve()),
+    executeCommand: (...args) => {
+      executed.push(args);
+      // Focusing the panel makes VS Code create its view; the page then says it is ready.
+      if (args[0] === "dad.output.focus" && viewProvider && !outputPanel) {
+        outputPanel = fakeWebviewView();
+        viewProvider.resolveWebviewView(outputPanel);
+        outputPanel.send({ type: "ready" });
+      }
+      return Promise.resolve();
+    },
   },
   window: {
     activeTextEditor: null,
@@ -163,6 +206,7 @@ const vscode = {
       return t;
     },
     onDidCloseTerminal: on("closeTerminal"),
+    registerWebviewViewProvider: (id, provider) => ((viewProvider = provider), { dispose() {} }),
     registerCustomEditorProvider: (viewType, provider) => ((customProvider = { viewType, provider }), { dispose() {} }),
   },
   workspace: {
@@ -242,19 +286,52 @@ test("columns after characters outside the BMP are converted to UTF-16", () => {
   assert.strictEqual(doc.lineAt(0).text.slice(pos.character), "خطا");
 });
 
-test("run opens a terminal that runs dad directly", async () => {
+test("run shows the output in the Ḍād panel and keeps it", async () => {
   const file = path.join(os.tmpdir(), "مثال تجريبي.dad");
-  fs.writeFileSync(file, 'اطبع("مرحبا")\n');
-  const doc = makeDoc('اطبع("مرحبا")', file);
-  vscode.window.activeTextEditor = { document: doc };
+  fs.writeFileSync(file, 'اطبع("مرحبا")\nاطبع(1 + 2)\n');
+  vscode.window.activeTextEditor = { document: makeDoc('اطبع("مرحبا")', file) };
   await commands["dad.run"]();
-  const t = terminals.at(-1);
-  assert.strictEqual(t.opts.shellPath, DAD);
-  assert.deepStrictEqual(t.opts.shellArgs, ["run", file]);
-  assert.strictEqual(t.opts.cwd, os.tmpdir());
-  assert.ok(t.shown);
+  assert.ok(outputPanel, "the panel opens");
+  assert.match(outputPanel.webview.html, /<html lang="ar" dir="rtl">/);
+  assert.match(outputPanel.webview.html, /DadMono-Regular\.ttf/);
+  const start = outputPanel.posted.find((m) => m.type === "start");
+  assert.strictEqual(start.file, "مثال تجريبي.dad");
+  assert.strictEqual(outputPanel.text(), "مرحبا\n3\n");
+  const done = outputPanel.posted.at(-1);
+  assert.strictEqual(done.type, "done");
+  assert.strictEqual(done.code, 0);
+  assert.strictEqual(terminals.length, 0, "no terminal is used");
+  // Running again clears and refills the same panel.
+  const before = outputPanel.posted.length;
+  outputPanel.send({ type: "rerun" });
+  const rerunDone = () => outputPanel.posted.slice(before).some((m) => m.type === "done");
+  for (let i = 0; i < 50 && !rerunDone(); i++) await wait(50);
+  assert.ok(outputPanel.posted.slice(before).some((m) => m.type === "start"), "run again starts a new run");
+  assert.strictEqual(outputPanel.posted.at(-1).code, 0);
+});
+
+test("run shows errors and the exit code", async () => {
+  const file = path.join(os.tmpdir(), "خطأ.dad");
+  fs.writeFileSync(file, "اطبع(1 / 0)\n");
+  vscode.window.activeTextEditor = { document: makeDoc("اطبع(1 / 0)", file) };
+  const before = outputPanel.posted.length;
   await commands["dad.run"]();
-  assert.ok(t.disposed, "the previous run terminal is replaced");
+  const msgs = outputPanel.posted.slice(before);
+  assert.ok(msgs.some((m) => m.type === "chunk" && m.stream === "err" && /قسمة على صفر/.test(m.text)));
+  assert.strictEqual(msgs.at(-1).code, 1);
+});
+
+test("a running program can be stopped", async () => {
+  const file = path.join(os.tmpdir(), "حلقة.dad");
+  fs.writeFileSync(file, "متغير ن = 0\nطالما صح { ن += 1 }\n");
+  vscode.window.activeTextEditor = { document: makeDoc("طالما صح {}", file) };
+  const before = outputPanel.posted.length;
+  const running = commands["dad.run"]();
+  await wait(150);
+  outputPanel.send({ type: "stop" });
+  await running;
+  const done = outputPanel.posted.slice(before).find((m) => m.type === "done");
+  assert.ok(done.stopped || done.code !== 0, "stopped");
 });
 
 test("hover explains keywords in English", () => {
