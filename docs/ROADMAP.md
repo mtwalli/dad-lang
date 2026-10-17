@@ -36,7 +36,7 @@ working end-to-end, crudely), then deepen each layer.
 ## Phase 1 breakdown (in progress)
 1. ✅ AST node definitions (`internal/ast`)
 2. ✅ Parser for declarations/statements/expressions + Arabic error reporting with line/column
-   in Arabic-Indic digits (`internal/parser`)
+   (`internal/parser`)
 3. ✅ `dad run file.dad` — a tree-walking interpreter (`internal/interp`) so programs run
    today, in the terminal and in the [playground](playground.md)
 4. ✅ Golden tests: each example has expected output in `examples/output/`

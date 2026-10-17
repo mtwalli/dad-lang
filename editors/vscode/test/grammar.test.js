@@ -135,9 +135,15 @@ test("short words are not found inside longer names", () => {
   assert.match(scopeOf(t, "وصف"), /variable\.other\.declaration/);
 });
 
-test("numbers in both digit sets", () => {
-  const t = tokenize("ثابت أ = ٣٫١٤١٦ + 2.5 + ١٬٠٠٠ + 72");
-  for (const n of ["٣٫١٤١٦", "2.5", "١٬٠٠٠", "72"]) assert.match(scopeOf(t, n), /constant\.numeric/);
+test("numbers use 0-9; other digit forms are flagged", () => {
+  const t = tokenize("ثابت أ = 3.14 + 1_000 + 72 + س2");
+  for (const n of ["3.14", "1_000", "72"]) assert.match(scopeOf(t, n), /constant\.numeric/);
+  assert.doesNotMatch(t.map((x) => x.text).join(" "), /\bس\b/); // «س2» stays one name
+  const bad = tokenize("ثابت ب = \u0664\u0662 + \u06F5"); // ٤٢ and Persian ۵
+  assert.match(scopeOf(bad, "\u0664\u0662"), /invalid\.illegal\.digits/);
+  assert.match(scopeOf(bad, "\u06F5"), /invalid\.illegal\.digits/);
+  const text = tokenize('اطبع("الطابق \u0663")'); // digits inside text are fine
+  assert.match(scopeOf(text, "الطابق \u0663"), /string\.quoted/);
 });
 
 test("strings, escapes and interpolation", () => {
@@ -151,7 +157,7 @@ test("strings, escapes and interpolation", () => {
 });
 
 test("comments", () => {
-  const t = tokenize("// إذا هنا تعليق\n/* ثابت\n متغير */ ثابت س = ١");
+  const t = tokenize("// إذا هنا تعليق\n/* ثابت\n متغير */ ثابت س = 1");
   assert.match(scopeOf(t, " إذا هنا تعليق"), /comment\.line/);
   assert.match(scopeOf(t, " ثابت"), /comment\.block/);
   assert.match(scopeOf(t, " متغير "), /comment\.block/);
@@ -174,7 +180,7 @@ test("types, enums, match and optionals", () => {
 });
 
 test("hidden direction characters are flagged", () => {
-  const t = tokenize("ثابت اسم‮ = ١");
+  const t = tokenize("ثابت اسم‮ = 1");
   assert.match(scopeOf(t, "‮"), /invalid\.illegal\.bidi/);
 });
 

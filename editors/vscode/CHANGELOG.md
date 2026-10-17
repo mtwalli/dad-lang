@@ -1,5 +1,10 @@
 # Changelog
 
+## Next release
+
+- Numbers are written with the digits 0-9 only. Arabic-Indic and Persian digits outside text
+  are highlighted as mistakes, and `dad check` shows the number written correctly.
+
 ## 0.2.0
 
 First release.

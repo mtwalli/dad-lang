@@ -55,7 +55,7 @@ func main() {
 	case "رموز", "tokens":
 		os.Exit(withFile("رموز", cmdTokens))
 	case "إصدار", "version", "--version":
-		fmt.Println("ضاد", lexer.ToArabicDigits(version), "("+version+")")
+		fmt.Println("ضاد", version)
 	case "مساعدة", "help", "-h", "--help":
 		fmt.Print(usage)
 	default:
@@ -108,7 +108,7 @@ func cmdRun(path, src string) int {
 	in := interp.New(os.Stdout)
 	err := in.Run(file)
 	if len(in.Notices) > 0 {
-		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الجداول والمكونات والمسارات تأتي في المرحلتين ٢ و٣.\n",
+		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الجداول والمكونات والمسارات تأتي في المرحلتين 2 و3.\n",
 			strings.Join(in.Notices, "، "))
 	}
 	if err != nil {
@@ -125,7 +125,7 @@ func cmdCheck(path, src string) int {
 		return 1
 	}
 	toks, _ := lexer.Tokenize(src)
-	fmt.Printf("✓ %s: لا أخطاء (%s رمزاً)\n", path, lexer.ToArabicDigits(fmt.Sprint(len(toks))))
+	fmt.Printf("✓ %s: لا أخطاء (%d رمزاً)\n", path, len(toks))
 	return 0
 }
 

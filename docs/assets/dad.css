@@ -380,7 +380,7 @@
 }
 
 .md-typeset ol.dad-timeline li::before {
-  content: counter(phase, arabic-indic);
+  content: counter(phase);
   position: absolute;
   top: 0;
   left: 0;

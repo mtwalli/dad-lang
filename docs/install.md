@@ -53,7 +53,7 @@ To install a specific version, set `DAD_VERSION`, for example
 dad version
 ```
 
-You should see the version number in Arabic and Latin digits, for example `ضاد ٠.١.٠ (0.1.0)`.
+You should see the version number, for example `ضاد 0.1.6`.
 
 ## Your first file
 
@@ -89,12 +89,12 @@ dad run examples/03-shapes.dad
 Errors found while running stop the program and point to the line, in Arabic:
 
 ```dad
-ثابت أ = ١٠
-اطبع(أ / ٠)
+ثابت أ = 10
+اطبع(أ / 0)
 ```
 
 ``` { .text .dad-out }
-hello.dad: خطأ أثناء التشغيل [السطر ٢، العمود ٨]: مشكلة لم تُعالَج: قسمة على صفر
+hello.dad: خطأ أثناء التشغيل [السطر 2، العمود 8]: مشكلة لم تُعالَج: قسمة على صفر
 ```
 
 To find mistakes without running anything, use `check`:
@@ -104,19 +104,20 @@ dad check hello.dad      # or: ضاد فحص hello.dad
 ```
 
 ``` { .text .dad-out }
-✓ hello.dad: لا أخطاء (١١ رمزاً)
+✓ hello.dad: لا أخطاء (11 رمزاً)
 ```
 
-Now add a line with a mistake, a number that mixes Arabic and Latin digits:
+Now add a line with a mistake. Ḍād writes numbers with the digits 0-9 only, so a number
+typed with Arabic-Indic digits is an error:
 
 ```dad
-ثابت عمر = ١2
+ثابت عمر = ١٢
 ```
 
 Check again. Ḍād reports the problem in Arabic, with its line and column:
 
 ``` { .text .dad-out }
-hello.dad: خطأ [السطر ٤، العمود ١٢]: لا يجوز خلط الأرقام العربية (٠-٩) واللاتينية (0-9) في عدد واحد
+hello.dad: خطأ [السطر 4، العمود 12]: اكتب الأعداد بالأرقام 0-9: «١٢» تُكتب «12»
 ```
 
 To see how Ḍād reads your code, print its tokens:

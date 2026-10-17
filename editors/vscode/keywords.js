@@ -4,7 +4,7 @@
 
 const KEYWORDS = {
   "ثابت": ["const", "A value that can't be reassigned: `ثابت اسم = \"سارة\"`"],
-  "متغير": ["var", "A value that can be reassigned: `متغير عدد = ٠`"],
+  "متغير": ["var", "A value that can be reassigned: `متغير عدد = 0`"],
   "دالة": ["func", "Declares a function: `دالة مربع(س: صحيح) = س * س`"],
   "نوع": ["type", "Declares a value type with fields: `نوع نقطة(س: عشري، ص: عشري)`"],
   "تعداد": ["enum", "Declares an enum whose cases can carry data"],
@@ -15,12 +15,12 @@ const KEYWORDS = {
   "إذا": ["if", "Condition. It is an expression, so it can produce a value"],
   "وإلا": ["else", "The other branch of `إذا`"],
   "طابق": ["match", "Matches a value against patterns. Must cover every case"],
-  "لكل": ["for", "Loop: `لكل س في قائمة { … }` or `لكل ع من ١ إلى ١٠ { … }`"],
+  "لكل": ["for", "Loop: `لكل س في قائمة { … }` or `لكل ع من 1 إلى 10 { … }`"],
   "في": ["in", "Used in `لكل … في …` to loop over items"],
-  "من": ["from", "Start of a range: `من ١ إلى ١٠`"],
-  "إلى": ["to (inclusive)", "End of a range, included: `من ١ إلى ١٠` gives 1…10"],
-  "حتى": ["until (exclusive)", "End of a range, not included: `من ٠ حتى ١٠` gives 0…9"],
-  "بخطوة": ["step", "Step of a range: `من ٠ حتى ١٠ بخطوة ٢`"],
+  "من": ["from", "Start of a range: `من 1 إلى 10`"],
+  "إلى": ["to (inclusive)", "End of a range, included: `من 1 إلى 10` gives 1…10"],
+  "حتى": ["until (exclusive)", "End of a range, not included: `من 0 حتى 10` gives 0…9"],
+  "بخطوة": ["step", "Step of a range: `من 0 حتى 10 بخطوة 2`"],
   "طالما": ["while", "Loop while a condition is true"],
   "أرجع": ["return", "Returns a value from a function"],
   "توقف": ["break", "Leaves the current loop"],
@@ -34,7 +34,7 @@ const KEYWORDS = {
   "و": ["and", "Logical and (also `&&`)"],
   "أو": ["or", "Logical or (also `||`)"],
   "ليس": ["not", "Logical not (also `!`)"],
-  "هو": ["it / is", "Inside a lambda: the single argument (`{ هو * ٢ }`). Between values: a type test (`ش هو دائرة`)"],
+  "هو": ["it / is", "Inside a lambda: the single argument (`{ هو * 2 }`). Between values: a type test (`ش هو دائرة`)"],
   "ك": ["as", "Converts a value to a type: `عدد ك عشري`"],
   "هذا": ["this", "The current value inside a type's method or an extension"],
   "خادم": ["server", "Marks a function that runs on the server (Phase 3)"],
@@ -55,8 +55,8 @@ const BUILTINS = {
   "عشري": ["Float", "Decimal-number type"],
   "نص": ["String", "Text type"],
   "منطقي": ["Bool", "صح or خطأ"],
-  "قائمة": ["List", "List type: `[١، ٢، ٣]`"],
-  "قاموس": ["Map", "Map type: `[\"أ\": ١]`"],
+  "قائمة": ["List", "List type: `[1، 2، 3]`"],
+  "قاموس": ["Map", "Map type: `[\"أ\": 1]`"],
 };
 
 module.exports = { KEYWORDS, BUILTINS };

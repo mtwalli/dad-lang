@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
-	"github.com/mtwalli/dad-lang/internal/lexer"
 )
 
 // Value is any Ḍād runtime value:
@@ -125,7 +124,7 @@ func typeName(v Value) string {
 
 // ---------------------------------------------------------------- formatting
 
-func formatInt(n int64) string { return lexer.ToArabicDigits(strconv.FormatInt(n, 10)) }
+func formatInt(n int64) string { return strconv.FormatInt(n, 10) }
 
 func formatFloat(f float64) string {
 	switch {
@@ -140,10 +139,10 @@ func formatFloat(f float64) string {
 	if !strings.Contains(s, ".") {
 		s += ".0"
 	}
-	return lexer.ToArabicDigits(strings.Replace(s, ".", "٫", 1))
+	return s
 }
 
-// Format renders a value the way اطبع prints it: Arabic-Indic digits, صح/خطأ, عدم.
+// Format renders a value the way اطبع prints it: digits 0-9, صح/خطأ, عدم.
 func Format(v Value) string {
 	switch v := v.(type) {
 	case nil:

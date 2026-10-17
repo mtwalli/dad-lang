@@ -29,13 +29,13 @@ func TestExamplesParse(t *testing.T) {
 
 func TestSyntaxErrors(t *testing.T) {
 	cases := []struct{ src, want string }{
-		{"ثابت = ٥", "توقعت اسماً"},
+		{"ثابت = 5", "توقعت اسماً"},
 		{"دالة ف(س صحيح) = س", "توقعت «:»"},
-		{"اطبع(١", "لم يُغلق"},
-		{"إذا صح { ١ } وإلا", "توقعت «{»"},
-		{"ثابت س = ١ ٢", "توقعت نهاية السطر"},
-		{"طابق ١ { ١ ٢ }", "توقعت «=>»"},
-		{"\"قيمة {١ +}\"", "داخل النص"},
+		{"اطبع(1", "لم يُغلق"},
+		{"إذا صح { 1 } وإلا", "توقعت «{»"},
+		{"ثابت س = 1 2", "توقعت نهاية السطر"},
+		{"طابق 1 { 1 2 }", "توقعت «=>»"},
+		{"\"قيمة {1 +}\"", "داخل النص"},
 	}
 	for _, c := range cases {
 		file, diags := parser.ParseFile(c.src)
@@ -51,7 +51,7 @@ func TestSyntaxErrors(t *testing.T) {
 }
 
 func TestTrailingLambdaNotInConditions(t *testing.T) {
-	src := "ثابت س = ١\nإذا س { اطبع(س) }\nلكل ع في [١] { اطبع(ع) }"
+	src := "ثابت س = 1\nإذا س { اطبع(س) }\nلكل ع في [1] { اطبع(ع) }"
 	if file, diags := parser.ParseFile(src); file == nil {
 		t.Fatal(diags)
 	}

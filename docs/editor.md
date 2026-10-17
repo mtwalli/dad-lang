@@ -6,8 +6,7 @@ macOS, Windows and Linux.
 
 ## The VS Code extension
 
-- **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, Arabic and
-  Latin numbers, comments, and Ḍād code blocks in Markdown.
+- **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, comments, and Ḍād code blocks in Markdown.
 - **Errors as you type.** The same Arabic messages as `dad check`, with the exact word underlined
   and listed in the Problems panel.
 - **Run** the current file with the ▶ button in the editor title. The output appears in the

@@ -5,7 +5,7 @@ Keep KEYWORDS in sync with internal/token/token.go.
 """
 
 from pygments.lexer import RegexLexer, bygroups, include, words
-from pygments.token import (Comment, Keyword, Name, Number, Operator,
+from pygments.token import (Error, Comment, Keyword, Name, Number, Operator,
                             Punctuation, String, Text, Whitespace)
 
 __all__ = ["DadLexer"]
@@ -42,8 +42,10 @@ class DadLexer(RegexLexer):
             (words(CONTROL, prefix=_B, suffix=_E), Keyword),
             (words(CONSTANTS, prefix=_B, suffix=_E), Keyword.Constant),
             (words(TYPES, prefix=_B, suffix=_E), Keyword.Type),
-            (r"[0-9٠-٩][0-9٠-٩_٬]*[.٫][0-9٠-٩][0-9٠-٩_٬]*", Number.Float),
-            (r"[0-9٠-٩][0-9٠-٩_٬]*", Number.Integer),
+            # Ḍād numbers use the digits 0-9 only; other digit forms are mistakes.
+            (r"[0-9][0-9_]*\.[0-9][0-9_]*", Number.Float),
+            (r"[0-9][0-9_]*", Number.Integer),
+            (r"[\u0660-\u0669\u06F0-\u06F9\u066B\u066C]+", Error),
             (rf"([^\W\d][{_NAME_CHAR}]*)(\s*)(?=\()", bygroups(Name.Function, Text)),
             (rf"[^\W\d][{_NAME_CHAR}]*", Name),
             (r"[?؟][?؟]|[?؟]\.|=>|\.\.|[=!<>]=|[+\-*/]=|&&|\|\||[-+*/%=<>!?؟.:]", Operator),

@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
-	"github.com/mtwalli/dad-lang/internal/lexer"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
@@ -57,8 +56,8 @@ type RuntimeError struct {
 }
 
 func (e *RuntimeError) Error() string {
-	return fmt.Sprintf("خطأ أثناء التشغيل [السطر %s، العمود %s]: %s",
-		lexer.ToArabicDigits(fmt.Sprint(e.Pos.Line)), lexer.ToArabicDigits(fmt.Sprint(e.Pos.Col)), e.Msg)
+	return fmt.Sprintf("خطأ أثناء التشغيل [السطر %d، العمود %d]: %s",
+		e.Pos.Line, e.Pos.Col, e.Msg)
 }
 
 type thrown struct {
@@ -1001,8 +1000,11 @@ func (in *Interp) cast(v Value, t *ast.TypeRef, pos token.Pos) Value {
 func parseNumber(s string) (float64, bool) {
 	s = strings.TrimSpace(strings.Map(func(r rune) rune {
 		switch {
+		// Text typed on an Arabic or Persian keyboard still converts to a number.
 		case r >= '٠' && r <= '٩':
 			return '0' + (r - '٠')
+		case r >= '۰' && r <= '۹':
+			return '0' + (r - '۰')
 		case r == '٫':
 			return '.'
 		case r == '٬' || r == '_':

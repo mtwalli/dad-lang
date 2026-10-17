@@ -92,7 +92,7 @@ lambda          = "{" , [ ident , { "," , ident } , "=>" ] , { NL } , { stmt , t
 
 (* ---------- lexical (see SPEC §2) ---------- *)
 ident           = letter , { letter | digit | "_" } ;
-number          = digits , [ ( "." | "٫" ) , digits ] ;   (* one digit script per literal *)
+number          = digits , [ "." , digits ] ;   (* digits are 0-9; "_" may separate groups *)
 string          = '"' , { char | interpolation } , '"'
                 | "«" , { char | interpolation } , "»" ;
 interpolation   = "{" , expr , "}" ;

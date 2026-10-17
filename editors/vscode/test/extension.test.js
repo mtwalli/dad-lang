@@ -183,20 +183,20 @@ test("a clean file has no problems", async () => {
 });
 
 test("errors and warnings land on the right words", async () => {
-  const doc = makeDoc("// مثال\nاذا عمر > ١8 {\n}", "/tmp/b.dad");
+  const doc = makeDoc("// مثال\nاذا عمر > \u0661\u0668 {\n}", "/tmp/b.dad"); // ١٨: digits must be 0-9
   const d = await diagnosticsFor(doc);
   assert.strictEqual(d.length, 2);
   assert.strictEqual(d[0].severity, 1); // warning: «اذا» without hamza
   assert.deepStrictEqual([d[0].range.start.line, d[0].range.start.character, d[0].range.end.character], [1, 0, 3]);
   assert.strictEqual(doc.getText(d[0].range), "اذا");
   assert.strictEqual(d[1].severity, 0); // error: mixed digits
-  assert.strictEqual(doc.getText(d[1].range), "١8");
-  assert.match(d[1].message, /الأرقام العربية/);
+  assert.strictEqual(doc.getText(d[1].range), "\u0661\u0668");
+  assert.match(d[1].message, /0-9: «١٨» تُكتب «18»/);
   assert.strictEqual(d[1].source, "ضاد");
 });
 
 test("a syntax error is reported", async () => {
-  const d = await diagnosticsFor(makeDoc("اطبع(١ + )", "/tmp/c.dad"));
+  const d = await diagnosticsFor(makeDoc("اطبع(1 + )", "/tmp/c.dad"));
   assert.strictEqual(d.length, 1);
   assert.match(d[0].message, /تعبير غير متوقع/);
   assert.strictEqual(d[0].range.start.character, 9);
@@ -240,8 +240,8 @@ test("completion offers keywords and built-ins", () => {
 test("a missing dad shows one helpful warning", async () => {
   config.path = "/nonexistent/dad";
   events.config.forEach((fn) => fn({ affectsConfiguration: () => true }));
-  events.open.forEach((fn) => fn(makeDoc("ثابت أ = ١", "/tmp/d.dad")));
-  events.open.forEach((fn) => fn(makeDoc("ثابت أ = ١", "/tmp/e.dad")));
+  events.open.forEach((fn) => fn(makeDoc("ثابت أ = 1", "/tmp/d.dad")));
+  events.open.forEach((fn) => fn(makeDoc("ثابت أ = 1", "/tmp/e.dad")));
   await wait(300);
   assert.strictEqual(messages.filter((m) => /couldn't find/.test(m)).length, 1);
   config.path = DAD;

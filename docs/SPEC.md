@@ -19,8 +19,9 @@
    the compiler infers this and inserts the waiting for you.
 6. **Small core.** 39 reserved keywords (Go has 25, Kotlin ~80, Swift ~90). UI elements and
    HTTP verbs are ordinary library functions / contextual words, not keywords.
-7. **Arabic first, not Arabic only.** Arabic keywords, digits and punctuation; Latin digits,
-   punctuation and identifiers are also accepted so mixed code never breaks.
+7. **Arabic first, not Arabic only.** Arabic keywords and punctuation; Latin punctuation and
+   identifiers are also accepted so mixed code never breaks. Numbers use one set of digits,
+   0-9, in code and in output (see 2.5).
 
 ## 2. Lexical structure
 
@@ -44,13 +45,19 @@ zero-width characters (U+200B–U+200D, U+FEFF) are a **compile error outside st
 This prevents "Trojan Source" attacks where code displays differently from how it runs.
 
 ### 2.4 Identifiers
-Start with an Arabic or Latin letter or `_`; continue with letters, digits (either script) or `_`.
-`عدد_المهام`, `userName`, `س٢` are all valid.
+Start with an Arabic or Latin letter or `_`; continue with letters, digits `0-9` or `_`.
+`عدد_المهام`, `userName`, `س2` are all valid.
 
 ### 2.5 Numbers
-- Arabic-Indic `٠١٢٣٤٥٦٧٨٩` or Western `0123456789` — but **not mixed** in one literal.
-- Decimal separator `٫` (U+066B) or `.`; digit grouping `_` or `٬` (U+066C).
-- `٤٢`, `3.14`, `٣٫١٤`, `١_٠٠٠_٠٠٠`.
+- Digits are `0123456789` only, in code and in output. `.` separates the fraction and `_` may
+  group digits: `42`, `3.14`, `1_000_000`.
+- Arabic-Indic (`٠-٩`) and Persian (`۰-۹`) digits, the Arabic decimal sign `٫` and the
+  thousands sign `٬` are errors in code. The message shows the number written correctly:
+  `«١٢» تُكتب «12»`.
+- `1,5` is two values. The lexer warns and suggests `1.5`.
+- Output uses `0-9` and `.`: `اطبع(7 / 2.0)` prints `3.5`.
+- Text is free: `"الطابق ٣"` is fine. Converting text to a number (`"٤٢" ك صحيح`) accepts
+  Arabic-Indic and Persian digits too, so input typed on an Arabic keyboard still works.
 
 ### 2.6 Strings
 - `"..."` or Arabic guillemets `«...»`.
@@ -61,7 +68,7 @@ Start with an Arabic or Latin letter or `_`; continue with letters, digits (eith
 `// سطر` and `/* كتلة */`.
 
 ### 2.8 Punctuation & operators
-Arabic and Latin forms are interchangeable:
+Arabic and Latin forms are interchangeable (digits are the exception: always `0-9`):
 
 | Arabic | Latin | Meaning |
 |---|---|---|
@@ -94,7 +101,7 @@ Logical: `و` / `&&`, `أو` / `||`, `ليس` / `!`.
 | `إذا` / `وإلا` | `if` / `else` | expression |
 | `طابق` | `when` / `switch` | exhaustive pattern match |
 | `لكل` / `في` | `for` / `in` | |
-| `من` / `إلى` / `حتى` / `بخطوة` | `1..10` / `1 until 10` / `step` | ranges: `من ١ إلى ١٠` |
+| `من` / `إلى` / `حتى` / `بخطوة` | `1..10` / `1 until 10` / `step` | ranges: `من 1 إلى 10` |
 | `طالما` | `while` | |
 | `أرجع` | `return` | |
 | `توقف` / `تابع` | `break` / `continue` | |
@@ -119,9 +126,9 @@ Logical: `و` / `&&`, `أو` / `||`, `ليس` / `!`.
 ### 4.1 Bindings and types
 ```dad
 ثابت اسم = "سارة"            // type inferred: نص
-متغير عداد = ٠                // صحيح
-ثابت سعر: عشري = ٩٫٩٩
-عداد += ١
+متغير عداد = 0                // صحيح
+ثابت سعر: عشري = 9.99
+عداد += 1
 ```
 Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), `منطقي` (Bool),
 `فراغ` (Unit), lists `[نص]`, maps `[نص: صحيح]`, optionals `نص؟`, functions `(صحيح) => نص`.
@@ -140,18 +147,18 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
 
 ### 4.3 Control flow as expressions
 ```dad
-ثابت وصف = إذا درجة >= ٩٠ { "ممتاز" } وإلا إذا درجة >= ٥٠ { "ناجح" } وإلا { "راسب" }
+ثابت وصف = إذا درجة >= 90 { "ممتاز" } وإلا إذا درجة >= 50 { "ناجح" } وإلا { "راسب" }
 
-لكل ع من ١ إلى ١٠ { اطبع(ع) }
-لكل ع من ٠ حتى ١٠ بخطوة ٢ { اطبع(ع) }       // 0,2,4,6,8
+لكل ع من 1 إلى 10 { اطبع(ع) }
+لكل ع من 0 حتى 10 بخطوة 2 { اطبع(ع) }       // 0,2,4,6,8
 لكل اسم في أسماء { اطبع(اسم) }
 ```
 
 ### 4.4 Lambdas and trailing lambdas
 ```dad
-ثابت كبار = أرقام.رشح { هو > ١٠ }             // `هو` = the implicit single parameter ("it")
-ثابت مضاعفة = أرقام.حول { س => س * ٢ }
-ثابت مجموع = أرقام.اختزل(٠) { أ، ب => أ + ب }
+ثابت كبار = أرقام.رشح { هو > 10 }             // `هو` = the implicit single parameter ("it")
+ثابت مضاعفة = أرقام.حول { س => س * 2 }
+ثابت مجموع = أرقام.اختزل(0) { أ، ب => أ + ب }
 ```
 
 ### 4.5 Value types (`نوع`)
@@ -160,9 +167,9 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
   دالة بعد() = جذر(س * س + ص * ص)
 }
 
-ثابت ن = نقطة(س: ٣، ص: ٤)
-ثابت م = ن.نسخة(ص: ٠)          // copy with change
-اطبع(ن == نقطة(٣، ٤))          // صح — structural equality
+ثابت ن = نقطة(س: 3، ص: 4)
+ثابت م = ن.نسخة(ص: 0)          // copy with change
+اطبع(ن == نقطة(3، 4))          // صح — structural equality
 ```
 
 ### 4.6 Enums with data and exhaustive matching
@@ -173,7 +180,7 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
 }
 
 دالة مساحة(ش: شكل) = طابق ش {
-  دائرة(ق) => ٣٫١٤ * ق * ق / ٤
+  دائرة(ق) => 3.14 * ق * ق / 4
   مستطيل(ع، ط) => ع * ط
 }   // forgetting a case is a compile error
 ```
@@ -198,18 +205,18 @@ There is no force-unwrap. Use `؟؟` with a default, or `؟؟ ارفع مشكل�
 }
 
 امتداد نص {
-  دالة مكرر(مرات: صحيح) = (من ١ إلى مرات).حول { هذا }.ضم("")
+  دالة مكرر(مرات: صحيح) = (من 1 إلى مرات).حول { هذا }.ضم("")
 }
 ```
 
 ### 4.9 Errors
 ```dad
 دالة اقسم(أ: صحيح، ب: صحيح): صحيح {
-  إذا ب == ٠ { ارفع مشكلة("قسمة على صفر") }
+  إذا ب == 0 { ارفع مشكلة("قسمة على صفر") }
   أرجع أ / ب
 }
 
-ثابت ن = حاول { اقسم(١، ٠) } التقط خ { ٠ }    // try is an expression too
+ثابت ن = حاول { اقسم(1، 0) } التقط خ { 0 }    // try is an expression too
 ```
 
 ### 4.10 Modules
@@ -250,10 +257,10 @@ Compose/SwiftUI style: components are functions; UI elements (`عمود`, `صف`
 Pages are right-to-left by default.
 ```dad
 مكون عداد() {
-  حالة ع = ٠
+  حالة ع = 0
   عمود {
     عنوان("العدد: {ع}")
-    زر("زد") { ع += ١ }
+    زر("زد") { ع += 1 }
   }
 }
 ```
@@ -264,4 +271,5 @@ Pages are right-to-left by default.
 2. Keyword spellings: `نوع` vs `بنية` for value types; `عقد` vs `واجهة` for contracts.
 3. Library method names (`حول`/map, `رشح`/filter, `اختزل`/reduce) — want a naming guide?
 4. Should Latin-letter identifiers produce a style warning in Arabic-first projects?
-5. ~~Integer division~~ Decided: `/` on two `صحيح` yields `صحيح`, as in Kotlin (`٧ / ٢` is `٣`). Convert with `ك عشري` for a fraction.
+5. ~~Integer division~~ Decided: `/` on two `صحيح` yields `صحيح`, as in Kotlin (`7 / 2` is `3`). Convert with `ك عشري` for a fraction.
+6. ~~Digits~~ Decided: `0-9` only, in code and in output (see 2.5).

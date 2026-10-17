@@ -467,7 +467,7 @@ func (in *Interp) listMethod(elems []Value, list *List, name string, ci *callInf
 			}
 			acc, rest = elems[0], elems[1:]
 		default:
-			in.fail(ci.pos, "«اختزل» تأخذ قيمة بداية ودالة، مثل: اختزل(٠) { أ، ب => أ + ب }")
+			in.fail(ci.pos, "«اختزل» تأخذ قيمة بداية ودالة، مثل: اختزل(0) { أ، ب => أ + ب }")
 		}
 		for _, x := range rest {
 			acc = in.apply(f, ci.pos, acc, x)

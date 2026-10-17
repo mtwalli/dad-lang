@@ -192,7 +192,7 @@ type PatternKind int
 
 const (
 	WildcardPattern PatternKind = iota // _
-	LiteralPattern                     // ١، "نص"، صح
+	LiteralPattern                     // 1، "نص"، صح
 	NamePattern                        // دائرة(ق) or a binding name
 )
 

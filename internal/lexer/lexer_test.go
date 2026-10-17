@@ -97,12 +97,10 @@ func TestNumbers(t *testing.T) {
 		kind  token.Kind
 		value string
 	}{
-		{"٤٢", token.INT, "42"},
 		{"42", token.INT, "42"},
-		{"٣٫١٤", token.FLOAT, "3.14"},
 		{"3.14", token.FLOAT, "3.14"},
-		{"١_٠٠٠", token.INT, "1000"},
-		{"١٬٠٠٠٬٠٠٠", token.INT, "1000000"},
+		{"1_000", token.INT, "1000"},
+		{"0", token.INT, "0"},
 	}
 	for _, c := range cases {
 		toks := lexOK(t, c.src)
@@ -113,20 +111,44 @@ func TestNumbers(t *testing.T) {
 }
 
 func TestRangeIsNotFloat(t *testing.T) {
-	expectKinds(t, "١..١٠", token.INT, token.RANGE, token.INT)
+	expectKinds(t, "1..10", token.INT, token.RANGE, token.INT)
 }
 
-func TestMixedDigitsRejected(t *testing.T) {
-	_, diags := Tokenize("١2٣")
-	if !HasErrors(diags) {
-		t.Fatal("expected an error for mixed digit scripts")
+// Only 0-9 are allowed. Other digit forms are errors that show the fix.
+func TestOnlyLatinDigits(t *testing.T) {
+	cases := []struct{ src, fix string }{
+		{"\u0664\u0662", "«42»"},                                                  // ٤٢
+		{"\u0663\u066B\u0661\u0664", "«3.14»"},                                    // ٣٫١٤
+		{"\u0661\u066C\u0660\u0660\u0660\u066C\u0660\u0660\u0660", "«1_000_000»"}, // ١٬٠٠٠٬٠٠٠
+		{"3\u066B14", "«3.14»"},                                                   // 3٫14
+		{"\u06612\u0663", "«123»"},                                                // ١2٣
+		{"\u06F4\u06F2", "«42»"},                                                  // Persian ۴۲
 	}
+	for _, c := range cases {
+		toks, diags := Tokenize(c.src)
+		if !HasErrors(diags) || !strings.Contains(diags[0].Msg, c.fix) || !strings.Contains(diags[0].Msg, "0-9") {
+			t.Errorf("%q: want an error suggesting %s, got %v", c.src, c.fix, diags)
+		}
+		// The value is still read, so one mistake doesn't cause a cascade of errors.
+		if toks[0].Kind != token.INT && toks[0].Kind != token.FLOAT {
+			t.Errorf("%q: got %v, want a number token", c.src, toks[0].Kind)
+		}
+	}
+	// Names can't hide Arabic-Indic digits either.
+	if _, diags := Tokenize("س\u0661 = 1"); !HasErrors(diags) {
+		t.Error("«س١»: want an error for the digit in the name")
+	}
+	// Digits inside text are just text.
+	lexOK(t, "\"رقم \u0665 و \u06F5\"")
 }
 
-func TestPersianDigitsRejected(t *testing.T) {
-	_, diags := Tokenize("۱۲")
-	if !HasErrors(diags) {
-		t.Fatal("expected an error for Persian digits")
+func TestCommaBetweenDigitsWarns(t *testing.T) {
+	_, diags := Tokenize("ثابت ن = 1,5")
+	if len(diags) != 1 || !diags[0].Warning || !strings.Contains(diags[0].Msg, "«1.5»") {
+		t.Errorf("want a warning suggesting 1.5, got %v", diags)
+	}
+	if _, diags := Tokenize("[1, 5]"); len(diags) != 0 {
+		t.Errorf("a list with a space after the comma must not warn: %v", diags)
 	}
 }
 
@@ -155,7 +177,7 @@ func TestStrings(t *testing.T) {
 }
 
 func TestBidiControlsRejectedOutsideStrings(t *testing.T) {
-	if _, d := Tokenize("ثابت أ\u202E = ١"); !HasErrors(d) {
+	if _, d := Tokenize("ثابت أ\u202E = 1"); !HasErrors(d) {
 		t.Error("expected error for RLO in code")
 	}
 	if _, d := Tokenize("// تعليق \u2066 خفي"); !HasErrors(d) {
@@ -165,7 +187,7 @@ func TestBidiControlsRejectedOutsideStrings(t *testing.T) {
 }
 
 func TestNewlinesIgnoredInsideParens(t *testing.T) {
-	expectKinds(t, "ف(\n١،\n٢\n)",
+	expectKinds(t, "ف(\n1،\n2\n)",
 		token.IDENT, token.LPAREN, token.INT, token.COMMA, token.INT, token.RPAREN)
 	// …but not inside braces.
 	expectKinds(t, "{\nأ\n}", token.LBRACE, token.NEWLINE, token.IDENT, token.NEWLINE, token.RBRACE)
@@ -182,7 +204,7 @@ func TestKeywordSuggestion(t *testing.T) {
 }
 
 func TestPositionsCountRunes(t *testing.T) {
-	toks := lexOK(t, "ثابت س = ١\nاطبع(س)")
+	toks := lexOK(t, "ثابت س = 1\nاطبع(س)")
 	last := toks[len(toks)-4] // س inside اطبع(س)
 	if last.Value != "س" || last.Pos != (token.Pos{Line: 2, Col: 6}) {
 		t.Errorf("got %q at %v, want س at 2:6", last.Value, last.Pos)

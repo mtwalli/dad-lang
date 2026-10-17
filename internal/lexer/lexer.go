@@ -25,8 +25,7 @@ func (d Diagnostic) String() string {
 	if d.Warning {
 		kind = "تنبيه"
 	}
-	return fmt.Sprintf("%s [السطر %s، العمود %s]: %s", kind,
-		ToArabicDigits(fmt.Sprint(d.Pos.Line)), ToArabicDigits(fmt.Sprint(d.Pos.Col)), d.Msg)
+	return fmt.Sprintf("%s [السطر %d، العمود %d]: %s", kind, d.Pos.Line, d.Pos.Col, d.Msg)
 }
 
 // Tokenize lexes src completely. The token list always ends with EOF.
@@ -122,7 +121,7 @@ func (l *lexer) run() {
 			l.errorf(p, "محرف تحكم خفي (U+%04X) غير مسموح خارج النصوص — قد يجعل الشيفرة تظهر بغير ما تعمل", r)
 		case isNameStart(r):
 			l.name()
-		case isASCIIDigit(r) || isArabicDigit(r) || isPersianDigit(r):
+		case isAnyDigit(r):
 			l.number()
 		case r == '"' || r == '«':
 			l.str()
@@ -197,53 +196,48 @@ var foldedKeywords = func() map[string]string {
 func (l *lexer) number() {
 	p := l.pos()
 	startIdx := l.i
-	first := l.peek(0)
-	if isPersianDigit(first) {
-		for l.i < len(l.src) && isPersianDigit(l.peek(0)) {
-			l.advance()
-		}
-		l.errorf(p, "الأرقام الفارسية غير مدعومة؛ استخدم ٠١٢٣٤٥٦٧٨٩ أو 0123456789")
-		l.emit(token.ILLEGAL, string(l.src[startIdx:l.i]), "", p)
-		return
-	}
-	arabic := isArabicDigit(first)
-	sameScript := func(r rune) bool {
-		if arabic {
-			return isArabicDigit(r)
-		}
-		return isASCIIDigit(r)
-	}
-	isDigit := func(r rune) bool { return isASCIIDigit(r) || isArabicDigit(r) }
-
-	var b strings.Builder
+	// Ḍād numbers use the digits 0-9, "." for fractions and "_" between groups.
+	// Arabic-Indic (٠-٩) and Persian (۰-۹) digits, "٫" and "٬" are read so the
+	// error can show the number written correctly, but they are not allowed.
+	var b strings.Builder   // the value, in 0-9
+	var fix strings.Builder // the literal as it should be written
 	kind := token.INT
-	mixed := false
+	foreign := false
 	for l.i < len(l.src) {
 		r := l.peek(0)
 		switch {
-		case isDigit(r):
-			if !sameScript(r) {
-				mixed = true
+		case isAnyDigit(r):
+			d := toASCIIDigit(r)
+			if d != r {
+				foreign = true
 			}
-			if isArabicDigit(r) {
-				b.WriteRune('0' + (r - '٠'))
-			} else {
-				b.WriteRune(r)
+			b.WriteRune(d)
+			fix.WriteRune(d)
+			l.advance()
+		case (r == '_' || r == '٬') && isAnyDigit(l.peek(1)):
+			if r == '٬' {
+				foreign = true
 			}
+			fix.WriteByte('_')
 			l.advance()
-		case (r == '_' || r == '٬') && isDigit(l.peek(1)):
-			l.advance()
-		case (r == '٫' || (r == '.' && l.peek(1) != '.')) && isDigit(l.peek(1)) && kind == token.INT:
+		case (r == '٫' || (r == '.' && l.peek(1) != '.')) && isAnyDigit(l.peek(1)) && kind == token.INT:
+			if r == '٫' {
+				foreign = true
+			}
 			kind = token.FLOAT
 			b.WriteByte('.')
+			fix.WriteByte('.')
 			l.advance()
 		default:
 			goto done
 		}
 	}
 done:
-	if mixed {
-		l.errorf(p, "لا يجوز خلط الأرقام العربية (٠-٩) واللاتينية (0-9) في عدد واحد")
+	if foreign {
+		l.errorf(p, "اكتب الأعداد بالأرقام 0-9: «%s» تُكتب «%s»", string(l.src[startIdx:l.i]), fix.String())
+	} else if (l.peek(0) == ',' || l.peek(0) == '،') && isAnyDigit(l.peek(1)) {
+		// "1,5" is two values, not one and a half: a common slip.
+		l.warnf(l.pos(), "الفاصلة تفصل بين قيمتين — إن قصدت كسراً فاكتب «%s.%s»", fix.String(), string(l.peek(1)))
 	}
 	l.emit(kind, string(l.src[startIdx:l.i]), b.String(), p)
 }

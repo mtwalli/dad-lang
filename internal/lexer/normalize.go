@@ -91,19 +91,23 @@ func isNameStart(r rune) bool {
 
 func isNamePart(r rune) bool {
 	return r == '_' || unicode.IsLetter(r) || unicode.Is(unicode.Mn, r) ||
-		isASCIIDigit(r) || isArabicDigit(r)
+		isASCIIDigit(r)
 }
 
 func isASCIIDigit(r rune) bool   { return r >= '0' && r <= '9' }
 func isArabicDigit(r rune) bool  { return r >= '٠' && r <= '٩' } // U+0660–U+0669
 func isPersianDigit(r rune) bool { return r >= '۰' && r <= '۹' } // U+06F0–U+06F9
 
-// ToArabicDigits renders the ASCII digits in s as Arabic-Indic digits.
-func ToArabicDigits(s string) string {
-	return strings.Map(func(r rune) rune {
-		if isASCIIDigit(r) {
-			return '٠' + (r - '0')
-		}
-		return r
-	}, s)
+// isAnyDigit reports whether r is a digit the lexer recognizes: 0-9, or an
+// Arabic-Indic or Persian digit that it reports as an error.
+func isAnyDigit(r rune) bool { return isASCIIDigit(r) || isArabicDigit(r) || isPersianDigit(r) }
+
+func toASCIIDigit(r rune) rune {
+	switch {
+	case isArabicDigit(r):
+		return '0' + (r - '٠')
+	case isPersianDigit(r):
+		return '0' + (r - '۰')
+	}
+	return r
 }

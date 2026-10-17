@@ -62,11 +62,11 @@ hide:
     <dd><strong>No fetch, no async.</strong> Server calls look local; the compiler adds the waiting.</dd>
   </div>
   <div>
-    <dt lang="ar">٠١٢</dt>
-    <dd><strong>Arabic first.</strong> Arabic digits and punctuation work everywhere, and diacritics never break a name.</dd>
+    <dt lang="ar">،؛؟</dt>
+    <dd><strong>Arabic first.</strong> Arabic punctuation works everywhere, diacritics never break a name, and numbers stay plain 0-9.</dd>
   </div>
   <div>
-    <dt lang="ar">٣٩</dt>
+    <dt>39</dt>
     <dd><strong>A small core.</strong> 39 keywords in total. Interface elements are ordinary functions.</dd>
   </div>
 </dl>
