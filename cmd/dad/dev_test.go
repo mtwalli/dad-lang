@@ -33,6 +33,12 @@ func startDev(t *testing.T, src string) (*devServer, *httptest.Server, string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Windows can't delete the temporary folder while the database is open.
+	t.Cleanup(func() {
+		if c, ok := store.(io.Closer); ok {
+			c.Close()
+		}
+	})
 	s := &devServer{path: path, store: store, out: io.Discard}
 	s.load()
 	ts := httptest.NewServer(s)
