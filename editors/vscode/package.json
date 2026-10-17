@@ -94,13 +94,25 @@
         "command": "dad.installFont",
         "title": "Install the Ḍād Mono Font",
         "category": "Ḍād"
+      },
+      {
+        "command": "dad.openRightToLeft",
+        "title": "Reopen Right to Left",
+        "category": "Ḍād",
+        "icon": "$(arrow-left)"
+      },
+      {
+        "command": "dad.openAsText",
+        "title": "Reopen as Text (Left to Right)",
+        "category": "Ḍād",
+        "icon": "$(file-code)"
       }
     ],
     "menus": {
       "editor/title/run": [
         {
           "command": "dad.run",
-          "when": "editorLangId == dad",
+          "when": "editorLangId == dad || activeCustomEditorId == dad.rtlEditor",
           "group": "navigation"
         }
       ],
@@ -120,12 +132,32 @@
       ],
       "commandPalette": [
         {
-          "command": "dad.run",
+          "command": "dad.check",
           "when": "editorLangId == dad"
         },
         {
-          "command": "dad.check",
+          "command": "dad.run",
+          "when": "editorLangId == dad || activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.openRightToLeft",
           "when": "editorLangId == dad"
+        },
+        {
+          "command": "dad.openAsText",
+          "when": "activeCustomEditorId == dad.rtlEditor"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "dad.openRightToLeft",
+          "when": "editorLangId == dad && activeCustomEditorId != dad.rtlEditor",
+          "group": "navigation"
+        },
+        {
+          "command": "dad.openAsText",
+          "when": "activeCustomEditorId == dad.rtlEditor",
+          "group": "navigation"
         }
       ]
     },
@@ -134,7 +166,7 @@
         "command": "dad.run",
         "key": "ctrl+shift+enter",
         "mac": "cmd+shift+enter",
-        "when": "editorTextFocus && editorLangId == dad"
+        "when": "(editorTextFocus && editorLangId == dad) || activeCustomEditorId == dad.rtlEditor"
       }
     ],
     "configuration": {
@@ -167,6 +199,18 @@
         "files.encoding": "utf8",
         "editor.fontFamily": "'Dad Mono', Menlo, Monaco, Consolas, 'DejaVu Sans Mono', 'Courier New', monospace"
       }
-    }
+    },
+    "customEditors": [
+      {
+        "viewType": "dad.rtlEditor",
+        "displayName": "Ḍād (right to left)",
+        "selector": [
+          {
+            "filenamePattern": "*.dad"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
   }
 }

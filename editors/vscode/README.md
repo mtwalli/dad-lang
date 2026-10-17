@@ -3,6 +3,9 @@
 Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming language with Arabic keywords.
 
 - **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, and Ḍād code blocks in Markdown.
+- **Right to left**: `.dad` files open in a right-to-left editor, with lines starting at the right
+  and line numbers on the right. Saving, undo, git and problems work as usual. **Open as text**
+  switches to VS Code's text editor for completion, hovers and find.
 - **Ḍād Mono**, a coding font made for Ḍād: Kufi Arabic that sits with Latin letters and
   digits. The extension uses it for `.dad` files and offers to install it the first time.
 - **Errors as you type**, in Arabic, with the exact word underlined.
@@ -29,8 +32,12 @@ finds `dad` on your `PATH` or in the default install folder. If yours is somewhe
 
 ## Right-to-left text
 
-VS Code has no right-to-left editor mode. Each line is laid out with the Unicode
-bidirectional algorithm, so Arabic words read correctly, but lines start at the left edge.
-Ḍād is designed for this: brackets and comparison signs are mirrored characters, so `أ < ب`
-still reads right. Hidden direction characters, which could make code look different from
-what it does, are highlighted, and Ḍād rejects them outside strings.
+VS Code's own text editor has no right-to-left mode, so the extension opens `.dad` files in
+its own right-to-left editor. It edits VS Code's copy of the file, so saving, undo, git and
+the Problems panel work as usual. Completion, keyword hovers, find and AI suggestions need
+VS Code's text editor: use **Open as text** (title bar or the bar at the bottom) to switch, and
+**Ḍād: Reopen Right to Left** to come back.
+
+In the text editor, Arabic words read correctly but lines start at the left. Brackets and
+comparison signs are mirrored characters, so `أ < ب` still reads right, and hidden direction
+characters are highlighted.

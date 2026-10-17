@@ -50,6 +50,9 @@ class Uri {
   static parse(s) {
     return new Uri(s, "https");
   }
+  static joinPath(base, ...parts) {
+    return new Uri(path.join(base.fsPath, ...parts), base.scheme);
+  }
 }
 class Diagnostic {
   constructor(range, message, severity) {
@@ -68,6 +71,10 @@ const messages = [];
 const answers = []; // replies to the next information messages, in order
 const config = { path: DAD, checkOnType: true, saveBeforeRun: true };
 const commands = {};
+const executed = []; // commands the extension ran, with their arguments
+const applied = []; // workspace edits the extension applied
+let customProvider = null;
+const diagnosticsByUri = new Map();
 
 function makeDoc(text, file = "/tmp/test.dad") {
   const lines = text.split("\n");
@@ -80,7 +87,7 @@ function makeDoc(text, file = "/tmp/test.dad") {
     isUntitled: false,
     lineCount: lines.length,
     getText: (r) => (r ? lines[r.start.line].slice(r.start.character, r.end.character) : text),
-    lineAt: (i) => ({ text: lines[i] }),
+    lineAt: (i) => ({ text: lines[i], range: new Range(i, 0, i, lines[i].length) }),
     getWordRangeAtPosition(pos) {
       const line = lines[pos.line];
       const word = /[\p{L}\p{Mn}\p{Nd}_]/u;
@@ -97,6 +104,14 @@ function makeDoc(text, file = "/tmp/test.dad") {
 const vscode = {
   Position,
   Range,
+  WorkspaceEdit: class {
+    constructor() {
+      this.edits = [];
+    }
+    replace(uri, range, text) {
+      this.edits.push({ uri, range, text });
+    }
+  },
   Uri,
   Diagnostic,
   DiagnosticSeverity: { Error: 0, Warning: 1 },
@@ -130,10 +145,12 @@ const vscode = {
     }),
     registerHoverProvider: (sel, p) => ((vscode._hover = p), { dispose() {} }),
     registerCompletionItemProvider: (sel, p) => ((vscode._completion = p), { dispose() {} }),
+    getDiagnostics: (uri) => diagnosticsByUri.get(uri.toString()) || [],
+    onDidChangeDiagnostics: on("diagnosticsChanged"),
   },
   commands: {
     registerCommand: (id, fn) => ((commands[id] = fn), { dispose() {} }),
-    executeCommand() {},
+    executeCommand: (...args) => (executed.push(args), Promise.resolve()),
   },
   window: {
     activeTextEditor: null,
@@ -146,6 +163,7 @@ const vscode = {
       return t;
     },
     onDidCloseTerminal: on("closeTerminal"),
+    registerCustomEditorProvider: (viewType, provider) => ((customProvider = { viewType, provider }), { dispose() {} }),
   },
   workspace: {
     textDocuments: [],
@@ -155,6 +173,7 @@ const vscode = {
     onDidChangeTextDocument: on("change"),
     onDidCloseTextDocument: on("close"),
     onDidChangeConfiguration: on("config"),
+    applyEdit: (edit) => (applied.push(edit), Promise.resolve(true)),
   },
 };
 
@@ -169,6 +188,7 @@ const state = {};
 const context = {
   subscriptions: [],
   extensionPath: path.join(__dirname, ".."),
+  extensionUri: new Uri(path.join(__dirname, "..")),
   globalState: { get: (k) => state[k], update: (k, v) => ((state[k] = v), Promise.resolve()) },
 };
 ext.activate(context);
@@ -298,6 +318,66 @@ test("\"Don't ask again\" is remembered", async () => {
   events.open.forEach((fn) => fn(makeDoc("ثابت أ = 1", "/tmp/f4.dad")));
   await wait(100);
   assert.strictEqual(messages.length, before, "no second prompt");
+});
+
+function fakePanel() {
+  const panel = {
+    posted: [],
+    handlers: [],
+    viewColumn: 1,
+    webview: {
+      options: null,
+      html: "",
+      cspSource: "vscode-resource:",
+      asWebviewUri: (u) => u,
+      postMessage: (m) => (panel.posted.push(m), Promise.resolve(true)),
+      onDidReceiveMessage: (fn) => (panel.handlers.push(fn), { dispose() {} }),
+    },
+    onDidDispose: () => ({ dispose() {} }),
+    send: (m) => Promise.all(panel.handlers.map((fn) => fn(m))),
+  };
+  return panel;
+}
+
+test("the right-to-left editor is registered for .dad files", () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"), "utf8"));
+  const ed = pkg.contributes.customEditors.find((e) => e.viewType === "dad.rtlEditor");
+  assert.ok(ed && ed.priority === "default" && ed.selector[0].filenamePattern === "*.dad");
+  assert.strictEqual(customProvider.viewType, "dad.rtlEditor");
+  for (const f of ["media/rtl-editor.js", "media/rtl-editor.css"]) assert.ok(fs.existsSync(path.join(__dirname, "..", f)), f);
+});
+
+test("the right-to-left editor shows the document and its problems", async () => {
+  const doc = makeDoc("ثابت أ = 1\nاطبع(أ)", "/tmp/rtl1.dad");
+  diagnosticsByUri.set(doc.uri.toString(), [new Diagnostic(new Range(1, 0, 1, 4), "مشكلة تجريبية", 0)]);
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(doc, panel);
+  assert.ok(panel.webview.options.enableScripts);
+  assert.match(panel.webview.html, /<html lang="ar" dir="rtl">/);
+  assert.match(panel.webview.html, /Content-Security-Policy/);
+  assert.match(panel.webview.html, /DadMono-Regular\.ttf/);
+  await panel.send({ type: "ready" });
+  const update = panel.posted.find((m) => m.type === "update");
+  assert.strictEqual(update.text, "ثابت أ = 1\nاطبع(أ)");
+  const diags = panel.posted.find((m) => m.type === "diagnostics").diagnostics;
+  assert.deepStrictEqual(diags[0], { line: 1, start: 0, endLine: 1, end: 4, severity: 0, message: "مشكلة تجريبية" });
+});
+
+test("edits in the right-to-left editor go into VS Code's document", async () => {
+  const doc = makeDoc("ثابت أ = 1", "/tmp/rtl2.dad");
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(doc, panel);
+  await panel.send({ type: "edit", text: "ثابت أ = 2" });
+  const edit = applied.at(-1).edits[0];
+  assert.strictEqual(edit.text, "ثابت أ = 2");
+  assert.strictEqual(edit.uri.toString(), doc.uri.toString());
+  const before = applied.length;
+  await panel.send({ type: "edit", text: "ثابت أ = 1" }); // same as the document: nothing to apply
+  assert.strictEqual(applied.length, before);
+  await panel.send({ type: "openText" });
+  assert.deepStrictEqual(executed.at(-1).slice(0, 3), ["vscode.openWith", doc.uri, "default"]);
+  await panel.send({ type: "undo" });
+  assert.deepStrictEqual(executed.at(-1), ["undo"]);
 });
 
 (async () => {

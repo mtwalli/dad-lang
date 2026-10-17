@@ -2,6 +2,10 @@
 
 ## Next release
 
+- `.dad` files open in a right-to-left editor: lines start at the right, line numbers are on
+  the right, with highlighting, problems and Ḍād Mono. **Ḍād: Reopen as Text** and
+  **Ḍād: Reopen Right to Left** switch between it and VS Code's text editor.
+
 - Ḍād Mono, the coding font for Ḍād, is bundled and set for `.dad` files. The extension offers
   to install it once, and **Ḍād: Install the Ḍād Mono Font** installs it any time.
 

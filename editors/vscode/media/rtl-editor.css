@@ -1,0 +1,190 @@
+/* The right-to-left editor. The coloured layer (#hl) and the textarea (#src) must share
+   every metric that affects layout: font, size, line height, padding, tab size, wrapping. */
+
+:root {
+  --ed-bg: var(--vscode-editor-background);
+  --ed-fg: var(--vscode-editor-foreground);
+  --ed-size: var(--vscode-editor-font-size, 14px);
+  --ed-line: 1.6;
+  --gutter-fg: var(--vscode-editorLineNumber-foreground);
+  --gutter-active: var(--vscode-editorLineNumber-activeForeground, var(--ed-fg));
+  --line-bg: var(--vscode-editor-lineHighlightBackground, rgba(127, 127, 127, 0.08));
+  --line-border: var(--vscode-editor-lineHighlightBorder, transparent);
+  --sel: var(--vscode-editor-selectionBackground);
+  --err: var(--vscode-editorError-foreground, #e51400);
+  --warn: var(--vscode-editorWarning-foreground, #bf8803);
+  /* Ḍād palette, light */
+  --t-kw: #2F45B5;
+  --t-const: #0B7F88;
+  --t-num: #0B7F88;
+  --t-str: #8A6417;
+  --t-fn: #8E3B5E;
+  --t-type: #0B7F88;
+  --t-com: #6E7591;
+  --t-op: #5A6180;
+}
+
+body.vscode-dark {
+  --t-kw: #8FA6F2;
+  --t-const: #4FC7CF;
+  --t-num: #4FC7CF;
+  --t-str: #E0BC66;
+  --t-fn: #E39BB8;
+  --t-type: #4FC7CF;
+  --t-com: #7C86AD;
+  --t-op: #A6AECB;
+}
+
+body.vscode-high-contrast {
+  --t-kw: var(--vscode-symbolIcon-keywordForeground, var(--ed-fg));
+  --t-const: var(--vscode-symbolIcon-booleanForeground, var(--ed-fg));
+  --t-num: var(--vscode-symbolIcon-numberForeground, var(--ed-fg));
+  --t-str: var(--vscode-symbolIcon-stringForeground, var(--ed-fg));
+  --t-fn: var(--vscode-symbolIcon-functionForeground, var(--ed-fg));
+  --t-type: var(--vscode-symbolIcon-classForeground, var(--ed-fg));
+  --t-com: var(--vscode-descriptionForeground, var(--ed-fg));
+  --t-op: var(--ed-fg);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--ed-bg);
+  color: var(--ed-fg);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#scroller {
+  flex: 1;
+  overflow: auto;
+}
+
+.stack {
+  display: flex;
+  direction: rtl;
+  min-height: 100%;
+}
+
+/* Line numbers on the right, staying in place when long lines scroll sideways. */
+#gutter {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  flex: none;
+  min-width: 3.2em;
+  padding: 8px 0.9em 8px 0.6em;
+  background: var(--ed-bg);
+  color: var(--gutter-fg);
+  font: var(--ed-size) / var(--ed-line) "Dad Mono", var(--vscode-editor-font-family, monospace), monospace;
+  text-align: left;
+  direction: ltr;
+  user-select: none;
+}
+
+#gutter .ln.cur { color: var(--gutter-active); }
+#gutter .ln.err { color: var(--err); }
+#gutter .ln.warn { color: var(--warn); }
+
+.code {
+  position: relative;
+  flex: 1;
+}
+
+#hl,
+#src {
+  position: absolute;
+  top: 0;
+  right: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 0.4em 8px 24px;
+  border: 0;
+  font-family: "Dad Mono", var(--vscode-editor-font-family, monospace), monospace;
+  font-size: var(--ed-size);
+  font-weight: normal;
+  font-feature-settings: normal;
+  font-variant-ligatures: none;
+  line-height: var(--ed-line);
+  letter-spacing: normal;
+  tab-size: 2;
+  white-space: pre;
+  word-wrap: normal;
+  direction: rtl;
+  text-align: right;
+}
+
+#hl {
+  color: var(--ed-fg);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#src {
+  z-index: 1;
+  overflow: hidden;
+  resize: none;
+  outline: none;
+  background: transparent;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: var(--vscode-editorCursor-foreground, var(--ed-fg));
+}
+
+#src::selection { background: var(--sel); }
+
+#current {
+  position: absolute;
+  right: 0;
+  left: 0;
+  background: var(--line-bg);
+  box-shadow: inset 0 0 0 1px var(--line-border);
+  pointer-events: none;
+}
+
+.kw, .decl, .interp, .esc { color: var(--t-kw); }
+.const { color: var(--t-const); }
+.num { color: var(--t-num); }
+.str { color: var(--t-str); }
+.fn, .builtin { color: var(--t-fn); }
+.type, .this { color: var(--t-type); }
+.com { color: var(--t-com); }
+.op { color: var(--t-op); }
+.bad { background: var(--vscode-inputValidation-errorBackground, rgba(229, 20, 0, 0.25)); }
+.err { text-decoration: underline wavy var(--err); text-underline-offset: 3px; text-decoration-skip-ink: none; }
+.warn { text-decoration: underline wavy var(--warn); text-underline-offset: 3px; text-decoration-skip-ink: none; }
+
+/* A thin bar at the bottom: the problem on the caret's line, and two actions. */
+footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  min-height: 24px;
+  padding: 2px 12px;
+  border-top: 1px solid var(--vscode-editorGroup-border, rgba(127, 127, 127, 0.25));
+  font: 12px var(--vscode-font-family, system-ui), sans-serif;
+  direction: rtl;
+}
+
+#status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#status.err { color: var(--err); }
+#status.warn { color: var(--warn); }
+
+footer button {
+  border: 0;
+  border-radius: 2px;
+  padding: 2px 8px;
+  background: var(--vscode-button-secondaryBackground, transparent);
+  color: var(--vscode-button-secondaryForeground, var(--ed-fg));
+  font: inherit;
+  cursor: pointer;
+}
+
+footer button:hover { background: var(--vscode-button-secondaryHoverBackground, rgba(127, 127, 127, 0.2)); }
+footer button:focus-visible { outline: 1px solid var(--vscode-focusBorder); }

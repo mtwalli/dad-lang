@@ -6,6 +6,7 @@ macOS, Windows and Linux.
 
 ## The VS Code extension
 
+- **Right to left.** `.dad` files open in an editor whose lines start at the right ([details](#right-to-left)).
 - **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, comments, and Ḍād code blocks in Markdown.
 - **Errors as you type.** The same Arabic messages as `dad check`, with the exact word underlined
   and listed in the Problems panel.
@@ -103,11 +104,30 @@ The Arabic comes from Noto Kufi Arabic and the Latin from DejaVu Sans Mono. Ḍ�
 under the SIL Open Font License ([license](assets/fonts/LICENSE.txt)). To rebuild it, run
 `python3 tools/font/build.py`.
 
-## Right-to-left text in code editors
+## Right to left
 
-No mainstream code editor has a true right-to-left mode. VS Code lays out each line with the
-Unicode bidirectional algorithm: Arabic words and sentences read correctly, but every line
-starts at the left edge. Ḍād is designed to read well this way:
+VS Code's text editor always starts lines at the left, and no setting changes that. So the
+extension opens `.dad` files in its own **right-to-left editor**: lines start at the right,
+line numbers sit on the right, and the cursor, selection and Arabic keyboard input work the
+way they do in any Arabic text. It shows the same colors, problems (with wavy underlines and
+the message for the current line at the bottom) and Ḍād Mono.
+
+It edits VS Code's own copy of the file, so saving, undo, the unsaved-changes dot, Git and the
+Problems panel all work as usual. <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
+(<kbd>⌘</kbd>+<kbd>Enter</kbd>) or **▶ شغّل** runs the file.
+
+VS Code's own features that need its text editor are only in the text view: completion,
+keyword hovers, find and replace, multiple cursors and AI suggestions. To switch, use the
+button in the editor's title bar or at the bottom of the editor:
+
+| To | Do this |
+|---|---|
+| Open the file in VS Code's text editor | **Open as text**, or **Ḍād: Reopen as Text (Left to Right)** |
+| Go back to right to left | **Ḍād: Reopen Right to Left** |
+| Always open `.dad` files as text | Right-click a `.dad` file, **Open With…**, choose **Text Editor**, then **Configure default editor for '*.dad'…** |
+
+In the text editor each line is laid out with the Unicode bidirectional algorithm: Arabic
+words read correctly, but lines start at the left. Ḍād is designed to read well there too:
 
 - Brackets and comparison signs are mirrored characters, so `أ < ب` reads correctly from the
   right.

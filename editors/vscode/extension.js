@@ -9,6 +9,7 @@ const os = require("os");
 const path = require("path");
 const { KEYWORDS, BUILTINS } = require("./keywords");
 const font = require("./font");
+const { RtlEditorProvider, VIEW_TYPE } = require("./rtlEditor");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -202,6 +203,8 @@ async function fileToRun(uri) {
   }
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== "dad") {
+    const rtl = activeDadUri();
+    if (rtl) return fileToRun(rtl);
     vscode.window.showInformationMessage("Ḍād: open a .dad file to run it.");
     return null;
   }
@@ -238,6 +241,22 @@ async function run(uri) {
     isTransient: true,
   });
   runTerminal.show(true);
+}
+
+/** Reopens a .dad file in the right-to-left editor or VS Code's text editor. */
+function reopen(uri, viewType) {
+  const target = uri instanceof vscode.Uri ? uri : activeDadUri();
+  if (target) return vscode.commands.executeCommand("vscode.openWith", target, viewType);
+}
+
+/** The .dad file in the active editor, whether it is the text editor or the right-to-left one. */
+function activeDadUri() {
+  const editor = vscode.window.activeTextEditor;
+  if (editor && editor.document.languageId === "dad") return editor.document.uri;
+  const tab = vscode.window.tabGroups && vscode.window.tabGroups.activeTabGroup.activeTab;
+  const input = tab && tab.input;
+  if (input && input.viewType === VIEW_TYPE && input.uri) return input.uri;
+  return null;
 }
 
 function runCheckCommand() {
@@ -319,6 +338,9 @@ function activate(context) {
     vscode.commands.registerCommand("dad.check", runCheckCommand),
     vscode.commands.registerCommand("dad.showVersion", showVersion),
     vscode.commands.registerCommand("dad.installFont", () => font.installCommand(context)),
+    RtlEditorProvider.register(context, run),
+    vscode.commands.registerCommand("dad.openRightToLeft", (uri) => reopen(uri, VIEW_TYPE)),
+    vscode.commands.registerCommand("dad.openAsText", (uri) => reopen(uri, "default")),
     vscode.languages.registerHoverProvider(selector, hoverProvider),
     vscode.languages.registerCompletionItemProvider(selector, completionProvider),
     vscode.workspace.onDidOpenTextDocument((doc) => {
