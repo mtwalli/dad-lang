@@ -14,7 +14,16 @@ macOS, Windows and Linux.
   left in the **Ḍād** panel, next to the terminal, and stays there until the next run. The
   panel has **Run again** and **Stop** buttons.
 - **Keyword help.** Hover a keyword to see what it means in English.
-- **Completion and snippets** for keywords, built-ins, functions, types, enums, loops and
+- **Go to definition** (<kbd>F12</kbd>, or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+click), **find all
+  references** (<kbd>Shift</kbd>+<kbd>F12</kbd>) and **rename** (<kbd>F2</kbd>) for variables,
+  functions, types, fields, parameters and cases. Renaming a field also changes `نقطة(س: …)`
+  and `نسخة(س: …)` wherever the field is named.
+- **Hover a name** to see how it is declared, such as `دالة مربع(عدد: صحيح): صحيح`.
+- **The outline** (<kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd>, and the Outline
+  view) lists the file's types, functions, tables and components with their fields and methods.
+- **Completion and snippets** for keywords, built-ins and the names in scope. After a `.`,
+  completion lists what the value really has: the fields and methods of `نقطة`, the methods of
+  text or lists, the queries of a table. Snippets cover functions, types, enums, loops and
   matching. Snippets answer to Arabic and English prefixes, so `دالة` and `func` both work.
 
 ### Install it
@@ -178,7 +187,8 @@ Indentation follows the code as you type:
 | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> | Format the file |
 
 VS Code's own features that need its text editor are only in the text view: completion,
-keyword hovers, find and replace, multiple cursors and AI suggestions. To switch, use the
+hovers, go to definition, references and rename, find and replace, multiple cursors and AI
+suggestions. To switch, use the
 button in the editor's title bar or at the bottom of the editor:
 
 | To | Do this |
@@ -206,9 +216,49 @@ dad run file.dad      # run it
 dad dev file.dad      # serve its routes and server functions
 ```
 
+### The language server
+
+`dad lsp` is a language server: any editor that speaks the
+[Language Server Protocol](https://microsoft.github.io/language-server-protocol/) gets
+errors as you type, go to definition, find references, rename, hover, completion (with
+members after `.`), the outline and formatting. Point the editor at the command `dad lsp`
+for `.dad` files:
+
+=== "Neovim"
+
+    ```lua
+    vim.filetype.add({ extension = { dad = "dad" } })
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "dad",
+      callback = function()
+        vim.lsp.start({ name = "dad", cmd = { "dad", "lsp" }, root_dir = vim.fs.root(0, { ".git" }) })
+      end,
+    })
+    ```
+
+=== "Helix"
+
+    ```toml
+    # ~/.config/helix/languages.toml
+    [language-server.dad]
+    command = "dad"
+    args = ["lsp"]
+
+    [[language]]
+    name = "dad"
+    scope = "source.dad"
+    file-types = ["dad"]
+    language-servers = ["dad"]
+    indent = { tab-width = 4, unit = "    " }
+    ```
+
+=== "Zed and others"
+
+    Add a language server whose command is `dad` with the argument `lsp`, for files ending
+    in `.dad`.
+
 Editors that read TextMate grammars, such as the JetBrains IDEs through their TextMate Bundles
 support, can use
 [`dad.tmLanguage.json`](https://github.com/mtwalli/dad-lang/blob/main/editors/vscode/syntaxes/dad.tmLanguage.json)
-for highlighting. Other tools can use `dad check --json <file>`, or `-` to read
-the source from standard input, to get problems in a machine-readable form.
-A language server for all editors is planned (see the [roadmap](ROADMAP.md)).
+for highlighting. Tools can also run `dad check --json <file>` (or `-` to read standard
+input) to get problems in a machine-readable form.

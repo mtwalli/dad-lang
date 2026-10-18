@@ -97,6 +97,7 @@ func (c *checker) expr(e ast.Expr, s *scope) *Type {
 			c.noMember(rt, e.Name, e.Pos, false)
 			return nil
 		}
+		c.ref(c.tokenAfter(e.Pos), c.memberDef(rt, e.Name))
 		if e.Safe || rt.Optional {
 			return optional(t)
 		}
@@ -149,7 +150,11 @@ func (c *checker) expr(e ast.Expr, s *scope) *Type {
 	case *ast.Try:
 		bt := c.block(e.Body, s.child())
 		cs := s.child()
-		cs.names[e.Var] = &symbol{kind: sVar}
+		cd := c.def(e.Var, c.nameAfter(e.Catch.Pos, e.Var), "variable", "التقط "+e.Var+": مشكلة", nil, nil)
+		if c.recording() {
+			cd.Pos = c.nameBeforeOr(e.Catch.Pos, e.Var)
+		}
+		cs.names[e.Var] = &symbol{kind: sVar, def: cd}
 		ct := c.block(e.Catch, cs.child())
 		return sameType(bt, ct)
 	case *ast.RangeExpr:
@@ -184,6 +189,7 @@ func (c *checker) ident(e *ast.Ident, s *scope) *Type {
 	if sym == nil {
 		if c.selfHas(e.Name) {
 			if known(c.fr.self) {
+				c.ref(e.Pos, c.memberDef(c.fr.self, e.Name))
 				t, _ := c.member(c.fr.self, e.Name, false)
 				return t
 			}
@@ -192,6 +198,7 @@ func (c *checker) ident(e *ast.Ident, s *scope) *Type {
 		c.errorf(e.Pos, "«%s» غير معرّف%s", e.Name, didYouMean(e.Name, s.visible()))
 		return nil
 	}
+	c.ref(e.Pos, sym.def)
 	switch sym.kind {
 	case sFunc, sBuiltin, sElement:
 		return tFunc
@@ -208,7 +215,8 @@ func (c *checker) lambda(l *ast.Lambda, s *scope, params []*Type) {
 		if i < len(params) {
 			t = params[i]
 		}
-		ls.names[p] = &symbol{kind: sVar, typ: t}
+		ld := c.def(p, c.nameAfter(l.Pos, p), "parameter", p+": "+t.String(), t, nil)
+		ls.names[p] = &symbol{kind: sVar, typ: t, def: ld}
 	}
 	fr := &frame{lambda: true, component: c.fr.component, self: c.fr.self, hasSelf: c.fr.hasSelf, it: len(l.Params) == 0}
 	body := func() { c.withFrame(fr, func() { c.block(l.Body, ls.child()) }) }
@@ -317,6 +325,7 @@ func (c *checker) call(e *ast.Call, s *scope) *Type {
 			c.trailing(e, s, nil)
 			if c.selfHas(fn.Name) {
 				if known(c.fr.self) {
+					c.ref(fn.Pos, c.memberDef(c.fr.self, fn.Name))
 					t, _ := c.member(c.fr.self, fn.Name, true)
 					return t
 				}
@@ -325,6 +334,7 @@ func (c *checker) call(e *ast.Call, s *scope) *Type {
 			c.errorf(fn.Pos, "«%s» غير معرّف%s", fn.Name, didYouMean(fn.Name, s.visible()))
 			return nil
 		}
+		c.ref(fn.Pos, sym.def)
 		// «حقل(اسم)»: the element gets the state variable itself; it's still a name to check.
 		for i, a := range e.Args {
 			argTypes[i] = c.expr(a.Value, s)
@@ -386,6 +396,7 @@ func (c *checker) call(e *ast.Call, s *scope) *Type {
 			c.noMember(rt, fn.Name, fn.Pos, true)
 			return nil
 		}
+		c.ref(c.tokenAfter(fn.Pos), c.memberDef(rt, fn.Name))
 		c.methodArgs(rt, fn.Name, e, argTypes)
 		if fn.Safe || rt.Optional {
 			return optional(t)
@@ -484,6 +495,9 @@ func (c *checker) args(what string, params []*ast.Param, e *ast.Call, types []*T
 			continue
 		}
 		set[idx] = true
+		if pos, ok := c.nameBefore(a.Value.P(), a.Name); ok {
+			c.ref(pos, c.paramDefs[params[idx]])
+		}
 		c.argType(what, params[idx], types[i], a.Value.P())
 	}
 	for i, p := range params {
@@ -834,6 +848,13 @@ func (c *checker) copyArgs(fields []*ast.Param, e *ast.Call, types []*Type, ftyp
 			c.errorf(a.Value.P(), "لا يوجد حقل باسم «%s»%s", a.Name, didYouMean(a.Name, names))
 			continue
 		}
+		if pos, ok := c.nameBefore(a.Value.P(), a.Name); ok {
+			for _, f := range fields {
+				if f.Name == a.Name {
+					c.ref(pos, c.paramDefs[f])
+				}
+			}
+		}
 		if want := ftypes[a.Name]; !assignable(types[i], want) {
 			c.errorf(a.Value.P(), "الحقل «%s» من النوع «%s»، لكن القيمة من النوع «%s»", a.Name, want, types[i])
 		}
@@ -864,6 +885,9 @@ func (c *checker) match(m *ast.Match, s *scope) *Type {
 			switch {
 			case isVariant:
 				covered[p.Name] = true
+				if sym := c.global.lookup(p.Name); sym != nil {
+					c.ref(p.Pos, sym.def)
+				}
 				if enum != nil && en != enum.name {
 					c.errorf(p.Pos, "«%s» ليست من حالات «%s»", p.Name, enum.name)
 				}
@@ -884,13 +908,15 @@ func (c *checker) match(m *ast.Match, s *scope) *Type {
 					if j < len(fields) {
 						bt, _ = c.fromRef(fields[j].Type)
 					}
-					scope.names[b] = &symbol{kind: sVar, typ: bt}
+					bd := c.def(b, c.nameAfter(p.Pos, b), "variable", b+": "+bt.String(), bt, nil)
+					scope.names[b] = &symbol{kind: sVar, typ: bt, def: bd}
 				}
 			case p.HasArgs:
 				c.errorf(p.Pos, "«%s» ليست حالة معروفة في أي تعداد%s", p.Name, didYouMean(p.Name, keys(c.variantOf)))
 			default:
 				catchAll = true
-				scope.names[p.Name] = &symbol{kind: sVar, typ: st}
+				bd := c.def(p.Name, p.Pos, "variable", p.Name+": "+st.String(), st, nil)
+				scope.names[p.Name] = &symbol{kind: sVar, typ: st, def: bd}
 			}
 		}
 		var bt *Type

@@ -78,7 +78,7 @@ hide:
   <li class="is-next"><span>Core language</span><small>Parser, <code>dad run</code> and the checker done; compiling to JavaScript next</small></li>
   <li class="is-next"><span>Interface</span><small><a href="ui/">Components, state and elements</a> work in <code>dad dev</code> and the playground; compiling to JavaScript next</small></li>
   <li class="is-next"><span>Server and data</span><small>Tables, server functions, routes and <a href="server/"><code>dad dev</code></a> work, with SQLite</small></li>
-  <li class="is-next"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a> and <a href="playground/">web playground</a> done; language server next</small></li>
+  <li class="is-next"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a> <a href="playground/">web playground</a> and <a href="editor/#the-language-server">language server</a> done</small></li>
   <li><span>Installers</span><small>macOS, Windows and Linux</small></li>
 </ol>
 

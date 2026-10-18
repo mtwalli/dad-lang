@@ -226,6 +226,7 @@ func (c *checker) fromRef(r *ast.TypeRef) (*Type, bool) {
 
 // checkRef reports unknown type names in a written type and returns the type.
 func (c *checker) checkRef(r *ast.TypeRef) *Type {
+	c.typeRefs(r)
 	t, ok := c.fromRef(r)
 	if !ok {
 		name := firstUnknown(c, r)
@@ -309,4 +310,19 @@ func distance(a, b string) int {
 		prev, cur = cur, prev
 	}
 	return prev[len(y)]
+}
+
+// typeRefs records the names of user types written in a type.
+func (c *checker) typeRefs(r *ast.TypeRef) {
+	if r == nil || !c.recording() {
+		return
+	}
+	if r.Kind == ast.NamedType {
+		if sym := c.global.lookup(r.Name); sym != nil && (sym.kind == sType || sym.kind == sEnum || sym.kind == sVariant) {
+			c.ref(r.Pos, sym.def)
+		}
+	}
+	for _, x := range append(append([]*ast.TypeRef{}, r.Args...), r.Elem, r.Key) {
+		c.typeRefs(x)
+	}
 }

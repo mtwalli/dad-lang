@@ -12,6 +12,7 @@ const font = require("./font");
 const { RtlEditorProvider, VIEW_TYPE } = require("./rtlEditor");
 const { OutputView } = require("./outputView");
 const formatter = require("./formatter");
+const languageServer = require("./languageServer");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -295,7 +296,9 @@ const hoverProvider = {
 };
 
 const completionProvider = {
-  provideCompletionItems() {
+  provideCompletionItems(doc, position) {
+    // After «x.» only members make sense; the language server lists them.
+    if (doc && position && languageServer.afterDot(doc, position)) return [];
     const items = [];
     for (const [word, [english]] of Object.entries(KEYWORDS)) {
       const item = new vscode.CompletionItem(word, vscode.CompletionItemKind.Keyword);
@@ -329,6 +332,7 @@ function activate(context) {
   const selector = { language: "dad" };
   const cfg = () => vscode.workspace.getConfiguration("dad");
   const fmt = formatter.register(context, dadPath, activeDadUri);
+  const lsp = languageServer.register(context, dadPath);
 
   context.subscriptions.push(
     diagnostics,
@@ -355,6 +359,7 @@ function activate(context) {
     }),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration("dad.path")) {
+        lsp.restart();
         cachedPath = null;
         warnedMissing = false;
         warnedOld = false;

@@ -12,6 +12,7 @@ import (
 	"github.com/mtwalli/dad-lang/internal/check"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/lsp"
 )
 
 // version is set at build time with -ldflags "-X main.version=…".
@@ -37,6 +38,7 @@ Usage (ASCII aliases):
                            (--json for editors; "-" reads the source from stdin)
   dad fmt <file.dad|dir>   format files in place (--check lists unformatted files;
                            "-" formats stdin to stdout)
+  dad lsp                  the language server, for editors (LSP over stdin/stdout)
   dad dev <file.dad>       serve routes and server functions on localhost:8080,
                            reloading when the file changes (--port to change it)
   dad tokens <file.dad>    print the tokens in a file
@@ -61,6 +63,11 @@ func main() {
 			os.Exit(runWith(args[1], cmdCheckJSON))
 		}
 		os.Exit(withFile("فحص", cmdCheck))
+	case "خادم_اللغة", "lsp":
+		if err := lsp.Serve(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	case "نسق", "fmt", "format":
 		os.Exit(cmdFmt(os.Args[2:]))
 	case "تطوير", "dev":

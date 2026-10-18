@@ -145,8 +145,24 @@ const vscode = {
   TextDocumentSaveReason: { Manual: 1, AfterDelay: 2, FocusOut: 3 },
   Uri,
   Diagnostic,
+  Location: class {
+    constructor(uri, range) {
+      Object.assign(this, { uri, range });
+    }
+  },
+  DocumentHighlight: class {
+    constructor(range, kind) {
+      Object.assign(this, { range, kind });
+    }
+  },
+  DocumentHighlightKind: { Text: 0, Read: 1, Write: 2 },
+  DocumentSymbol: class {
+    constructor(name, detail, kind, range, selectionRange) {
+      Object.assign(this, { name, detail, kind, range, selectionRange, children: [] });
+    }
+  },
   DiagnosticSeverity: { Error: 0, Warning: 1 },
-  CompletionItemKind: { Keyword: 13, Function: 2, Class: 6 },
+  CompletionItemKind: { Keyword: 13, Function: 2, Class: 6, Method: 1, Field: 4, Variable: 5, Property: 9, Enum: 12, EnumMember: 19, Constant: 20, Struct: 21, Text: 0 },
   CompletionItem: class {
     constructor(label, kind) {
       Object.assign(this, { label, kind });
@@ -183,8 +199,13 @@ const vscode = {
       delete: (uri) => diagSets.delete(uri.toString()),
       dispose() {},
     }),
-    registerHoverProvider: (sel, p) => ((vscode._hover = p), { dispose() {} }),
-    registerCompletionItemProvider: (sel, p) => ((vscode._completion = p), { dispose() {} }),
+    registerHoverProvider: (sel, p) => (((p.provideHover.constructor.name === "AsyncFunction" ? (vscode._lspHover = p) : (vscode._hover = p))), { dispose() {} }),
+    registerCompletionItemProvider: (sel, p) => (((p.provideCompletionItems.constructor.name === "AsyncFunction" ? (vscode._lspCompletion = p) : (vscode._completion = p))), { dispose() {} }),
+    registerDefinitionProvider: (sel, p) => ((vscode._definition = p), { dispose() {} }),
+    registerReferenceProvider: (sel, p) => ((vscode._references = p), { dispose() {} }),
+    registerDocumentHighlightProvider: (sel, p) => ((vscode._highlights = p), { dispose() {} }),
+    registerRenameProvider: (sel, p) => ((vscode._rename = p), { dispose() {} }),
+    registerDocumentSymbolProvider: (sel, p) => ((vscode._symbols = p), { dispose() {} }),
     registerDocumentFormattingEditProvider: (sel, p) => ((vscode._formatter = p), { dispose() {} }),
     getDiagnostics: (uri) => diagnosticsByUri.get(uri.toString()) || [],
     onDidChangeDiagnostics: on("diagnosticsChanged"),
@@ -523,6 +544,47 @@ test("Shift+Alt+F in the right-to-left editor formats the document", async () =>
   assert.strictEqual(applyEdits(doc, [{ range: e.range, newText: e.text }]), tidy);
 });
 
+const lspSrc = "نوع نقطة(س: عشري، ص: عشري) {\n    دالة بعد() = جذر(س * س + ص * ص)\n}\n\nدالة مربع(عدد: صحيح): صحيح = عدد * عدد\n\nثابت ن = نقطة(س: 3، ص: 4)\nاطبع(ن.بعد()، مربع(2)، مربع(عدد: 3))\n";
+
+test("go to definition, references and highlights come from dad lsp", async () => {
+  const doc = makeDoc(lspSrc, "/tmp/lsp1.dad");
+  const def = await vscode._definition.provideDefinition(doc, new Position(7, 8)); // ن.بعد
+  assert.ok(def, "no definition");
+  assert.deepStrictEqual([def.range.start.line, def.range.start.character], [1, 9]);
+  const refs = await vscode._references.provideReferences(doc, new Position(4, 6)); // مربع
+  assert.strictEqual(refs.length, 3);
+  const hs = await vscode._highlights.provideDocumentHighlights(doc, new Position(6, 6)); // ن: declared, then used once
+  assert.strictEqual(hs.length, 2);
+});
+
+test("rename changes every use, and refuses keywords", async () => {
+  const doc = makeDoc(lspSrc, "/tmp/lsp2.dad");
+  const prep = await vscode._rename.prepareRename(doc, new Position(4, 11)); // عدد
+  assert.strictEqual(prep.placeholder, "عدد");
+  const edit = await vscode._rename.provideRenameEdits(doc, new Position(4, 11), "قيمة");
+  assert.strictEqual(edit.edits.length, 4);
+  assert.ok(edit.edits.every((e) => e.text === "قيمة"));
+  await assert.rejects(() => vscode._rename.provideRenameEdits(doc, new Position(4, 11), "إذا"));
+});
+
+test("hover shows a declaration; completion after a dot lists members", async () => {
+  const doc = makeDoc(lspSrc, "/tmp/lsp3.dad");
+  const h = await vscode._lspHover.provideHover(doc, new Position(7, 15)); // مربع
+  assert.ok(/دالة مربع\(عدد: صحيح\): صحيح/.test(h.contents[0] ? h.contents[0].value : h.contents.value));
+  const doc2 = makeDoc(lspSrc + "اطبع(ن.)\n", "/tmp/lsp4.dad");
+  const items = await vscode._lspCompletion.provideCompletionItems(doc2, new Position(8, 7));
+  assert.deepStrictEqual(items.map((i) => i.label), ["بعد", "س", "ص", "نسخة"]);
+  // the extension's keyword list stays out of the way after a dot
+  assert.deepStrictEqual(vscode._completion.provideCompletionItems(doc2, new Position(8, 7)), []);
+});
+
+test("the outline lists declarations with their members", async () => {
+  const doc = makeDoc(lspSrc, "/tmp/lsp5.dad");
+  const syms = await vscode._symbols.provideDocumentSymbols(doc);
+  assert.deepStrictEqual(syms.map((s) => s.name), ["نقطة", "مربع", "ن"]);
+  assert.deepStrictEqual(syms[0].children.map((c) => c.name), ["س", "ص", "بعد"]);
+});
+
 (async () => {
   for (const [name, fn] of tests) {
     try {
@@ -534,4 +596,6 @@ test("Shift+Alt+F in the right-to-left editor formats the document", async () =>
     }
   }
   ext.deactivate();
+  // VS Code disposes an extension's subscriptions when it stops; this stops dad lsp.
+  context.subscriptions.forEach((d) => d && d.dispose && d.dispose());
 })();

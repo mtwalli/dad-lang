@@ -134,6 +134,7 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
 |---|---|---|
 | `dad run <file>` | `ضاد شغل <ملف>` | Run a program (`dad <file>` also works) |
 | `dad fmt <file or folder>` | `ضاد نسق <ملف>` | Format files in place (`--check` lists the ones that need it). See [Formatting](editor.md#formatting) |
+| `dad lsp` | `ضاد خادم_اللغة` | The language server, for editors: definitions, references, rename, completion. See [the editor guide](editor.md#the-language-server) |
 | `dad dev <file>` | `ضاد تطوير <ملف>` | Serve routes and server functions on `localhost:8080`, reloading on save (`--port` to change it). See [Server and data](server.md) |
 | `dad check <file>` | `ضاد فحص <ملف>` | Check a file without running it: syntax, names, arguments, types and `طابق` cases (`--json` for tools) |
 | `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |

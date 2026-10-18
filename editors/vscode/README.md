@@ -14,6 +14,7 @@ Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming languag
 - **Run** the current file, with the output shown right to left in the **Ḍād** panel until the next run. Use the ▶ button in the editor title, or
   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac).
 - **Keyword help**: hover a keyword to see what it means in English.
+- **Go to definition, references, rename and the outline**, from Ḍād's language server; completion after `.` lists the value's real fields and methods.
 - **Snippets** for functions, types, enums, loops and matching. They answer to Arabic and English
   prefixes, so `func` and `دالة` both work.
 

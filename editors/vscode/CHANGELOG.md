@@ -2,6 +2,11 @@
 
 ## Next release
 
+- Go to definition, find all references, rename, the outline, and hovers that show how a
+  name is declared, from Ḍād's language server (`dad lsp`). After a `.`, completion lists the
+  real fields and methods of the value. Needs a `dad` with `dad lsp`; with an older one these
+  features stay off.
+
 - Errors as you type now include the checker's: names that aren't defined (with a
   suggestion), wrong arguments and types, fields that don't exist and `طابق` that misses
   cases. They come from `dad check`, so update `dad` to get them.

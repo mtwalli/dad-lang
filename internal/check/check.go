@@ -54,6 +54,7 @@ type symbol struct {
 	params  []*ast.Param  // sFunc, sType, sVariant, sComponent: what a call takes
 	result  *Type         // what a call gives
 	what    string        // how messages name it: «مربع»، المكون «عداد»
+	def     *Def          // where it is declared, when recording for editors
 }
 
 type scope struct {
@@ -121,20 +122,29 @@ type checker struct {
 	results   map[*ast.FuncDecl]*Type
 	deferred  []func()
 	fr        *frame
+
+	// for editors (Analyze): definitions of functions, members and parameters
+	info       *Info
+	funcDefs   map[*ast.FuncDecl]*Def
+	memberDefs map[string]map[string]*Def // type name → field or method → definition
+	paramDefs  map[*ast.Param]*Def
 }
 
 func newChecker() *checker {
 	c := &checker{
-		global:    &scope{names: map[string]*symbol{}},
-		types:     map[string]*Type{},
-		structs:   map[string]*structInfo{},
-		enums:     map[string]*enumInfo{},
-		variantOf: map[string]string{},
-		contracts: map[string]bool{},
-		ext:       map[string]map[string]*ast.FuncDecl{},
-		inferring: map[*ast.FuncDecl]bool{},
-		results:   map[*ast.FuncDecl]*Type{},
-		fr:        &frame{},
+		global:     &scope{names: map[string]*symbol{}},
+		types:      map[string]*Type{},
+		structs:    map[string]*structInfo{},
+		enums:      map[string]*enumInfo{},
+		variantOf:  map[string]string{},
+		contracts:  map[string]bool{},
+		ext:        map[string]map[string]*ast.FuncDecl{},
+		inferring:  map[*ast.FuncDecl]bool{},
+		results:    map[*ast.FuncDecl]*Type{},
+		fr:         &frame{},
+		funcDefs:   map[*ast.FuncDecl]*Def{},
+		memberDefs: map[string]map[string]*Def{},
+		paramDefs:  map[*ast.Param]*Def{},
 	}
 	// Built-ins live in a scope around the program's own, like in the interpreter.
 	prelude := &scope{names: map[string]*symbol{}}
@@ -198,26 +208,44 @@ func (c *checker) collect(s ast.Stmt) {
 	g := c.global
 	switch d := s.(type) {
 	case *ast.FuncDecl:
-		c.define(g, d.Name, &symbol{kind: sFunc, decl: d, params: d.Params, typ: tFunc, what: "«" + d.Name + "»"}, d.Pos)
+		fd := c.funcDef(d, "function", nil)
+		c.define(g, d.Name, &symbol{kind: sFunc, decl: d, params: d.Params, typ: tFunc, what: "«" + d.Name + "»", def: fd}, d.Pos)
 	case *ast.TypeDecl:
 		c.types[d.Name] = &Type{Kind: Struct, Name: d.Name}
 		c.structs[d.Name] = &structInfo{name: d.Name, fields: d.Fields, methods: map[string]*ast.FuncDecl{}}
+		td := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "type", "نوع "+d.Name+paramsSig(d.Fields), &Type{Kind: TypeValue, Name: d.Name}, nil)
+		c.fieldDefs(td, d.Name, d.Fields)
+		for _, m := range d.Methods {
+			c.memberDefs[d.Name][m.Name] = c.funcDef(m, "method", td)
+		}
 		c.define(g, d.Name, &symbol{kind: sType, typ: &Type{Kind: TypeValue, Name: d.Name}, params: d.Fields,
-			result: c.types[d.Name], what: "«" + d.Name + "»"}, d.Pos)
+			result: c.types[d.Name], what: "«" + d.Name + "»", def: td}, d.Pos)
 	case *ast.TableDecl:
 		fields := append([]*ast.Param{}, d.Fields...)
 		fields = append(fields, &ast.Param{At: d.At, Name: "رقم", Type: &ast.TypeRef{Kind: ast.NamedType, Name: "صحيح"}, Default: &ast.IntLit{}})
 		c.types[d.Name] = &Type{Kind: Struct, Name: d.Name}
 		c.structs[d.Name] = &structInfo{name: d.Name, fields: fields, methods: map[string]*ast.FuncDecl{}, table: true}
+		td := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "table", "جدول "+d.Name+paramsSig(d.Fields), &Type{Kind: TypeValue, Name: d.Name}, nil)
+		c.fieldDefs(td, d.Name, d.Fields)
 		c.define(g, d.Name, &symbol{kind: sType, typ: &Type{Kind: TypeValue, Name: d.Name}, params: fields,
-			result: c.types[d.Name], what: "«" + d.Name + "»"}, d.Pos)
+			result: c.types[d.Name], what: "«" + d.Name + "»", def: td}, d.Pos)
 	case *ast.EnumDecl:
 		c.types[d.Name] = &Type{Kind: Enum, Name: d.Name}
 		c.enums[d.Name] = &enumInfo{name: d.Name, variants: d.Variants}
-		c.define(g, d.Name, &symbol{kind: sEnum, typ: &Type{Kind: EnumType, Name: d.Name}}, d.Pos)
+		ed := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "enum", "تعداد "+d.Name, &Type{Kind: EnumType, Name: d.Name}, nil)
+		c.define(g, d.Name, &symbol{kind: sEnum, typ: &Type{Kind: EnumType, Name: d.Name}, def: ed}, d.Pos)
 		for _, v := range d.Variants {
 			c.variantOf[v.Name] = d.Name
-			sym := &symbol{kind: sVariant, params: v.Fields, result: c.types[d.Name], what: "«" + v.Name + "»"}
+			vd := c.def(v.Name, c.nameAfter(v.Pos, v.Name), "case", v.Name+paramsSig(v.Fields)+" — "+d.Name, c.types[d.Name], ed)
+			if vd != nil {
+				vd.Global = true // a case is used by its own name everywhere
+			}
+			for _, f := range v.Fields {
+				if fd := c.def(f.Name, c.nameAfter(f.Pos, f.Name), "field", f.Name+": "+refString(f.Type), nil, vd); fd != nil {
+					c.paramDefs[f] = fd
+				}
+			}
+			sym := &symbol{kind: sVariant, params: v.Fields, result: c.types[d.Name], what: "«" + v.Name + "»", def: vd}
 			if len(v.Fields) == 0 {
 				sym.typ = c.types[d.Name]
 			} else {
@@ -228,13 +256,57 @@ func (c *checker) collect(s ast.Stmt) {
 	case *ast.ContractDecl:
 		c.contracts[d.Name] = true
 	case *ast.ComponentDecl:
+		cd := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "component", "مكون "+d.Name+paramsSig(d.Params), &Type{Kind: Component}, nil)
+		c.paramDefsFor(d.Params, cd)
 		c.define(g, d.Name, &symbol{kind: sComponent, typ: &Type{Kind: Component}, params: d.Params, result: tNull,
-			what: "المكون «" + d.Name + "»"}, d.Pos)
+			what: "المكون «" + d.Name + "»", def: cd}, d.Pos)
 	case *ast.Import:
 		c.errorf(d.Pos, "الاستيراد من ملفات أخرى غير مدعوم بعد؛ ضع الكود في ملف واحد حالياً")
 		for _, n := range d.Names {
 			g.names[n] = &symbol{kind: sVar}
 		}
+	}
+}
+
+// funcDef records a function or method and its parameters.
+func (c *checker) funcDef(d *ast.FuncDecl, kind string, parent *Def) *Def {
+	fd := c.def(d.Name, c.nameAfter(d.Pos, d.Name), kind, funcSig(d), tFunc, parent)
+	if fd != nil {
+		c.funcDefs[d] = fd
+		c.paramDefsFor(d.Params, fd)
+	}
+	return fd
+}
+
+// paramDefsFor records parameters, so named arguments can point at them.
+func (c *checker) paramDefsFor(params []*ast.Param, owner *Def) {
+	if owner == nil {
+		return
+	}
+	for _, p := range params {
+		t, _ := c.fromRef(p.Type)
+		pd := &Def{Name: p.Name, Pos: p.Pos, Kind: "parameter", Detail: p.Name + ": " + refString(p.Type), Type: t}
+		c.info.Defs = append(c.info.Defs, pd)
+		c.paramDefs[p] = pd
+	}
+}
+
+// fieldDefs records the fields of a type or table as its children.
+func (c *checker) fieldDefs(owner *Def, typeName string, fields []*ast.Param) {
+	if c.memberDefs[typeName] == nil {
+		c.memberDefs[typeName] = map[string]*Def{}
+	}
+	if owner == nil {
+		return
+	}
+	for _, f := range fields {
+		detail := f.Name
+		if f.Type != nil {
+			detail += ": " + refString(f.Type)
+		}
+		fd := c.def(f.Name, f.Pos, "field", detail, nil, owner)
+		c.memberDefs[typeName][f.Name] = fd
+		c.paramDefs[f] = fd
 	}
 }
 
@@ -244,6 +316,7 @@ func (c *checker) collectMembers(s ast.Stmt) {
 	case *ast.TypeDecl:
 		info := c.structs[d.Name]
 		info.ftypes = c.fieldTypes(d.Fields, false)
+		c.setFieldTypes(d.Name, info.ftypes)
 		for _, m := range d.Methods {
 			info.methods[m.Name] = m
 		}
@@ -253,6 +326,7 @@ func (c *checker) collectMembers(s ast.Stmt) {
 	case *ast.TableDecl:
 		info := c.structs[d.Name]
 		info.ftypes = c.fieldTypes(info.fields, true)
+		c.setFieldTypes(d.Name, info.ftypes)
 	case *ast.EnumDecl:
 		for _, v := range d.Variants {
 			c.fieldTypes(v.Fields, false)
@@ -265,6 +339,18 @@ func (c *checker) collectMembers(s ast.Stmt) {
 		}
 		for _, m := range d.Methods {
 			c.ext[key][m.Name] = m
+			c.funcDef(m, "method", nil)
+		}
+	}
+}
+
+func (c *checker) setFieldTypes(typeName string, types map[string]*Type) {
+	for name, d := range c.memberDefs[typeName] {
+		if d != nil && d.Kind == "field" {
+			d.Type = types[name]
+			if t := types[name]; t != nil && !strings.Contains(d.Detail, ":") {
+				d.Detail += ": " + t.String()
+			}
 		}
 	}
 }
@@ -368,7 +454,7 @@ func (c *checker) funcDecl(d *ast.FuncDecl, outer *scope, self *Type, method boo
 		if method && self != nil && self.Kind == Struct {
 			if info := c.structs[self.Name]; info != nil {
 				for _, f := range info.fields {
-					s.names[f.Name] = &symbol{kind: sVar, typ: info.ftypes[f.Name]}
+					s.names[f.Name] = &symbol{kind: sVar, typ: info.ftypes[f.Name], def: c.memberDefs[self.Name][f.Name]}
 				}
 			}
 		}
@@ -397,7 +483,11 @@ func (c *checker) params(params []*ast.Param, s, outer *scope) {
 				c.errorf(p.Default.P(), "القيمة الافتراضية لـ«%s» من النوع «%s»، لكن نوعه «%s»", p.Name, dt, t)
 			}
 		}
-		c.define(s, p.Name, &symbol{kind: sVar, typ: t}, p.Pos)
+		pd := c.paramDefs[p]
+		if pd == nil {
+			pd = c.def(p.Name, p.Pos, "parameter", p.Name+": "+refString(p.Type), t, nil)
+		}
+		c.define(s, p.Name, &symbol{kind: sVar, typ: t, def: pd}, p.Pos)
 	}
 }
 
@@ -514,7 +604,12 @@ func (c *checker) stmt(st ast.Stmt, s *scope) *Type {
 			}
 			t = declared
 		}
-		c.define(s, d.Name, &symbol{kind: sVar, typ: t, mutable: d.Mutable}, d.Pos)
+		kind, word := "constant", "ثابت "
+		if d.Mutable {
+			kind, word = "variable", "متغير "
+		}
+		ld := c.def(d.Name, c.nameAfter(d.Pos, d.Name), kind, word+d.Name+": "+t.String(), t, nil)
+		c.define(s, d.Name, &symbol{kind: sVar, typ: t, mutable: d.Mutable, def: ld}, d.Pos)
 	case *ast.StateDecl:
 		if c.atTopLevel() {
 			c.errorf(d.Pos, "«حالة» تُستخدم داخل مكون فقط؛ خارجه استخدم «متغير»")
@@ -528,7 +623,8 @@ func (c *checker) stmt(st ast.Stmt, s *scope) *Type {
 			}
 			t = declared
 		}
-		c.define(s, d.Name, &symbol{kind: sVar, typ: t, mutable: true}, d.Pos)
+		sd := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "state", "حالة "+d.Name+": "+t.String(), t, nil)
+		c.define(s, d.Name, &symbol{kind: sVar, typ: t, mutable: true, def: sd}, d.Pos)
 	case *ast.Assign:
 		c.assign(d, s)
 	case *ast.Return:
@@ -572,7 +668,8 @@ func (c *checker) stmt(st ast.Stmt, s *scope) *Type {
 			}
 		}
 		body := s.child()
-		body.names[d.Var] = &symbol{kind: sVar, typ: elem}
+		vd := c.def(d.Var, c.nameAfter(d.Pos, d.Var), "variable", "لكل "+d.Var+": "+elem.String(), elem, nil)
+		body.names[d.Var] = &symbol{kind: sVar, typ: elem, def: vd}
 		c.fr.loops++
 		c.block(d.Body, body.child())
 		c.fr.loops--
@@ -583,7 +680,8 @@ func (c *checker) stmt(st ast.Stmt, s *scope) *Type {
 		c.fr.loops--
 	case *ast.FuncDecl:
 		// a local function
-		c.define(s, d.Name, &symbol{kind: sFunc, decl: d, params: d.Params, typ: tFunc, what: "«" + d.Name + "»"}, d.Pos)
+		fd := c.funcDef(d, "function", nil)
+		c.define(s, d.Name, &symbol{kind: sFunc, decl: d, params: d.Params, typ: tFunc, what: "«" + d.Name + "»", def: fd}, d.Pos)
 		c.funcDeclNow(d, s)
 	case *ast.Import:
 		c.errorf(d.Pos, "الاستيراد من ملفات أخرى غير مدعوم بعد؛ ضع الكود في ملف واحد حالياً")
@@ -620,6 +718,7 @@ func (c *checker) assign(d *ast.Assign, s *scope) {
 			c.errorf(t.Pos, "«%s» غير معرّف%s", t.Name, didYouMean(t.Name, s.visible()))
 			return
 		}
+		c.ref(t.Pos, sym.def)
 		if !sym.mutable {
 			c.errorf(t.Pos, "لا يمكن تغيير «%s» لأنه ثابت — عرّفه بـ«متغير» إذا أردت تغييره", t.Name)
 			return
