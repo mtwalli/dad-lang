@@ -1,0 +1,146 @@
+/* The default look of a Ḍād app: right to left, Kufi type, lapis accent. */
+
+@font-face {
+  font-family: "Dad Kufi";
+  src: url("fonts/NotoKufiArabic-Medium.ttf") format("truetype");
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dad Kufi";
+  src: url("fonts/NotoKufiArabic-Bold.ttf") format("truetype");
+  font-weight: 600 800;
+  font-display: swap;
+}
+
+:root {
+  --paper: #fcfcfd;
+  --surface: #f3f4f8;
+  --ink: #1a1f36;
+  --muted: #5b6178;
+  --line: #d9dce8;
+  --lapis: #2a3f9d;
+  --lapis-deep: #1f2f7a;
+  --on-lapis: #ffffff;
+  --focus: rgba(42, 63, 157, 0.35);
+  --danger: #b42318;
+  --danger-bg: #fef3f2;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12152a;
+    --surface: #1b1f38;
+    --ink: #e9ebf5;
+    --muted: #a3a9c2;
+    --line: #2e3352;
+    --lapis: #8ea2ff;
+    --lapis-deep: #b4c1ff;
+    --on-lapis: #10143a;
+    --focus: rgba(142, 162, 255, 0.4);
+    --danger: #ff8a7a;
+    --danger-bg: #2c1618;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 500 17px/1.75 "Dad Kufi", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+}
+
+#dad-root {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2.5rem 16px 4rem;
+}
+
+/* Layout */
+.dad-col { display: flex; flex-direction: column; gap: 1rem; }
+.dad-row { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.dad-row > input[type="text"], .dad-row > input[type="email"],
+.dad-row > input[type="password"], .dad-row > input[type="number"] { flex: 1 1 12rem; }
+[data-align="وسط"] { align-items: center; justify-content: center; text-align: center; }
+[data-align="بداية"] { align-items: flex-start; justify-content: flex-start; }
+[data-align="نهاية"] { align-items: flex-end; justify-content: flex-end; }
+.dad-card {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+/* Text */
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 700; line-height: 1.4; }
+h1 { font-size: 1.9rem; }
+h1::after {
+  /* the one flourish: a short lapis stroke under the start of the page title */
+  content: ""; display: block;
+  width: 3rem; height: 4px; margin-top: 0.4rem;
+  background: var(--lapis); border-radius: 2px;
+}
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.2rem; }
+h4, h5, h6 { font-size: 1rem; }
+p { margin: 0; max-width: 38em; }
+a { color: var(--lapis); text-underline-offset: 0.2em; }
+hr { width: 100%; border: 0; border-top: 1px solid var(--line); margin: 0.25rem 0; }
+img { max-width: 100%; height: auto; border-radius: 8px; }
+
+/* Controls */
+button {
+  font: inherit; font-weight: 600;
+  padding: 0.45rem 1.25rem;
+  border: 0; border-radius: 8px;
+  background: var(--lapis); color: var(--on-lapis);
+  cursor: pointer;
+}
+button:hover { background: var(--lapis-deep); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+  font: inherit;
+  min-width: 0;
+  padding: 0.45rem 0.85rem;
+  border: 1.5px solid var(--line); border-radius: 8px;
+  background: var(--paper); color: var(--ink);
+}
+input::placeholder { color: var(--muted); opacity: 1; }
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus {
+  border-color: var(--lapis); outline: none;
+}
+input[type="checkbox"] {
+  width: 1.2em; height: 1.2em; margin: 0;
+  accent-color: var(--lapis);
+  cursor: pointer;
+}
+.dad-check { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+button:focus-visible, input:focus-visible, a:focus-visible {
+  outline: 3px solid var(--focus); outline-offset: 2px;
+}
+
+/* A ticked box crosses out the text next to it */
+.dad-row > input[type="checkbox"]:checked + p { color: var(--muted); text-decoration: line-through; }
+
+/* Errors from the program */
+#dad-error {
+  position: fixed; inset-inline: 16px; bottom: 16px;
+  max-width: 42rem; margin: 0 auto;
+  padding: 0.75rem 1rem;
+  background: var(--danger-bg); color: var(--danger);
+  border: 1px solid currentColor; border-radius: 10px;
+  white-space: pre-wrap;
+}
+#dad-error[hidden] { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  button { transition: background-color 120ms ease; }
+}

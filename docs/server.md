@@ -1,9 +1,9 @@
 # Server and data
 
 A Ḍād file can hold its data, its server code and its web routes next to each other.
-`dad dev` serves them on your computer and reloads when you save. The interface part
-(`مكون`) comes in Phase 2; until then you can call everything from the dev page, from
-`curl`, or from any web page.
+`dad dev` serves them on your computer and reloads when you save. The [interface](ui.md)
+(`مكون`) calls server functions and tables directly; other programs reach them through the
+dev page, `curl`, or any web page.
 
 ## Tables — `جدول`
 
@@ -80,9 +80,9 @@ same; it just reads every record. `بالرقم` and `عدد` always ask the dat
 خادم دالة بدل(م: مهمة) = م.نسخة(منجزة: ليس م.منجزة).احفظ()
 ```
 
-A function marked `خادم` can be called from the browser. In Phase 2, interface code will call
-it like any other function. Today `dad dev` serves it at `/_dad/call/<name>`: send a POST with
-the arguments as a JSON object, by parameter name.
+A function marked `خادم` can be called from the browser. A [component](ui.md) calls it like
+any other function. Other pages and programs reach it at `/_dad/call/<name>`: send a POST
+with the arguments as a JSON object, by parameter name.
 
 ```sh
 curl -X POST localhost:8080/_dad/call/أضف -d '{"عنوان": "اشترِ خبزاً"}'
@@ -123,7 +123,8 @@ dad dev todo.dad              # or: ضاد تطوير todo.dad
 dad dev todo.dad --port 3000
 ```
 
-Open <http://localhost:8080>. The dev page lists your server functions, with a form to call
+Open <http://localhost:8080>. If the program has an [interface](ui.md), that's what you
+see; the developer page is at <http://localhost:8080/_dad>. The developer page lists your server functions, with a form to call
 each one, your tables and their rows, and your routes. It updates by itself.
 
 - Save the file and the program reloads. The data is kept.

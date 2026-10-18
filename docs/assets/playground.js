@@ -11,7 +11,9 @@
     "hello": "// أول برنامج بلغة ضاد\nثابت اسم = \"العالم\"\nاطبع(\"مرحبا يا {اسم}!\")\n\nدالة حي(اسم: نص، تحية: نص = \"أهلاً\"): نص {\n    أرجع \"{تحية} يا {اسم}\"\n}\n\nاطبع(حي(\"سارة\"))\nاطبع(حي(اسم: \"علي\"، تحية: «صباح الخير»))",
     "basics": "// المتغيرات، الشروط، الحلقات، والدوال المختصرة\nدالة مربع(س: صحيح) = س * س\n\nدالة وصف(درجة: صحيح) = إذا درجة >= 90 { \"ممتاز\" } وإلا إذا درجة >= 50 { \"ناجح\" } وإلا { \"راسب\" }\n\nمتغير مجموع = 0\nلكل ع من 1 إلى 10 {\n    مجموع += مربع(ع)\n}\nاطبع(\"مجموع المربعات: {مجموع}\")\n\nلكل ع من 0 حتى 10 بخطوة 2 { اطبع(ع) }\n\nثابت درجات = [95، 72، 40]\nلكل د في درجات {\n    اطبع(\"{د} => {وصف(د)}\")\n}\n\nثابت كبار = درجات.رشح { هو >= 50 }.حول { هو * 2 }\nثابت متوسط = درجات.اختزل(0) { أ، ب => أ + ب } ك عشري / 3.0",
     "shapes": "// أنواع القيم، التعدادات، والمطابقة الشاملة\nنوع نقطة(س: عشري، ص: عشري) {\n    دالة بعد() = جذر(س * س + ص * ص)\n}\n\nتعداد شكل {\n    دائرة(قطر: عشري)\n    مستطيل(عرض: عشري، طول: عشري)\n    مثلث(قاعدة: عشري، ارتفاع: عشري)\n}\n\nدالة مساحة(ش: شكل): عشري = طابق ش {\n    دائرة(ق) => 3.1416 * ق * ق / 4\n    مستطيل(ع، ط) => ع * ط\n    مثلث(ق، ر) => ق * ر / 2\n}\n\nثابت أشكال = [دائرة(2)، مستطيل(3، 4)، مثلث(قاعدة: 6، ارتفاع: 2)]\nلكل ش في أشكال {\n    اطبع(\"المساحة = {مساحة(ش)}\")\n    إذا ش من نوع دائرة { اطبع(\"قطرها {ش.قطر}\") }\n}\n\nثابت ن = نقطة(س: 3، ص: 4)\nاطبع(ن.بعد()) // 5\nاطبع(ن == نقطة(3، 4)) // صح\nثابت م = ن.نسخة(ص: 0)",
-    "safety": "// الأمان من القيم المفقودة، الأخطاء، العقود والامتدادات\nنوع مستخدم(اسم: نص، بريد: نص؟ = عدم)\n\nدالة بريد_العرض(م: مستخدم؟): نص {\n    ثابت بريد = م؟.بريد\n    إذا بريد != عدم {\n        أرجع \"{بريد} ({بريد.طول} حرفاً)\" // تحويل ذكي: بريد هنا نص\n    }\n    أرجع م؟.بريد ؟؟ \"لا يوجد بريد\"\n}\n\nدالة اقسم(أ: صحيح، ب: صحيح): صحيح {\n    إذا ب == 0 { ارفع مشكلة(\"قسمة على صفر\") }\n    أرجع أ / ب\n}\n\nثابت ناتج = حاول { اقسم(10، 0) } التقط خ {\n    اطبع(خ.رسالة)\n    0\n}\n\nعقد قابل_للعرض {\n    دالة اعرض(): نص\n}\n\nامتداد نص {\n    خاص دالة نظيف() = هذا.قص()\n    دالة مكرر(مرات: صحيح) = (من 1 إلى مرات).حول { هذا }.ضم(\"\")\n}\n\nاطبع(\"هلا \".مكرر(3))\nاطبع(بريد_العرض(مستخدم(\"هدى\"، بريد: \"huda@example.com\")))\nاطبع(بريد_العرض(عدم))",
+    "safety": "// الأمان من القيم المفقودة، الأخطاء، العقود والامتدادات\nنوع مستخدم(اسم: نص، بريد: نص؟ = عدم)\n\nدالة بريد_العرض(م: مستخدم؟): نص {\n    ثابت بريد = م؟.بريد\n    إذا بريد != عدم {\n        أرجع \"{بريد} ({بريد.طول} حرفاً)\" // تحويل ذكي: بريد هنا نص\n    }\n    أرجع م؟.بريد ؟؟ \"لا يوجد بريد\"\n}\n\nدالة اقسم(أ: صحيح، ب: صحيح): عشري {\n    إذا ب == 0 { ارفع مشكلة(\"قسمة على صفر\") }\n    أرجع أ / ب\n}\n\nثابت ناتج = حاول { اقسم(10، 0) } التقط خ {\n    اطبع(خ.رسالة)\n    0\n}\n\nعقد قابل_للعرض {\n    دالة اعرض(): نص\n}\n\nامتداد نص {\n    خاص دالة نظيف() = هذا.قص()\n    دالة مكرر(مرات: صحيح) = (من 1 إلى مرات).حول { هذا }.ضم(\"\")\n}\n\nاطبع(\"هلا \".مكرر(3))\nاطبع(بريد_العرض(مستخدم(\"هدى\"، بريد: \"huda@example.com\")))\nاطبع(بريد_العرض(عدم))",
+    "counter": "// واجهة بلا خادم: مكونات بمعاملات، وحالة لكل نسخة، وحقول\nمكون عداد(اسم: نص، بداية: صحيح = 0) {\n    حالة ع = بداية\n    بطاقة {\n        عنوان(\"{اسم}: {ع}\"، مستوى: 2)\n        صف {\n            زر(\"زد\") { ع += 1 }\n            زر(\"أنقص\"، معطل: ع == 0) { ع -= 1 }\n            زر(\"صفّر\") { ع = بداية }\n        }\n    }\n}\n\nمكون الرئيسية {\n    حالة اسم = \"\"\n    حالة خطوة = 1\n    عمود {\n        عنوان(\"عدّادات\")\n        فقرة(\"لكل عداد حالته الخاصة.\")\n        عداد(\"التفاح\")\n        عداد(\"البرتقال\"، بداية: 5)\n        فاصل()\n        صف {\n            حقل(اسم، تلميح: \"ما اسمك؟\")\n            حقل(خطوة)\n        }\n        إذا اسم != \"\" { فقرة(\"أهلاً يا {اسم}، الخطوة {خطوة * 2}\") }\n        مربع_اختيار(خطوة > 1، نص: \"الخطوة أكبر من 1\")\n        رابط(\"عن ضاد\"، \"https://mtwalli.github.io/dad-lang/\")\n    }\n}",
+    "todo": "// تطبيق مهام كامل: بيانات + خادم + واجهة في ملف واحد\n\nجدول مهمة {\n    عنوان: نص\n    منجزة = خطأ\n}\n\nخادم دالة المهام() = مهمة.الكل()\nخادم دالة أضف(عنوان: نص) = مهمة.أنشئ(عنوان: عنوان)\nخادم دالة بدل(م: مهمة) = م.نسخة(منجزة: ليس م.منجزة).احفظ()\n\n// واجهة برمجية عامة للبرامج الأخرى\nمسار جلب \"/api/مهام\" = مهمة.الكل()\n\nمكون قائمة_المهام() {\n    حالة مهام = المهام()\n    حالة جديدة = \"\"\n\n    عمود {\n        عنوان(\"مهامي ({مهام.رشح { ليس هو.منجزة }.عدد} متبقية)\")\n        صف {\n            حقل(جديدة، تلميح: \"مهمة جديدة…\")\n            زر(\"أضف\") {\n                أضف(جديدة)\n                مهام = المهام()\n                جديدة = \"\"\n            }\n        }\n        لكل م في مهام {\n            صف {\n                مربع_اختيار(م.منجزة) {\n                    بدل(م)\n                    مهام = المهام()\n                }\n                فقرة(م.عنوان)\n            }\n        }\n    }\n}",
     "mistakes": "// ثلاث مشكلات: كلمة محجوزة بلا همزة، رقم مكتوب بغير 0-9، ومحرف اتجاه خفي بعد «اسم»\nاذا عمر > ١٨ {\n  ثابت اسم\u202e = \"سارة\"\n}"
   };
 
@@ -28,7 +30,8 @@
   kw("hl-op", "و أو ليس هو ك");
   kw("hl-this", "هذا");
   kw("hl-type", "صحيح عشري نص منطقي قائمة قاموس");
-  var BUILTINS = { "اطبع": 1, "مشكلة": 1, "جذر": 1, "مطلق": 1, "أدنى": 1, "أقصى": 1 };
+  var BUILTINS = { "اطبع": 1, "مشكلة": 1, "جذر": 1, "مطلق": 1, "أدنى": 1, "أقصى": 1,
+    "عمود": 1, "صف": 1, "بطاقة": 1, "عنوان": 1, "فقرة": 1, "زر": 1, "حقل": 1, "مربع_اختيار": 1, "صورة": 1, "رابط": 1, "فاصل": 1 };
   var NAMES_TYPE = { "نوع": 1, "تعداد": 1, "عقد": 1, "امتداد": 1, "مكون": 1, "جدول": 1 };
 
   var WORD = /[\p{L}\p{Mn}_][\p{L}\p{Mn}0-9_]*/uy;
@@ -218,6 +221,9 @@
     var tokens = document.getElementById("dad-tokens");
     var tabOut = document.getElementById("dad-tab-out");
     var tabTokens = document.getElementById("dad-tab-tokens");
+    var tabUI = document.getElementById("dad-tab-ui");
+    var uiPane = document.getElementById("dad-ui");
+    var uiFrame = document.getElementById("dad-ui-frame");
     var timer = null;
     var hl = document.getElementById("dad-hl");
     var hlPre = hl.parentNode;
@@ -231,14 +237,46 @@
     src.addEventListener("input", paint);
 
     function showTab(which) {
-      var isOut = which === "out";
-      tabOut.setAttribute("aria-selected", String(isOut));
-      tabTokens.setAttribute("aria-selected", String(!isOut));
-      out.hidden = !isOut;
-      tokens.hidden = isOut;
+      [["out", tabOut, out], ["ui", tabUI, uiPane], ["tokens", tabTokens, tokens]].forEach(function (t) {
+        if (!t[1]) return;
+        t[1].setAttribute("aria-selected", String(t[0] === which));
+        t[2].hidden = t[0] !== which;
+      });
     }
     tabOut.addEventListener("click", function () { showTab("out"); });
     tabTokens.addEventListener("click", function () { showTab("tokens"); });
+    if (tabUI) tabUI.addEventListener("click", function () { showTab("ui"); });
+
+    // The interface runs in a frame with the same page, stylesheet and script as
+    // «dad dev»; its events come back here to the interpreter in WebAssembly.
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+    }
+    window.dadPlaygroundEvent = function (event) {
+      var reply = JSON.parse(window.dadUIEvent(JSON.stringify(event)));
+      if (reply.output) {
+        if (out.classList.contains("is-empty")) { out.textContent = ""; out.classList.remove("is-empty"); }
+        out.appendChild(document.createTextNode(reply.output));
+      }
+      return reply;
+    };
+    function showUI(ui) {
+      if (!tabUI) return;
+      tabUI.hidden = false;
+      uiFrame.srcdoc = '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+        '<base href="' + esc(assets + "ui/") + '"><link rel="stylesheet" href="ui.css"><title>' + esc(ui.title) + "</title></head><body>" +
+        '<main id="dad-root" data-session="playground" data-version="' + ui.version + '">' + ui.html + "</main>" +
+        '<div id="dad-error" role="alert"' + (ui.error ? "" : " hidden") + ">" + esc(ui.error || "") + "</div>" +
+        "<script>window.dadSend = function (e) { return parent.dadPlaygroundEvent(e); };<\/script>" +
+        '<script src="ui.js"><\/script></body></html>';
+      showTab("ui");
+    }
+    function hideUI() {
+      if (!tabUI) return;
+      tabUI.hidden = true;
+      uiFrame.removeAttribute("srcdoc");
+    }
 
     function check() {
       var res = JSON.parse(window.dadTokenize(src.value));
@@ -255,10 +293,11 @@
       res.notices.forEach(function (n) { out.appendChild(el("span", "dad-play__notice", n + "\n")); });
       if (res.error) out.appendChild(el("span", "dad-play__error", res.error + "\n"));
       if (!res.output && !res.error && res.notices.length === 0) {
-        out.textContent = "انتهى البرنامج دون أن يطبع شيئاً.";
+        out.textContent = res.ui ? "ما يطبعه البرنامج يظهر هنا." : "انتهى البرنامج دون أن يطبع شيئاً.";
         out.classList.add("is-empty");
       }
-      showTab("out");
+      if (res.ui) showUI(res.ui);
+      else { hideUI(); showTab("out"); }
     }
 
     function load(name) {
@@ -266,6 +305,8 @@
       paint();
       out.textContent = "اضغط «Run» لتشغيل البرنامج.";
       out.classList.add("is-empty");
+      hideUI();
+      showTab("out");
       check();
     }
 

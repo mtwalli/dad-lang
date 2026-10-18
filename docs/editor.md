@@ -8,7 +8,7 @@ macOS, Windows and Linux.
 
 - **Right to left.** `.dad` files open in an editor whose lines start at the right ([details](#right-to-left)).
 - **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, comments, and Ḍād code blocks in Markdown.
-- **Errors as you type.** The same Arabic messages as `dad check`, with the exact word underlined
+- **Errors as you type.** The same Arabic messages as `dad check`, with the exact word underlined: mistyped names (with «هل تقصد …؟»), wrong arguments and types, missing fields and `طابق` cases
   and listed in the Problems panel.
 - **Run** the current file with the ▶ button in the editor title. The output appears right to
   left in the **Ḍād** panel, next to the terminal, and stays there until the next run. The

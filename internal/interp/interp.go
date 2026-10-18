@@ -22,6 +22,7 @@ import (
 type binding struct {
 	val     Value
 	mutable bool
+	state   bool // a component's «حالة»
 }
 
 // Env is a lexical scope.
@@ -85,28 +86,34 @@ type Interp struct {
 	// and dad dev use a JSON file next to the program.
 	Store Store
 
-	steps     int64
-	depth     int
-	globals   *Env
-	ext       map[string]map[string]*Func
-	variants  map[string]*Variant
-	tables    []*StructType
-	routes    []*Route
-	serverFns []string
+	steps      int64
+	depth      int
+	globals    *Env
+	ext        map[string]map[string]*Func
+	variants   map[string]*Variant
+	tables     []*StructType
+	routes     []*Route
+	serverFns  []string
+	components []*Component
+	ui         *renderCtx // set while a page is being rendered
 }
 
 const maxDepth = 2000
 
 // New returns an interpreter that prints to out.
 func New(out io.Writer) *Interp {
+	// Interface elements live in a scope around the program's own, so a program
+	// can still use their names (عنوان، صف…) for its own things.
+	prelude := newEnv(nil)
 	in := &Interp{
 		Out:      out,
-		globals:  newEnv(nil),
+		globals:  newEnv(prelude),
 		ext:      map[string]map[string]*Func{},
 		variants: map[string]*Variant{},
 		Store:    NewMemoryStore(),
 	}
 	in.installBuiltins()
+	in.installElements(prelude)
 	return in
 }
 
@@ -182,6 +189,10 @@ func (in *Interp) declare(s ast.Stmt, env *Env) bool {
 		}
 	case *ast.TableDecl:
 		in.declareTable(d, env)
+	case *ast.ComponentDecl:
+		c := &Component{Name: d.Name, Params: d.Params, Body: d.Body, Env: env, Pos: d.Pos}
+		in.defineName(env, d.Name, c, d.Pos)
+		in.components = append(in.components, c)
 	case *ast.RouteDecl:
 		in.routes = append(in.routes, &Route{Method: d.Method, Path: d.Path, Pos: d.Pos, body: d.Body, env: env})
 	case *ast.TypeDecl:
@@ -257,6 +268,8 @@ func (in *Interp) exec(s ast.Stmt, env *Env) Value {
 	switch s := s.(type) {
 	case *ast.ExprStmt:
 		return in.eval(s.X, env)
+	case *ast.StateDecl:
+		in.declareState(s, env)
 	case *ast.Let:
 		v := in.eval(s.Value, env)
 		if s.Type != nil {
@@ -1045,4 +1058,17 @@ func parseNumber(s string) (float64, bool) {
 		return 0, false
 	}
 	return f, true
+}
+
+// BuiltinNames lists the names every program starts with: functions such as
+// اطبع and the interface elements.
+func BuiltinNames() []string {
+	in := New(io.Discard)
+	var out []string
+	for e := in.globals; e != nil; e = e.parent {
+		for name := range e.vars {
+			out = append(out, name)
+		}
+	}
+	return out
 }

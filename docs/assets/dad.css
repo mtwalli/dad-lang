@@ -782,6 +782,16 @@ html body {
   outline: 2px solid var(--md-accent-fg-color);
 }
 
+.dad-play__ui iframe {
+  display: block;
+  width: 100%;
+  height: 26rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.3rem;
+  background: #fcfcfd;
+  resize: vertical;
+}
+
 .md-typeset pre.dad-play__out {
   flex: 1;
   min-height: 12rem;
@@ -847,4 +857,9 @@ html body {
   font-size: 1.6rem;
   line-height: 1.6;
   text-align: right;
+}
+
+/* Only the selected tab's pane shows (the theme's display rules would override [hidden]). */
+.dad-play__output > [role="tabpanel"][hidden] {
+  display: none !important;
 }

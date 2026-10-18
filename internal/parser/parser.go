@@ -192,8 +192,10 @@ func (p *parser) parseStmt() ast.Stmt {
 		return p.parseTable()
 	case token.ROUTE:
 		return p.parseRoute()
-	case token.COMPONENT, token.STATE:
-		return p.parseUnsupported()
+	case token.COMPONENT:
+		return p.parseComponent()
+	case token.STATE:
+		return p.parseState()
 	case token.FOR:
 		return p.parseFor()
 	case token.WHILE:
@@ -239,6 +241,35 @@ func (p *parser) parseLet() ast.Stmt {
 	p.expect(token.ASSIGN, "=")
 	l.Value = p.parseExpr()
 	return l
+}
+
+// parseComponent reads «مكون اسم(معاملات) { … }»; the parentheses are optional.
+func (p *parser) parseComponent() ast.Stmt {
+	t := p.next()
+	c := &ast.ComponentDecl{At: ast.At{Pos: t.Pos}, Name: p.expectIdent()}
+	if p.at(token.LPAREN) {
+		c.Params = p.parseParams()
+	}
+	if !p.at(token.LBRACE) {
+		p.failf(p.cur().Pos, "توقعت «{» لجسم المكون «%s»", c.Name)
+	}
+	c.Body = p.parseBlock()
+	return c
+}
+
+// parseState reads «حالة اسم = قيمة» (or «حالة اسم: نوع = قيمة»).
+func (p *parser) parseState() ast.Stmt {
+	t := p.next()
+	s := &ast.StateDecl{At: ast.At{Pos: t.Pos}, Name: p.expectIdent()}
+	if p.accept(token.COLON) {
+		s.Type = p.parseType()
+	}
+	if !p.at(token.ASSIGN) {
+		p.failf(p.cur().Pos, "الحالة «%s» تحتاج قيمة أولى، مثل: حالة %s = 0", s.Name, s.Name)
+	}
+	p.next()
+	s.Value = p.parseExpr()
+	return s
 }
 
 func (p *parser) parseParams() []*ast.Param {

@@ -25,7 +25,24 @@ type callInfo struct {
 
 func (in *Interp) call(c *ast.Call, env *Env) Value {
 	ci := &callInfo{pos: c.Pos}
-	for _, a := range c.Args {
+	bindFirst := false
+	if id, ok := c.Fn.(*ast.Ident); ok {
+		if b := env.lookup(id.Name); b != nil {
+			if bi, ok := b.val.(*Builtin); ok && bi.BindFirst {
+				bindFirst = true
+			}
+		}
+	}
+	for i, a := range c.Args {
+		if i == 0 && bindFirst && a.Name == "" {
+			// «حقل(جديدة)»: the element gets the state variable itself.
+			if id, ok := a.Value.(*ast.Ident); ok {
+				if b := env.lookup(id.Name); b != nil && b.state {
+					ci.args = append(ci.args, &StateRef{Name: id.Name, b: b})
+					continue
+				}
+			}
+		}
 		v := in.eval(a.Value, env)
 		if a.Name != "" {
 			ci.named = append(ci.named, namedArg{name: a.Name, val: v})
@@ -70,6 +87,8 @@ func (in *Interp) callValue(fn Value, ci *callInfo) Value {
 		return in.callFunc(f, ci)
 	case *Builtin:
 		return f.Fn(in, ci)
+	case *Component:
+		return in.renderComponent(f, ci)
 	case *StructType:
 		return &Struct{Type: f, Vals: in.bindArgs(f.Fields, ci, newEnv(f.Env), "«"+f.Name+"»")}
 	case *Variant:

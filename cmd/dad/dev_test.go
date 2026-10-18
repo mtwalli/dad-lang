@@ -141,3 +141,77 @@ func TestDevWatchReloads(t *testing.T) {
 	}
 	t.Error("the file change was not picked up")
 }
+
+func TestDevServesTheInterface(t *testing.T) {
+	src := devSrc + `
+مكون الرئيسية {
+    حالة جديدة = ""
+    عمود {
+        عنوان("مهامي ({مهمة.عدد()})")
+        حقل(جديدة)
+        زر("أضف") {
+            أضف(جديدة)
+            جديدة = ""
+        }
+    }
+}
+`
+	_, ts, _ := startDev(t, src)
+	res, err := http.Get(ts.URL + "/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, _ := io.ReadAll(res.Body)
+	html := string(page)
+	for _, want := range []string{`dir="rtl"`, `<h1>مهامي (0)</h1>`, "/_dad/assets/ui.js", `data-live="1"`} {
+		if !strings.Contains(html, want) {
+			t.Fatalf("page lacks %q:\n%s", want, html)
+		}
+	}
+	session := between(html, `data-session="`, `"`)
+	field := between(html, `data-input="`, `"`)
+	button := between(html, `data-click="`, `"`)
+
+	event := func(v int, id string, value any) map[string]any {
+		body, _ := json.Marshal(map[string]any{"s": session, "v": v, "id": id, "value": value})
+		_, obj, _ := do(t, "POST", ts.URL+"/_dad/ui/event", string(body))
+		return obj
+	}
+	r := event(1, field, "اشترِ خبزاً")
+	if r["version"] != 2.0 {
+		t.Fatalf("typing: %v", r)
+	}
+	r = event(2, button, nil)
+	if !strings.Contains(r["html"].(string), "مهامي (1)") || !strings.Contains(r["html"].(string), `value=""`) {
+		t.Errorf("after adding: %v", r)
+	}
+	// an old page gets the current render back, and nothing else happens
+	r = event(1, button, nil)
+	if !strings.Contains(r["html"].(string), "مهامي (1)") {
+		t.Errorf("stale event: %v", r)
+	}
+	// an unknown page is told to reload
+	session = "nope"
+	if r = event(1, button, nil); r["reload"] != true {
+		t.Errorf("unknown session: %v", r)
+	}
+	// the assets are served
+	for _, a := range []string{"ui.js", "ui.css", "fonts/NotoKufiArabic-Bold.ttf"} {
+		if res, err := http.Get(ts.URL + "/_dad/assets/" + a); err != nil || res.StatusCode != 200 {
+			t.Errorf("%s: %v %v", a, err, res.StatusCode)
+		}
+	}
+	// the developer page moved to /_dad
+	if res, _ := http.Get(ts.URL + "/_dad"); res.StatusCode != 200 {
+		t.Errorf("dev page: %d", res.StatusCode)
+	}
+}
+
+func between(s, a, b string) string {
+	i := strings.Index(s, a)
+	if i < 0 {
+		return ""
+	}
+	s = s[i+len(a):]
+	return s[:strings.Index(s, b)]
+}

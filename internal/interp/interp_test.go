@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtwalli/dad-lang/internal/ast"
+	"github.com/mtwalli/dad-lang/internal/check"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/parser"
 )
@@ -21,7 +23,21 @@ func run(t *testing.T, src string) (string, error) {
 	in := interp.New(&out)
 	in.MaxSteps = 1_000_000
 	err := in.Run(file)
+	if err == nil {
+		noCheckErrors(t, src, file)
+	}
 	return out.String(), err
+}
+
+// noCheckErrors fails when the checker rejects a program that runs fine:
+// the checker must only report real mistakes.
+func noCheckErrors(t *testing.T, src string, file *ast.File) {
+	t.Helper()
+	for _, d := range check.File(file) {
+		if !d.Warning {
+			t.Errorf("the checker rejects a program that runs:\n%s\n%s", d, src)
+		}
+	}
 }
 
 func golden(t *testing.T, srcPath, wantPath string) {

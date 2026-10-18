@@ -20,6 +20,8 @@ compiled to WebAssembly. Press **Run**, or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
       <option value="basics">Loops and lambdas</option>
       <option value="shapes">Enums and matching</option>
       <option value="safety">Optionals and errors</option>
+      <option value="counter">An interface: counters</option>
+      <option value="todo">A to-do app with a table</option>
       <option value="mistakes">A file with mistakes</option>
     </select>
     <button type="button" class="md-button md-button--primary dad-play__run" id="dad-run" disabled>Run</button>
@@ -36,9 +38,11 @@ compiled to WebAssembly. Press **Run**, or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
       <ul class="dad-play__diags" id="dad-diags" aria-label="Errors and warnings"></ul>
       <div class="dad-play__tabs" role="tablist">
         <button type="button" role="tab" id="dad-tab-out" aria-selected="true" aria-controls="dad-out">Output</button>
+        <button type="button" role="tab" id="dad-tab-ui" aria-selected="false" aria-controls="dad-ui" hidden>Interface</button>
         <button type="button" role="tab" id="dad-tab-tokens" aria-selected="false" aria-controls="dad-tokens">Tokens</button>
       </div>
       <pre class="dad-play__out" id="dad-out" role="tabpanel" dir="rtl" aria-live="polite"></pre>
+      <div class="dad-play__ui" id="dad-ui" role="tabpanel" hidden><iframe title="الواجهة" id="dad-ui-frame"></iframe></div>
       <div class="dad-play__tokens" id="dad-tokens" role="tabpanel" dir="rtl" hidden></div>
     </div>
   </div>

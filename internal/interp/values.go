@@ -53,6 +53,9 @@ type Func struct {
 type Builtin struct {
 	Name string
 	Fn   func(in *Interp, c *callInfo) Value
+	// BindFirst passes a state variable given as the first argument by
+	// reference (*StateRef), so an element like حقل can change it.
+	BindFirst bool
 }
 
 type StructType struct {
@@ -107,6 +110,8 @@ func typeName(v Value) string {
 		return "قاموس"
 	case *Func, *Builtin:
 		return "دالة"
+	case *Component:
+		return "مكون"
 	case *StructType:
 		return "نوع"
 	case *Struct:
@@ -179,6 +184,10 @@ func Format(v Value) string {
 		return "<دالة>"
 	case *Builtin:
 		return "<دالة " + v.Name + ">"
+	case *Component:
+		return "<مكون " + v.Name + ">"
+	case *StateRef:
+		return Format(v.b.val)
 	case *StructType:
 		return "<نوع " + v.Name + ">"
 	case *EnumType:

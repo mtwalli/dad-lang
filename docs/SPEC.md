@@ -220,7 +220,7 @@ There is no force-unwrap. Use `؟؟` with a default, or `؟؟ ارفع مشكل�
 
 ### 4.9 Errors
 ```dad
-دالة اقسم(أ: صحيح، ب: صحيح): صحيح {
+دالة اقسم(أ: صحيح، ب: صحيح): عشري {
   إذا ب == 0 { ارفع مشكلة("قسمة على صفر") }
   أرجع أ / ب
 }
@@ -233,6 +233,34 @@ One file = one module. Everything not marked `خاص` is exported.
 ```dad
 استورد نقطة، شكل من "./أشكال"
 ```
+
+### 4.11 Checking before running
+Programs are checked before they run, and a program with errors doesn't start (`dad run`,
+`dad dev`, the playground). `dad check` and the editors show the same messages as you type.
+The checker reports only what is certain; where it can't know a value's type, it accepts the
+program and the interpreter checks at run time.
+
+It reports:
+- names that aren't defined (with the closest defined name: «هل تقصد …؟»), a name used
+  before a top-level `ثابت` defines it, and names declared twice in one scope;
+- changing a `ثابت`, a parameter or a field (`نسخة` makes a changed copy);
+- calls with too many or too few arguments, an unknown named argument, a named argument
+  before a positional one, or an argument of the wrong type;
+- values of the wrong type for a declared type, a result type or a returned value, and a
+  block-bodied function with a result type and no `أرجع`;
+- fields and methods that a type doesn't have, on records, tables, text, lists, maps and
+  numbers (with the closest name);
+- `طابق` over a `تعداد` that misses cases and has no `_` (exhaustiveness), and patterns that
+  name unknown cases or too many fields;
+- conditions that aren't `منطقي`, operators on the wrong types (`"أ" - 1`), `لكل` over a
+  value that can't be looped over, and indexes that aren't `صحيح`;
+- `أرجع`, `توقف`, `تابع`, `هو` and `هذا` used where they mean nothing; `حالة` and interface
+  elements used at the top level instead of in a component; unknown element options.
+
+Types come from declarations and literals: `ثابت س = 1` is `صحيح`, a function's result is its
+declared type or the type of its `= expression` body, a table field without a type takes its
+default's type. A `صحيح` is accepted where an `عشري` is expected. Optional values (`نص؟`)
+are not yet followed through `إذا س != عدم` checks (smart casts), so they are not reported.
 
 ## 5. The full-stack layer
 
@@ -286,13 +314,26 @@ Compose/SwiftUI style: components are functions; UI elements (`عمود`, `صف`
 Pages are right-to-left by default.
 ```dad
 مكون عداد() {
-  حالة ع = 0
-  عمود {
-    عنوان("العدد: {ع}")
-    زر("زد") { ع += 1 }
-  }
+    حالة ع = 0
+    عمود {
+        عنوان("العدد: {ع}")
+        زر("زد") { ع += 1 }
+    }
 }
 ```
+A component is called like a function from another component; it adds its elements where it
+is called. Elements with a block (`عمود`, `صف`, `بطاقة`) put the elements laid out in the block
+inside them. `حالة` is only allowed in a component: its initial value is evaluated on the
+first render, and each instance of a component (by its place in the page) has its own state.
+An element given a state variable as its first argument (`حقل(اسم)`, `مربع_اختيار(مفعل)`)
+receives the variable itself and changes it. The page shows the component named `الرئيسية`
+or `التطبيق`, otherwise the last one that needs no arguments.
+
+*Implemented:* components run in the interpreter on the server (`dad dev`); the page sends
+events and updates in place, LiveView style. Elements: `عمود`، `صف`، `بطاقة`، `عنوان`،
+`فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل` (see the [interface guide](ui.md)).
+*Planned:* compiling components to JavaScript with a reactive runtime, so they run in the
+browser. Programs don't change.
 
 ## 6. Open questions (please decide)
 1. ~~`هو` doing double duty~~ Decided: `هو` only means "it" in lambdas; the type test is

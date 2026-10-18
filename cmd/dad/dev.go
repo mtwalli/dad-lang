@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
 	_ "embed"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -15,9 +17,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mtwalli/dad-lang/internal/check"
 	"github.com/mtwalli/dad-lang/internal/interp"
-	"github.com/mtwalli/dad-lang/internal/parser"
+	"github.com/mtwalli/dad-lang/internal/lexer"
 	"github.com/mtwalli/dad-lang/internal/sqlitestore"
+	"github.com/mtwalli/dad-lang/internal/web"
 )
 
 //go:embed devpage.html
@@ -70,11 +74,13 @@ type devServer struct {
 	store interp.Store
 	out   io.Writer
 
-	mu      sync.Mutex
-	in      *interp.Interp
-	err     string // the last load error, in Arabic
-	version int
-	mtime   time.Time
+	mu       sync.Mutex
+	in       *interp.Interp
+	sessions map[string]*interp.UISession // open pages, by id
+	order    []string                     // session ids, oldest first
+	err      string                       // the last load error, in Arabic
+	version  int
+	mtime    time.Time
 }
 
 // load parses and runs the file. A program that doesn't parse leaves the last good
@@ -91,16 +97,21 @@ func (s *devServer) load() {
 		s.err = fmt.Sprintf("تعذرت قراءة الملف «%s»: %v", s.path, err)
 		return
 	}
-	file, diags := parser.ParseFile(string(src))
-	var msgs []string
+	file, diags := check.Source(string(src))
 	for _, d := range diags {
-		msgs = append(msgs, d.String())
 		if !d.Warning {
 			fmt.Fprintf(os.Stderr, "%s: %s\n", s.path, d)
 		}
 	}
-	if file == nil {
-		s.err = strings.Join(msgs, "\n")
+	if file == nil || lexer.HasErrors(diags) {
+		// The last program that worked keeps running until this one is fixed.
+		var errs []string
+		for _, d := range diags {
+			if !d.Warning {
+				errs = append(errs, d.String())
+			}
+		}
+		s.err = strings.Join(errs, "\n")
 		return
 	}
 	in := interp.New(s.out)
@@ -112,8 +123,10 @@ func (s *devServer) load() {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", s.path, err)
 	}
 	storeNotes(s.store)
+	s.sessions = map[string]*interp.UISession{} // pages reload with the new program
+	s.order = nil
 	if s.version == 1 && len(in.Notices) > 0 {
-		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الواجهات تأتي في المرحلة 2.\n", strings.Join(in.Notices, "، "))
+		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s.\n", strings.Join(in.Notices, "، "))
 	}
 	s.in = in
 }
@@ -187,6 +200,12 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case path == "/_dad" || path == "/_dad/":
 		s.page(w)
 		return
+	case strings.HasPrefix(path, web.AssetsPath):
+		web.Handler().ServeHTTP(w, r)
+		return
+	case path == "/_dad/ui/event":
+		s.uiEvent(w, r)
+		return
 	}
 
 	if s.in == nil {
@@ -196,6 +215,10 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	route, params := s.in.MatchRoute(r.Method, path)
 	if route == nil {
 		if path == "/" && r.Method == http.MethodGet {
+			if root := s.in.RootComponent(); root != nil {
+				s.appPage(w, root)
+				return
+			}
 			s.page(w)
 			return
 		}
@@ -217,6 +240,75 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, result)
+}
+
+// appPage shows the program's main component as a live page.
+func (s *devServer) appPage(w http.ResponseWriter, root *interp.Component) {
+	id := newSessionID()
+	sess := interp.NewUISession()
+	body, err := s.in.Render(sess, root)
+	msg := ""
+	if err != nil {
+		msg = err.Error()
+	} else {
+		s.sessions[id] = sess
+		s.order = append(s.order, id)
+		if len(s.order) > maxSessions {
+			delete(s.sessions, s.order[0])
+			s.order = s.order[1:]
+		}
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	io.WriteString(w, web.Page(web.PageOptions{
+		Title: root.Name, Body: body, Session: id, Version: sess.Version, Error: msg, Live: s.version,
+	}))
+}
+
+const maxSessions = 200
+
+func newSessionID() string {
+	b := make([]byte, 12)
+	rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
+// uiEvent runs a click or typing from a page and sends back the new render.
+func (s *devServer) uiEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, 405, "الأحداث تُرسل بطلب POST")
+		return
+	}
+	var ev struct {
+		Session string `json:"s"`
+		Version int    `json:"v"`
+		ID      string `json:"id"`
+		Value   any    `json:"value"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&ev); err != nil {
+		writeError(w, 400, "حدث غير مفهوم")
+		return
+	}
+	sess := s.sessions[ev.Session]
+	root := (*interp.Component)(nil)
+	if s.in != nil {
+		root = s.in.RootComponent()
+	}
+	if sess == nil || root == nil {
+		writeJSON(w, 200, map[string]any{"reload": true}) // the program was reloaded
+		return
+	}
+	reply := map[string]any{}
+	if err := s.in.Event(sess, ev.Version, ev.ID, ev.Value); err != nil && !errors.Is(err, interp.ErrStale) {
+		reply["error"] = err.Error()
+	}
+	html, err := s.in.Render(sess, root)
+	if err != nil {
+		reply["error"] = err.Error()
+	} else {
+		reply["html"], reply["version"] = html, sess.Version
+	}
+	writeJSON(w, 200, reply)
 }
 
 func (s *devServer) page(w http.ResponseWriter) {
@@ -329,8 +421,8 @@ func cmdDev(args []string) int {
 		fmt.Fprintf(os.Stderr, "تعذر فتح المنفذ %d: %v\n(جرّب منفذاً آخر: --port 8081)\n", *port, err)
 		return 1
 	}
-	fmt.Fprintf(os.Stderr, "ضاد يعمل على http://localhost:%d — البيانات في %s\nيُعاد التحميل عند حفظ الملف. للإيقاف: Ctrl+C\n",
-		*port, dataPath(file))
+	fmt.Fprintf(os.Stderr, "ضاد يعمل على http://localhost:%d — البيانات في %s\nأدوات المطوّر: http://localhost:%d/_dad\nيُعاد التحميل عند حفظ الملف. للإيقاف: Ctrl+C\n",
+		*port, dataPath(file), *port)
 	if err := http.Serve(ln, s); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1

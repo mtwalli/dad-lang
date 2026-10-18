@@ -8,6 +8,7 @@ __pycache__/
 build/
 # Built by the docs workflow
 /docs/assets/playground/
+/docs/assets/ui/
 # Font sources: only the weights tools/font/build.py uses are kept
 /fonts-src/Noto_Kufi_Arabic/*VariableFont*
 /fonts-src/Noto_Kufi_Arabic/static/*

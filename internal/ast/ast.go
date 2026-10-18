@@ -337,8 +337,25 @@ type (
 		Body   Expr // *Block, or an expression for "= expr" bodies
 	}
 
-	// Unsupported is a full-stack declaration (مكون، حالة) that
-	// parses but cannot run yet.
+	// ComponentDecl is a piece of interface: «مكون عداد(بداية: صحيح = 0) { … }».
+	// Its body declares state with «حالة» and lays out elements such as عمود and زر.
+	ComponentDecl struct {
+		At
+		Name   string
+		Params []*Param
+		Body   *Block
+	}
+
+	// StateDecl is «حالة ع = 0» inside a component: a variable that keeps its
+	// value between renders; changing it updates the page.
+	StateDecl struct {
+		At
+		Name  string
+		Type  *TypeRef
+		Value Expr
+	}
+
+	// Unsupported is a declaration that parses but cannot run yet.
 	Unsupported struct {
 		At
 		Keyword string
@@ -376,6 +393,8 @@ func (*Import) stmtNode()        {}
 func (*Unsupported) stmtNode()   {}
 func (*TableDecl) stmtNode()     {}
 func (*RouteDecl) stmtNode()     {}
+func (*ComponentDecl) stmtNode() {}
+func (*StateDecl) stmtNode()     {}
 
 // File is a parsed source file.
 type File struct {

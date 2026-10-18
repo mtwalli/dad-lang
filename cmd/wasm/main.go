@@ -6,7 +6,12 @@
 // It registers two global functions:
 //
 //	dadTokenize(source) → {"tokens":[…], "diagnostics":[…]}   (lexer + parser checks)
-//	dadRun(source)      → {"output":"…", "error":"…", "notices":[…], "diagnostics":[…]}
+//	dadRun(source)      → {"output":"…", "error":"…", "notices":[…], "diagnostics":[…], "ui":{…}}
+//	dadUIEvent(event)   → {"html":"…", "version":n} or {"error":"…"}   (a click or typing in the interface)
+//	dadFormat(source)   → {"text":"…"} or {"error":"…"}
+//
+// When the program has a main component, "ui" holds its first render; the page
+// sends events back with dadUIEvent. Tables are kept in memory.
 package main
 
 import (
@@ -15,10 +20,10 @@ import (
 	"strings"
 	"syscall/js"
 
+	"github.com/mtwalli/dad-lang/internal/check"
 	"github.com/mtwalli/dad-lang/internal/format"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
-	"github.com/mtwalli/dad-lang/internal/parser"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
@@ -69,8 +74,8 @@ func tokenize(_ js.Value, args []js.Value) any {
 	src := args[0].String()
 	toks, diags := lexer.Tokenize(src)
 	if !lexer.HasErrors(diags) {
-		// Also report syntax errors from the parser (it repeats lexer warnings).
-		_, diags = parser.ParseFile(src)
+		// Also report the parser's and the checker's problems (they repeat lexer warnings).
+		_, diags = check.Source(src)
 	}
 	res := result{Tokens: []jsToken{}, Diagnostics: []jsDiagnostic{}}
 	for _, t := range toks {
@@ -100,6 +105,59 @@ type runResult struct {
 	Error       string         `json:"error"`
 	Notices     []string       `json:"notices"`
 	Diagnostics []jsDiagnostic `json:"diagnostics"`
+	UI          *uiResult      `json:"ui,omitempty"`
+}
+
+type uiResult struct {
+	Title   string `json:"title"`
+	HTML    string `json:"html"`
+	Version int    `json:"version"`
+	Error   string `json:"error,omitempty"`
+}
+
+// The program whose interface is showing, kept between events.
+var (
+	uiInterp *interp.Interp
+	uiSess   *interp.UISession
+	uiRoot   *interp.Component
+	uiOut    *bytes.Buffer
+)
+
+// uiEvent runs a click or typing from the interface and renders it again.
+func uiEvent(_ js.Value, args []js.Value) (ret any) {
+	reply := map[string]any{}
+	defer func() {
+		if r := recover(); r != nil {
+			reply = map[string]any{"error": "خطأ داخلي في المفسّر — نرجو الإبلاغ عنه على GitHub."}
+		}
+		out, _ := json.Marshal(reply)
+		ret = string(out)
+	}()
+	if uiInterp == nil || len(args) == 0 {
+		reply["error"] = "شغّل البرنامج أولاً"
+		return
+	}
+	var ev struct {
+		Version int    `json:"v"`
+		ID      string `json:"id"`
+		Value   any    `json:"value"`
+	}
+	json.Unmarshal([]byte(args[0].String()), &ev)
+	uiInterp.MaxSteps = 5_000_000
+	if err := uiInterp.Event(uiSess, ev.Version, ev.ID, ev.Value); err != nil && err != interp.ErrStale {
+		reply["error"] = err.Error()
+	}
+	html, err := uiInterp.Render(uiSess, uiRoot)
+	if err != nil {
+		reply["error"] = err.Error()
+	} else {
+		reply["html"], reply["version"] = html, uiSess.Version
+	}
+	if uiOut.Len() > 0 {
+		reply["output"] = uiOut.String() // what اطبع printed while handling the event
+		uiOut.Reset()
+	}
+	return
 }
 
 // run executes a program with a step limit so a runaway loop cannot freeze the page.
@@ -114,9 +172,9 @@ func run(_ js.Value, args []js.Value) (ret any) {
 		}
 	}()
 	if len(args) > 0 {
-		file, diags := parser.ParseFile(args[0].String())
+		file, diags := check.Source(args[0].String())
 		res.Diagnostics = toJSDiagnostics(diags)
-		if file == nil {
+		if file == nil || lexer.HasErrors(diags) {
 			res.Error = "لم يُشغَّل البرنامج بسبب الأخطاء أعلاه."
 		} else {
 			var out bytes.Buffer
@@ -126,9 +184,23 @@ func run(_ js.Value, args []js.Value) (ret any) {
 				res.Error = err.Error()
 			}
 			res.Output = out.String()
+			uiInterp, uiSess, uiRoot = nil, nil, nil
+			if root := in.RootComponent(); root != nil && res.Error == "" {
+				out.Reset()
+				sess := interp.NewUISession()
+				html, err := in.Render(sess, root)
+				ui := &uiResult{Title: root.Name, HTML: html, Version: sess.Version}
+				if err != nil {
+					ui.Error = err.Error()
+				}
+				res.UI = ui
+				res.Output += out.String()
+				out.Reset()
+				uiInterp, uiSess, uiRoot, uiOut = in, sess, root, &out
+			}
 			if len(in.Notices) > 0 {
 				res.Notices = append(res.Notices, "لم يُشغَّل "+strings.Join(in.Notices, "، ")+
-					" — الواجهات تأتي في المرحلة 2.")
+					".")
 			}
 		}
 	}
@@ -154,6 +226,7 @@ func formatSource(_ js.Value, args []js.Value) any {
 func main() {
 	js.Global().Set("dadTokenize", js.FuncOf(tokenize))
 	js.Global().Set("dadFormat", js.FuncOf(formatSource))
+	js.Global().Set("dadUIEvent", js.FuncOf(uiEvent))
 	js.Global().Set("dadRun", js.FuncOf(run))
 	js.Global().Call("dispatchEvent", js.Global().Get("Event").New("dad-ready"))
 	select {}

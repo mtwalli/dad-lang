@@ -2,6 +2,13 @@
 
 ## Next release
 
+- Errors as you type now include the checker's: names that aren't defined (with a
+  suggestion), wrong arguments and types, fields that don't exist and `طابق` that misses
+  cases. They come from `dad check`, so update `dad` to get them.
+
+- Hovers, completion and highlighting for the interface: `مكون`, `حالة` and the elements
+  `عمود`، `صف`، `بطاقة`، `عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`.
+
 - Formatting: **Format Document** and formatting on save (`dad.formatOnSave`, on by default)
   lay out the file with `dad fmt`, in the text editor and the right-to-left editor. The
   style follows the Kotlin conventions: four spaces, `{` at the end of the line, `}` on its

@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/mtwalli/dad-lang/internal/check"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
-	"github.com/mtwalli/dad-lang/internal/parser"
 )
 
 // version is set at build time with -ldflags "-X main.version=…".
@@ -113,10 +113,10 @@ func printDiags(path string, diags []lexer.Diagnostic) {
 }
 
 func cmdRun(path, src string) int {
-	file, diags := parser.ParseFile(src)
+	file, diags := check.Source(src)
 	printDiags(path, diags)
-	if file == nil {
-		return 1
+	if file == nil || lexer.HasErrors(diags) {
+		return 1 // like a compiler: a program with mistakes doesn't start
 	}
 	in := interp.New(os.Stdout)
 	store, err := openStore(path)
@@ -128,10 +128,12 @@ func cmdRun(path, src string) int {
 	err = in.Run(file)
 	storeNotes(store)
 	if len(in.Notices) > 0 {
-		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s — الواجهات تأتي في المرحلة 2.\n",
-			strings.Join(in.Notices, "، "))
+		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s.\n", strings.Join(in.Notices, "، "))
 	}
-	if len(in.Routes()) > 0 || len(in.ServerFunctions()) > 0 {
+	switch {
+	case in.RootComponent() != nil:
+		fmt.Fprintf(os.Stderr, "ملاحظة: لهذا البرنامج واجهة؛ لعرضها شغّل «ضاد تطوير %s» وافتح الصفحة.\n", filepath.Base(path))
+	case len(in.Routes()) > 0 || len(in.ServerFunctions()) > 0:
 		fmt.Fprintf(os.Stderr, "ملاحظة: للمسارات ودوال الخادم شغّل «ضاد تطوير %s».\n", filepath.Base(path))
 	}
 	if err != nil {
@@ -142,9 +144,9 @@ func cmdRun(path, src string) int {
 }
 
 func cmdCheck(path, src string) int {
-	file, diags := parser.ParseFile(src)
+	file, diags := check.Source(src)
 	printDiags(path, diags)
-	if file == nil {
+	if file == nil || lexer.HasErrors(diags) {
 		return 1
 	}
 	toks, _ := lexer.Tokenize(src)
@@ -174,7 +176,7 @@ type jsonDiag struct {
 }
 
 func cmdCheckJSON(_ string, src string) int {
-	_, diags := parser.ParseFile(src)
+	_, diags := check.Source(src)
 	out := struct {
 		Diagnostics []jsonDiag `json:"diagnostics"`
 	}{Diagnostics: []jsonDiag{}}

@@ -28,7 +28,7 @@ working end-to-end, crudely), then deepen each layer.
 |---|---|---|
 | **0. Specification** | `docs/SPEC.md`, `docs/grammar.ebnf`, sample programs, lexer | Keywords agreed; all examples tokenize ✅ (lexer done) |
 | **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output ✅ (`dad run`) |
-| **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser |
+| **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser ✅ (`dad dev` and the playground; compiling to JS next) |
 | **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end (server half ✅ with SQLite; the UI half next) |
 | **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified (VS Code extension, `dad fmt` and playground ✅, language server next) |
 | **5. Distribution** | GoReleaser + GitHub Actions; Homebrew, winget, `.deb`/`.rpm`, `install.sh`; Arabic tutorial site | One-line install on macOS, Windows, Linux |
@@ -40,9 +40,21 @@ working end-to-end, crudely), then deepen each layer.
 3. ✅ `dad run file.dad` — a tree-walking interpreter (`internal/interp`) so programs run
    today, in the terminal and in the [playground](playground.md)
 4. ✅ Golden tests: each example has expected output in `examples/output/`
-5. Name resolution and type checker (`internal/check`)
+5. ✅ Name resolution and a first type checker (`internal/check`): undefined names with
+   suggestions, arguments, declared types, members, exhaustive `طابق`; programs with errors
+   don't run. Next: smart casts for optional values, generic types, unused-variable warnings
 6. JS code generator (`internal/codegen/js`); `dad run` switches to it once it passes the
    same golden tests. The interpreter stays as the reference implementation.
+
+## Phase 2 breakdown (in progress)
+1. ✅ Parse `مكون` and `حالة`
+2. ✅ Components and per-instance state in the interpreter; elements `عمود`، `صف`، `بطاقة`،
+   `عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`
+3. ✅ Pages in `dad dev`: render on the server, events from the browser, updates in place,
+   live reload; a right-to-left Kufi stylesheet with light and dark themes
+4. ✅ The playground shows the interface (in WebAssembly, tables in memory)
+5. Compile components to JavaScript with a signals runtime, so pages work without a server
+6. More elements: lists, selects, text areas, dialogs, navigation between pages
 
 ## Phase 3 breakdown (in progress)
 1. ✅ Parse `جدول`, `خادم` and `مسار`
@@ -52,7 +64,7 @@ working end-to-end, crudely), then deepen each layer.
    live reload that keeps the data
 4. ✅ SQLite store (`modernc.org/sqlite`, `.dad/<program>.db`): migrations from table changes,
    simple `حيث` lambdas compiled to SQL, earlier JSON data imported
-5. Typed client calls from `مكون` code once Phase 2 lands
+5. ✅ Components call server functions and tables directly (they run on the server for now)
 
 ## Costs to know about
 - macOS signed/notarized installer: Apple Developer Program, $99/year (can postpone via Homebrew).

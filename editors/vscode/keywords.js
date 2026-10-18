@@ -38,8 +38,8 @@ const KEYWORDS = {
   "ك": ["as", "Converts a value to a type: `عدد ك عشري`. `(7 / 2) ك صحيح` gives 3"],
   "هذا": ["this", "The current value inside a type's method or an extension"],
   "خادم": ["server", "Marks a function the browser may call. `dad dev` serves it at `/_dad/call/<name>`"],
-  "مكون": ["component", "Declares an interface component (Phase 2)"],
-  "حالة": ["state", "Reactive state inside a component (Phase 2)"],
+  "مكون": ["component", "Declares a piece of interface: `مكون عداد() { حالة ع = 0؛ زر(\"{ع}\") { ع += 1 } }`. `dad dev` shows the main one (named الرئيسية, or the last one without parameters)"],
+  "حالة": ["state", "State inside a component: `حالة ع = 0`. It keeps its value between renders, and changing it updates the page"],
   "جدول": ["table", "Declares a table of records saved in SQLite with a hidden id `رقم`: `مهمة.أنشئ(…)`, `.الكل()`, `.حيث { … }`, `.بالرقم(1)`, `م.احفظ()`, `م.احذف()`"],
   "مسار": ["route", "Declares a public web route: `مسار جلب \"/api/مهام/{رقم}\" = مهمة.بالرقم(رقم)`. Methods: جلب, أرسل, عدل, احذف"],
 };
@@ -57,6 +57,18 @@ const BUILTINS = {
   "منطقي": ["Bool", "صح or خطأ"],
   "قائمة": ["List", "List type: `[1، 2، 3]`"],
   "قاموس": ["Map", "Map type: `[\"أ\": 1]`"],
+  // interface elements, used inside a مكون
+  "عمود": ["column", "Lays out its children top to bottom: `عمود { … }`. Options: `محاذاة`, `مسافة`"],
+  "صف": ["row", "Lays out its children side by side, from the right: `صف { … }`. Options: `محاذاة`, `مسافة`"],
+  "بطاقة": ["card", "A boxed group of elements: `بطاقة { … }`"],
+  "عنوان": ["heading", "A heading: `عنوان(\"مهامي\")`, or smaller with `مستوى: 2`"],
+  "فقرة": ["paragraph", "A paragraph of text: `فقرة(\"…\")`"],
+  "زر": ["button", "A button that runs its block when clicked: `زر(\"أضف\") { … }`. Option: `معطل`"],
+  "حقل": ["text field", "A text field bound to a state: `حقل(اسم، تلميح: \"اسمك\")`. A number state gives a number field. Options: `تلميح`, `صيغة` (نص، رقم، كلمة_سر، بريد), `معطل`"],
+  "مربع_اختيار": ["check box", "A check box: `مربع_اختيار(م.منجزة) { … }` runs its block with the new value. Options: `نص`, `معطل`"],
+  "صورة": ["image", "An image: `صورة(\"شعار.png\"، وصف: \"الشعار\")`. Option: `عرض`"],
+  "رابط": ["link", "A link: `رابط(\"الموقع\"، \"https://…\")`"],
+  "فاصل": ["divider", "A horizontal line between sections: `فاصل()`"],
 };
 
 module.exports = { KEYWORDS, BUILTINS };

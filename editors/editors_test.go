@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
@@ -38,6 +39,25 @@ func TestVSCodeKnowsEveryKeyword(t *testing.T) {
 		}
 		if !strings.Contains(grammarText, kw) {
 			t.Errorf("keyword %q is missing from the VS Code grammar", kw)
+		}
+	}
+}
+
+// The interface elements are highlighted and explained like the other built-ins.
+func TestEditorsKnowEveryElement(t *testing.T) {
+	files := map[string]string{}
+	for _, f := range []string{"vscode/keywords.js", "vscode/syntaxes/dad.tmLanguage.json", "../docs/assets/playground.js"} {
+		b, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files[f] = string(b)
+	}
+	for _, name := range interp.Elements {
+		for f, text := range files {
+			if !strings.Contains(text, name) {
+				t.Errorf("element %q is missing from %s", name, f)
+			}
 		}
 	}
 }

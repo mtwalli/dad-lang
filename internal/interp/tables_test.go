@@ -44,6 +44,7 @@ func newInterp(t *testing.T, src string, store interp.Store) (*interp.Interp, *b
 	if err := in.Run(file); err != nil {
 		t.Fatal(err)
 	}
+	noCheckErrors(t, src, file)
 	return in, &out
 }
 
