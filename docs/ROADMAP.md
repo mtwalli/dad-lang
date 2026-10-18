@@ -28,7 +28,7 @@ working end-to-end, crudely), then deepen each layer.
 |---|---|---|
 | **0. Specification** | `docs/SPEC.md`, `docs/grammar.ebnf`, sample programs, lexer | Keywords agreed; all examples tokenize ✅ (lexer done) |
 | **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output ✅ (`dad run`) |
-| **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser ✅ (`dad dev` and the playground; compiling to JS next) |
+| **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser ✅ (`dad dev`, the playground, and static sites from `dad build`) |
 | **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end (server half ✅ with SQLite; the UI half next) |
 | **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified (VS Code extension, `dad fmt`, playground and the `dad lsp` language server ✅) |
 | **5. Distribution** | GoReleaser + GitHub Actions; Homebrew, winget, `.deb`/`.rpm`, `install.sh`; Arabic tutorial site | One-line install on macOS, Windows, Linux |
@@ -43,8 +43,10 @@ working end-to-end, crudely), then deepen each layer.
 5. ✅ Name resolution and a first type checker (`internal/check`): undefined names with
    suggestions, arguments, declared types, members, exhaustive `طابق`; programs with errors
    don't run. Next: smart casts for optional values, generic types, unused-variable warnings
-6. JS code generator (`internal/codegen/js`); `dad run` switches to it once it passes the
-   same golden tests. The interpreter stays as the reference implementation.
+6. ✅ JS code generator (`internal/codegen/js`) and `dad build`: a static site for programs
+   with an interface, `app.js` for Node otherwise. Every example and test program prints the
+   same output and errors as the interpreter, which stays the reference implementation for
+   `dad run`, `dad dev` and the playground
 
 ## Phase 2 breakdown (in progress)
 1. ✅ Parse `مكون` and `حالة`
@@ -53,7 +55,9 @@ working end-to-end, crudely), then deepen each layer.
 3. ✅ Pages in `dad dev`: render on the server, events from the browser, updates in place,
    live reload; a right-to-left Kufi stylesheet with light and dark themes
 4. ✅ The playground shows the interface (in WebAssembly, tables in memory)
-5. Compile components to JavaScript with a signals runtime, so pages work without a server
+5. ✅ Compiled pages work without a server (`dad build`): components render in the browser,
+   tables live in its storage. Next: update only what changed (signals) instead of
+   re-rendering the component tree
 6. More elements: lists, selects, text areas, dialogs, navigation between pages
 
 ## Phase 3 breakdown (in progress)

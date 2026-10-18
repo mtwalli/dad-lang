@@ -16,7 +16,8 @@ in Arabic type from the start. Run the program with `dad dev` and open
 ```
 
 Click **زد** and the heading changes. Nothing else is needed: no HTML, no JavaScript, no
-build step.
+build step. When the page is ready to share, `dad build` turns it into a static site that
+needs no server (see [Building for the web](build.md)).
 
 ## Components — `مكون`
 

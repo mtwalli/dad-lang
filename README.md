@@ -20,7 +20,7 @@ compiler is written in Go.
 ```
 
 ## Status
-Phase 1: the parser and interpreter are done, so `dad run file.dad` runs programs. Phase 3 has started: tables (`جدول`, stored in SQLite), server functions (`خادم`) and routes (`مسار`) work, and `dad dev file.dad` serves them with live reload. Phase 2 has started too: components (`مكون`) with state (`حالة`) and elements such as `زر` and `حقل` render as live, right-to-left pages in `dad dev`, so `examples/05-todo.dad` works end to end. Programs are checked before they run: undefined names (with suggestions), wrong arguments and types, missing fields and `طابق` cases are reported in Arabic by `dad check`, VS Code and the playground. `dad lsp` gives any editor go to definition, references, rename and completion. Compiling to JavaScript is next. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Phase 1: the parser and interpreter are done, so `dad run file.dad` runs programs. Phase 3 has started: tables (`جدول`, stored in SQLite), server functions (`خادم`) and routes (`مسار`) work, and `dad dev file.dad` serves them with live reload. Phase 2 has started too: components (`مكون`) with state (`حالة`) and elements such as `زر` and `حقل` render as live, right-to-left pages in `dad dev`, so `examples/05-todo.dad` works end to end. Programs are checked before they run: undefined names (with suggestions), wrong arguments and types, missing fields and `طابق` cases are reported in Arabic by `dad check`, VS Code and the playground. `dad lsp` gives any editor go to definition, references, rename and completion. `dad build file.dad` compiles a program to JavaScript: a page becomes a static site that needs no server, and the tests check that it prints exactly what the interpreter prints. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 - [docs/SPEC.md](docs/SPEC.md): language specification (draft)
 - [docs/grammar.ebnf](docs/grammar.ebnf): grammar
@@ -83,6 +83,7 @@ internal/lexer/     Arabic-aware lexer + tests
 internal/ast/       syntax tree
 internal/parser/    parser with Arabic error messages
 internal/interp/    interpreter behind `dad run` and `dad dev`, tables and storage
+internal/codegen/js/ compiler to JavaScript and its runtime, behind `dad build`
 internal/sqlitestore/ SQLite storage and migrations for tables
 internal/check/     the checker: names, arguments, types, exhaustive طابق
 internal/lsp/       the language server behind `dad lsp`

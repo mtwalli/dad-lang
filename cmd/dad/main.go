@@ -28,6 +28,8 @@ const usage = `ضاد — لغة برمجة عربية
                          (--check لعرض الملفات غير المنسّقة، و«-» للدخل القياسي)
   ضاد تطوير <ملف.dad>    شغّل الخادم على http://localhost:8080 مع إعادة التحميل
                          (--port لاختيار منفذ آخر)
+  ضاد ابن <ملف.dad>      حوّل البرنامج إلى JavaScript: موقع ثابت لبرامج الواجهات،
+                         أو app.js يعمل بـ node (--out لاختيار المجلد)
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
   ضاد إصدار              اعرض رقم الإصدار
   ضاد مساعدة             اعرض هذه الرسالة
@@ -41,6 +43,8 @@ Usage (ASCII aliases):
   dad lsp                  the language server, for editors (LSP over stdin/stdout)
   dad dev <file.dad>       serve routes and server functions on localhost:8080,
                            reloading when the file changes (--port to change it)
+  dad build <file.dad>     compile to JavaScript: a static site for programs with
+                           an interface, otherwise app.js for node (--out dir)
   dad tokens <file.dad>    print the tokens in a file
   dad version
   dad help
@@ -54,6 +58,7 @@ func main() {
 	cmd := os.Args[1]
 	// "شغّل" with a shadda is the same command as "شغل".
 	cmd = strings.ReplaceAll(cmd, "ّ", "")
+	cmd = strings.ReplaceAll(cmd, "ِ", "") // «ابنِ» is «ابن»
 	switch cmd {
 	case "شغل", "run":
 		os.Exit(withFile("شغل", cmdRun))
@@ -72,6 +77,8 @@ func main() {
 		os.Exit(cmdFmt(os.Args[2:]))
 	case "تطوير", "dev":
 		os.Exit(cmdDev(os.Args[2:]))
+	case "ابن", "build":
+		os.Exit(cmdBuild(os.Args[2:]))
 	case "رموز", "tokens":
 		os.Exit(withFile("رموز", cmdTokens))
 	case "إصدار", "version", "--version":

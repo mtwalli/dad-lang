@@ -14,6 +14,7 @@ nav:
   - Editor: editor.md
   - Interface: ui.md
   - Server and data: server.md
+  - Building for the web: build.md
   - Playground: playground.md
   - Language specification: SPEC.md
   - Grammar: grammar.md

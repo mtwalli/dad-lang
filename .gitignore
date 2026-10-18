@@ -18,3 +18,4 @@ build/
 .dad/
 # Go module bundle used to build offline
 /gomods.tgz
+dist/

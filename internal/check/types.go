@@ -172,6 +172,9 @@ var builtinTypes = map[string]*Type{
 	"قائمة": {Kind: List}, "قاموس": {Kind: Map}, "دالة": tFunc,
 }
 
+// anyType names accept every value, as in the interpreter: «س: أي».
+var anyType = map[string]bool{"أي": true, "قيمة": true}
+
 // fromRef turns a type written in the source into a Type. ok is false when a
 // name in it is not a type.
 func (c *checker) fromRef(r *ast.TypeRef) (*Type, bool) {
@@ -205,8 +208,8 @@ func (c *checker) fromRef(r *ast.TypeRef) (*Type, bool) {
 			t = &bt
 		} else if d, isDecl := c.types[r.Name]; isDecl {
 			t = d
-		} else if c.contracts[r.Name] {
-			t = nil // a contract: any value that has its methods
+		} else if c.contracts[r.Name] || anyType[r.Name] {
+			t = nil // a contract (any value that has its methods), or any value at all
 		} else if en, isVariant := c.variantOf[r.Name]; isVariant {
 			t = c.types[en] // «ش من نوع دائرة»: a case of a تعداد
 		} else {
@@ -241,7 +244,7 @@ func firstUnknown(c *checker, r *ast.TypeRef) string {
 	}
 	if r.Kind == ast.NamedType {
 		_, isVariant := c.variantOf[r.Name]
-		if _, ok := builtinTypes[r.Name]; !ok && c.types[r.Name] == nil && !c.contracts[r.Name] && !isVariant {
+		if _, ok := builtinTypes[r.Name]; !ok && c.types[r.Name] == nil && !c.contracts[r.Name] && !isVariant && !anyType[r.Name] {
 			return r.Name
 		}
 	}
