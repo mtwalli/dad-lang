@@ -1,9 +1,9 @@
-# ٣. القرارات والتكرار
+# 3. Decisions and loops
 
-حتى الآن ينفّذ البرنامج كل سطر مرة واحدة، من الأعلى إلى الأسفل. في هذا الدرس يختار
-البرنامج ما يفعل، ويكرر العمل.
+So far the program runs every line once, from top to bottom. In this lesson it chooses what
+to do, and repeats work.
 
-## «إذا»: أن تختار
+## `إذا`: choosing
 
 ```dad
 ثابت الحرارة = 34
@@ -17,8 +17,10 @@
 الجو حار، اشرب ماءً كثيراً
 ```
 
-ما بين `{` و`}` **كتلة**، ولا تُنفَّذ إلا إذا كان الشرط صحيحاً. ويمكنك أن تضيف ما يحدث في
-غير ذلك بـ`وإلا`، وأن تسأل أكثر من سؤال:
+`إذا` means «if». What's between `{` and `}` is a **block**, and it only runs when the
+condition is true: here, when the temperature is above 30, the program says «it's hot, drink
+plenty of water». Add what happens otherwise with `وإلا` («else»), and ask more than one
+question:
 
 ```dad
 ثابت الدرجة = 72
@@ -36,9 +38,9 @@
 ناجح
 ```
 
-### «إذا» تعطي قيمة
+### `إذا` gives a value
 
-في ضاد تُرجع `إذا` قيمة: آخر ما في الكتلة التي اختيرت. لذلك تستطيع أن تكتب:
+In Ḍād, `إذا` returns a value: the last thing in the block it chose. So you can write:
 
 ```dad
 ثابت العمر = 15
@@ -50,7 +52,7 @@
 مراهق
 ```
 
-وتجمع الشروط بـ`و` و`أو`، وتنفي بـ`ليس`:
+Combine conditions with `و` («and») and `أو` («or»), and negate them with `ليس` («not»):
 
 ```dad
 ثابت عطلة = صح
@@ -65,7 +67,7 @@
 يوم مناسب للقراءة في البيت
 ```
 
-## «لكل»: أن تكرر عدداً معروفاً من المرات
+## `لكل`: repeating a known number of times
 
 ```dad
 لكل ع من 1 إلى 5 {
@@ -81,16 +83,17 @@
 المرة رقم 5
 ```
 
-يأخذ `ع` القيم 1 ثم 2… حتى 5. وهناك صيغ أخرى للعدّ:
+`لكل … من … إلى` means «for each … from … to». The name `ع` takes the values 1, then 2… up
+to 5. There are other ways to count:
 
-| تكتب | تحصل على |
+| You write | You get |
 |---|---|
-| `من 1 إلى 5` | 1، 2، 3، 4، 5 |
-| `من 0 حتى 5` | 0، 1، 2، 3، 4 (بلا 5) |
-| `من 0 إلى 10 بخطوة 5` | 0، 5، 10 |
-| `من 3 إلى 1 بخطوة -1` | 3، 2، 1 |
+| `من 1 إلى 5` | 1, 2, 3, 4, 5 |
+| `من 0 حتى 5` | 0, 1, 2, 3, 4 (without 5) |
+| `من 0 إلى 10 بخطوة 5` | 0, 5, 10 |
+| `من 3 إلى 1 بخطوة -1` | 3, 2, 1 |
 
-مثال: جدول الضرب للعدد 7.
+An example: the times table for 7.
 
 ```dad
 لكل ع من 1 إلى 10 {
@@ -111,7 +114,7 @@
 7 × 10 = 70
 ```
 
-وتمرّ `لكل … في` على حروف نص أيضاً:
+`لكل … في` («for each … in») goes through the letters of a text too:
 
 ```dad
 لكل حرف في "ضاد" {
@@ -125,9 +128,10 @@
 د
 ```
 
-## «طالما»: أن تكرر حتى يتحقق شيء
+## `طالما`: repeating until something happens
 
-حين لا تعرف عدد المرات مسبقاً، استعمل `طالما`. يتكرر ما في الكتلة طالما الشرط صحيح:
+When you don't know the number of times in advance, use `طالما` («while»). The block
+repeats while the condition is true:
 
 ```dad
 // كم سنة حتى يتضاعف المال بفائدة 10٪؟
@@ -145,12 +149,15 @@
 بعد 8 سنوات يصير المال 2143.59
 ```
 
-انتبه: إن بقي الشرط صحيحاً دائماً تكرر العمل بلا نهاية. أوقف البرنامج حينها بـ`Ctrl+C`،
-أما في الملعب فيوقفه ضاد بنفسه ويخبرك بالسبب.
+This asks how many years it takes money to double at 10% interest. `تقريب(2)` rounds to two
+decimal places.
 
-### «توقف» و«تابع»
+Careful: if the condition stays true forever, the work repeats with no end. Stop the
+program with `Ctrl+C`; in the playground, Ḍād stops it for you and says why.
 
-`توقف` تخرج من الحلقة فوراً، و`تابع` تقفز إلى المرة التالية:
+### `توقف` and `تابع`
+
+`توقف` («stop») leaves the loop at once, and `تابع` («continue») skips to the next round:
 
 ```dad
 لكل ع من 1 إلى 10 {
@@ -167,13 +174,13 @@
 7
 ```
 
-## تمرين
+## Exercise
 
-1. اطبع الأعداد من 1 إلى 20، لكن اكتب «فز» بدل كل عدد يقبل القسمة على 3، و«بز» بدل
-   كل عدد يقبل القسمة على 5، و«فز بز» إذا قبل القسمة على كليهما.
-2. اجمع الأعداد من 1 إلى 100 واطبع المجموع.
+1. Print the numbers from 1 to 20, but write «فز» instead of each number divisible by 3,
+   «بز» instead of each number divisible by 5, and «فز بز» if it is divisible by both.
+2. Add up the numbers from 1 to 100 and print the total.
 
-??? note "الحل"
+??? note "Solution"
 
     ```dad
     لكل ع من 1 إلى 20 {
@@ -195,4 +202,4 @@
     اطبع("المجموع:"، المجموع)
     ```
 
-**التالي:** [الدوال](04-functions.md)
+**Next:** [Functions](04-functions.md)

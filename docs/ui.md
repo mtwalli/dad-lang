@@ -131,11 +131,12 @@ page.
 
 ## How it runs
 
-For now, components run on the server, inside `dad dev`. The page in the browser sends each
-click and change to the program, the program runs the block and lays out the page again,
-and the page updates in place, keeping focus and what you are typing. Phoenix LiveView and
-Blazor Server work this way. A later version compiles components to JavaScript so they run
-in the browser; programs stay the same.
+With `dad dev` and `dad serve`, components run on the server. The page in the browser sends
+each click and change to the program, the program runs the block and lays out the page
+again, and the page updates in place, keeping focus and what you are typing. Phoenix
+LiveView and Blazor Server work this way. With [`dad build`](build.md), the same components
+are compiled to JavaScript and run in the browser, with no server. The program stays the same
+either way.
 
 The look comes from a built-in stylesheet: right to left, Noto Kufi Arabic, light and dark
 themes that follow the system setting.

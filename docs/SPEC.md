@@ -1,7 +1,7 @@
-# Ḍād (ضاد) — Language Specification, Draft 0
+# Language specification
 
-> Status: **draft for review**. Everything here — especially keyword choices — is open to change.
-> Source files use the extension `.dad`. The CLI is `ضاد` with the ASCII alias `dad`.
+> Status: **draft 1**, describing Ḍād 0.2. Parts marked *Planned* are designed but not built
+> yet. Source files use the extension `.dad`. The command is `dad`, with the Arabic name `ضاد`.
 
 ## 1. Design principles
 
@@ -128,30 +128,30 @@ error, the message suggests the fix: `هل تقصد «و ب»؟`.
 | `مسار` | — | explicit HTTP route (public APIs) |
 
 **Contextual words** (only special in one position, usable as names elsewhere): HTTP verbs
-`جلب` (GET), `أرسل` (POST), `حدث` (PUT), `احذف` (DELETE).
+`جلب` (GET), `أرسل` (POST), `عدل` (PUT), `احذف` (DELETE).
 
 ## 4. Language tour
 
 ### 4.1 Bindings and types
 ```dad
-ثابت اسم = "سارة"            // type inferred: نص
-متغير عداد = 0                // صحيح
+ثابت اسم = "سارة" // type inferred: نص
+متغير عداد = 0 // صحيح
 ثابت سعر: عشري = 9.99
 عداد += 1
 ```
 Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), `منطقي` (Bool),
-`فراغ` (Unit), lists `[نص]`, maps `[نص: صحيح]`, optionals `نص؟`, functions `(صحيح) => نص`.
+lists `[نص]`, maps `[نص: صحيح]`, optionals `نص؟`, functions `(صحيح) => نص`.
 
 ### 4.2 Functions
 ```dad
-دالة مربع(س: صحيح) = س * س                     // expression body, return type inferred
+دالة مربع(س: صحيح) = س * س // expression body, return type inferred
 
 دالة حي(اسم: نص، تحية: نص = "مرحبا"): نص {
-  أرجع "{تحية} يا {اسم}"
+    أرجع "{تحية} يا {اسم}"
 }
 
 حي("سارة")
-حي(اسم: "علي"، تحية: "أهلاً")                  // named arguments
+حي(اسم: "علي"، تحية: "أهلاً") // named arguments
 ```
 
 ### 4.3 Control flow as expressions
@@ -159,13 +159,13 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
 ثابت وصف = إذا درجة >= 90 { "ممتاز" } وإلا إذا درجة >= 50 { "ناجح" } وإلا { "راسب" }
 
 لكل ع من 1 إلى 10 { اطبع(ع) }
-لكل ع من 0 حتى 10 بخطوة 2 { اطبع(ع) }       // 0,2,4,6,8
+لكل ع من 0 حتى 10 بخطوة 2 { اطبع(ع) } // 0,2,4,6,8
 لكل اسم في أسماء { اطبع(اسم) }
 ```
 
 ### 4.4 Lambdas and trailing lambdas
 ```dad
-ثابت كبار = أرقام.رشح { هو > 10 }             // `هو` = the implicit single parameter ("it")
+ثابت كبار = أرقام.رشح { هو > 10 } // `هو` = the implicit single parameter ("it")
 ثابت مضاعفة = أرقام.حول { س => س * 2 }
 ثابت مجموع = أرقام.اختزل(0) { أ، ب => أ + ب }
 ```
@@ -173,25 +173,25 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
 ### 4.5 Value types (`نوع`)
 ```dad
 نوع نقطة(س: عشري، ص: عشري) {
-  دالة بعد() = جذر(س * س + ص * ص)
+    دالة بعد() = جذر(س * س + ص * ص)
 }
 
 ثابت ن = نقطة(س: 3، ص: 4)
-ثابت م = ن.نسخة(ص: 0)          // copy with change
-اطبع(ن == نقطة(3، 4))          // صح — structural equality
+ثابت م = ن.نسخة(ص: 0) // copy with change
+اطبع(ن == نقطة(3، 4)) // صح — structural equality
 ```
 
 ### 4.6 Enums with data and exhaustive matching
 ```dad
 تعداد شكل {
-  دائرة(قطر: عشري)
-  مستطيل(عرض: عشري، طول: عشري)
+    دائرة(قطر: عشري)
+    مستطيل(عرض: عشري، طول: عشري)
 }
 
 دالة مساحة(ش: شكل) = طابق ش {
-  دائرة(ق) => 3.14 * ق * ق / 4
-  مستطيل(ع، ط) => ع * ط
-}   // forgetting a case is a compile error
+    دائرة(ق) => 3.14 * ق * ق / 4
+    مستطيل(ع، ط) => ع * ط
+} // forgetting a case is a compile error
 ```
 
 ### 4.7 Null safety and smart casts
@@ -200,32 +200,32 @@ Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), 
 ثابت عرض = بريد ؟؟ "لا يوجد بريد"
 
 إذا بريد != عدم {
-  اطبع(بريد.طول)              // smart cast: بريد is نص here
+    اطبع(بريد.طول) // smart cast: بريد is نص here
 }
 
-إذا ش من نوع دائرة { اطبع(ش.قطر) }   // type test + smart cast
+إذا ش من نوع دائرة { اطبع(ش.قطر) } // type test + smart cast
 ```
 There is no force-unwrap. Use `؟؟` with a default, or `؟؟ ارفع مشكلة("...")`.
 
 ### 4.8 Contracts and extensions
 ```dad
 عقد قابل_للعرض {
-  دالة اعرض(): نص
+    دالة اعرض(): نص
 }
 
 امتداد نص {
-  دالة مكرر(مرات: صحيح) = (من 1 إلى مرات).حول { هذا }.ضم("")
+    دالة مكرر(مرات: صحيح) = (من 1 إلى مرات).حول { هذا }.ضم("")
 }
 ```
 
 ### 4.9 Errors
 ```dad
 دالة اقسم(أ: صحيح، ب: صحيح): عشري {
-  إذا ب == 0 { ارفع مشكلة("قسمة على صفر") }
-  أرجع أ / ب
+    إذا ب == 0 { ارفع مشكلة("قسمة على صفر") }
+    أرجع أ / ب
 }
 
-ثابت ن = حاول { اقسم(1، 0) } التقط خ { 0 }    // try is an expression too
+ثابت ن = حاول { اقسم(1، 0) } التقط خ { 0 } // try is an expression too
 ```
 
 ### 4.10 Modules
@@ -242,7 +242,7 @@ known by name across the program, so they may not be declared in two files. See
 
 ### 4.11 Checking before running
 Programs are checked before they run, and a program with errors doesn't start (`dad run`,
-`dad dev`, the playground). `dad check` and the editors show the same messages as you type.
+`dad dev`, `dad serve`, `dad build`, the playground). `dad check` and the editors show the same messages as you type.
 The checker reports only what is certain; where it can't know a value's type, it accepts the
 program and the interpreter checks at run time.
 
@@ -273,8 +273,8 @@ are not yet followed through `إذا س != عدم` checks (smart casts), so they
 ### 5.1 Data — `جدول`
 ```dad
 جدول مهمة {
-  عنوان: نص
-  منجزة = خطأ
+    عنوان: نص
+    منجزة = خطأ
 }
 ```
 A table is a value type with a hidden id field `رقم` (`صحيح`, 0 until the record is saved;
@@ -285,7 +285,7 @@ over the original.
 
 A field with a literal default and no type takes the default's type (`منجزة = خطأ` is `منطقي`).
 
-*Implemented:* `dad run` and `dad dev` store tables in SQLite (`.dad/<program>.db`), one SQL
+*Implemented:* `dad run`, `dad dev` and `dad serve` store tables in SQLite (`.dad/<program>.db`), one SQL
 table per `جدول` and one column per field. Migrations follow the declaration: added fields are
 filled with their default, removed fields are hidden but kept, and type changes convert every
 value or are refused. `حيث` lambdas that compare fields with values or variables (joined by
@@ -298,7 +298,7 @@ value or are refused. `حيث` lambdas that compare fields with values or variab
 Callable directly from UI code. The compiler generates a typed endpoint plus the client call;
 the server code never ships to the browser. Server functions are implicitly asynchronous.
 
-*Implemented:* `dad dev` serves each server function at `POST /_dad/call/<name>`, with the
+*Implemented:* `dad dev` and `dad serve` serve each server function at `POST /_dad/call/<name>`, with the
 arguments as a JSON object keyed by parameter name. Arguments are converted to the
 parameter types; errors return 400 with `{"خطأ": "…"}`.
 
@@ -307,7 +307,10 @@ For public APIs that other programs call:
 ```dad
 مسار جلب "/api/مهام" = مهمة.الكل()
 مسار جلب "/api/مهام/{رقم}" = مهمة.بالرقم(رقم)
-مسار أرسل "/api/مهام" { أرجع مهمة.أنشئ(عنوان: البيانات["عنوان"]) }
+
+مسار أرسل "/api/مهام" {
+    أرجع مهمة.أنشئ(عنوان: البيانات["عنوان"])
+}
 ```
 Methods: `جلب` GET, `أرسل` POST, `عدل` PUT, `احذف` DELETE. The path starts with `/`.
 `{name}` segments are bound as variables (digits become `صحيح`); the JSON request body is
@@ -335,11 +338,11 @@ An element given a state variable as its first argument (`حقل(اسم)`, `مر
 receives the variable itself and changes it. The page shows the component named `الرئيسية`
 or `التطبيق`, otherwise the last one that needs no arguments.
 
-*Implemented:* components run in the interpreter on the server (`dad dev`); the page sends
-events and updates in place, LiveView style. Elements: `عمود`، `صف`، `بطاقة`، `عنوان`،
-`فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل` (see the [interface guide](ui.md)).
-*Planned:* compiling components to JavaScript with a reactive runtime, so they run in the
-browser. Programs don't change.
+*Implemented:* in `dad dev` and `dad serve`, components run in the interpreter on the server;
+the page sends events and updates in place, LiveView style. After `dad build`, the same
+components are compiled to JavaScript and run in the browser. Elements: `عمود`، `صف`، `بطاقة`،
+`عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل` (see the
+[interface guide](ui.md)). *Planned:* a reactive runtime that updates only what changed.
 
 ## 6. Open questions (please decide)
 1. ~~`هو` doing double duty~~ Decided: `هو` only means "it" in lambdas; the type test is

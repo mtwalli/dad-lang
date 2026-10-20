@@ -1,81 +1,105 @@
-# Ḍād Roadmap
+# Roadmap
 
-Strategy: build a **thin vertical slice** first (the to-do app in `examples/05-todo.dad`
-working end-to-end, crudely), then deepen each layer.
+Ḍād 0.2 is the first public release. A whole web app can be written in it today: the
+interface, server functions, tables in SQLite and routes, in one file or several. It runs
+with `dad dev`, goes online with `dad serve`, and becomes a static site with `dad build`.
+This page shows how it is built, what is done, and what comes next.
 
 ## Architecture
 
 ```text
-*.dad ─► lexer ─► parser ─► AST ─► resolver/type checker ─► IR ─┬─► client JS (browser, RTL UI runtime)
-                                                                 ├─► server JS (embedded engine) / later native
-                                                                 └─► SQLite schema + migrations
+*.dad ─► lexer ─► parser ─► syntax tree ─► checker ─┬─► interpreter ─► dad run · dad dev · dad serve · playground (WebAssembly)
+                                                     └─► JavaScript compiler ─► dad build (static site, or app.js for Node)
+                       tables ─► SQLite (migrations from table changes)
 ```
 
-- **Compiler:** Go, single static binary per OS (`GOOS/GOARCH` cross-compilation).
-- **Parser:** hand-written recursive descent with Pratt parsing for expressions — no parser
-  generator, so error messages can be precise and in Arabic.
-- **Types:** bidirectional type inference (Kotlin/Swift-style local inference), smart casts,
-  exhaustiveness checking for `طابق`.
-- **Client output:** ES2022 modules + a small reactive runtime (signals), embedded with `go:embed`.
-- **Server in dev:** generated server JS runs inside the `dad` binary on an embedded pure-Go
-  JS engine (goja) — no Node install required. **Production:** `ضاد ابنِ` emits a bundle for
-  Node/Bun; a native backend is a later option if server performance demands it.
-- **Database:** SQLite via `modernc.org/sqlite` (pure Go, no cgo → trivial cross-compiling).
+- **One program, written in Go.** `dad` is a single binary for each system, with no
+  dependencies: SQLite is built in (`modernc.org/sqlite`, pure Go), and so are the page
+  script, the stylesheet and the Kufi font.
+- **A hand-written parser,** recursive descent with Pratt parsing for expressions, so that
+  error messages can be precise and in Arabic.
+- **A checker** that reports only what is certain: undefined names with suggestions,
+  arguments, declared types, members, and `طابق` that misses cases. A program with mistakes
+  doesn't run.
+- **Two ways to run, one behaviour.** The interpreter is the reference. The JavaScript
+  compiler is tested against it: every example prints the same output and the same errors,
+  and pages render the same HTML after the same clicks.
+- **Pages render on the server** in `dad dev` and `dad serve` (like Phoenix LiveView), and in
+  the browser after `dad build`.
 
 ## Phases
 
-| Phase | Goal | Done when |
+| Phase | Goal | Status |
 |---|---|---|
-| **0. Specification** | `docs/SPEC.md`, `docs/grammar.ebnf`, sample programs, lexer | Keywords agreed; all examples tokenize ✅ (lexer done) |
-| **1. Core language** | Parser, AST, type checker, JS codegen for logic; `dad run`, REPL, Arabic errors | `01`–`04` examples run and print correct output ✅ (`dad run`) |
-| **2. UI** | `مكون`, `حالة`, element library, reactive runtime, RTL defaults | Counter + list examples render in a browser ✅ (`dad dev`, the playground, and static sites from `dad build`) |
-| **3. Server & data** | `خادم` functions (auto RPC), `جدول` → SQLite, `مسار`, `dad dev` with live reload | `05-todo.dad` works end-to-end (server half ✅ with SQLite; the UI half next) |
-| **4. Tooling** | Language server (Go), VS Code extension, formatter `dad fmt`, WASM web playground | Editing in VS Code with completion, errors, RTL display verified (VS Code extension, `dad fmt`, playground and the `dad lsp` language server ✅) |
-| **5. Distribution** | GoReleaser + GitHub Actions; Homebrew, winget, `.deb`/`.rpm`, `install.sh`; Arabic tutorial site | One-line install on macOS, Windows, Linux |
+| **0. Specification** | [The specification](SPEC.md), [the grammar](grammar.md), sample programs, the lexer | ✅ Done |
+| **1. Core language** | Parser, checker, interpreter, programs in several files, JavaScript compiler, Arabic errors | ✅ Done. Next: smart casts for optional values, generic types, unused-variable warnings |
+| **2. Interface** | `مكون`, `حالة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`. Next: more elements, several pages, updating only what changed |
+| **3. Server and data** | `خادم` functions, `جدول` in SQLite, `مسار`, `dad dev`, `dad serve` | ✅ Done. Next: users and sign-in, permissions, requests in parallel |
+| **4. Tooling** | VS Code extension, `dad fmt`, the playground, the `dad lsp` language server | ✅ Done |
+| **5. Distribution** | Homebrew, winget, `.deb` and `.rpm`, install scripts, the tutorial in English and Arabic | ✅ Done in 0.2 |
 
-## Phase 1 breakdown (in progress)
-1. ✅ AST node definitions (`internal/ast`)
-2. ✅ Parser for declarations/statements/expressions + Arabic error reporting with line/column
-   (`internal/parser`)
-3. ✅ `dad run file.dad` — a tree-walking interpreter (`internal/interp`) so programs run
-   today, in the terminal and in the [playground](playground.md)
-4. ✅ Golden tests: each example has expected output in `examples/output/`
-5. ✅ Programs in several files (`internal/module`): `استورد … من "./ملف"`, `خاص`,
-   checked across files, followed by `dad run`, `dad dev`, `dad build`, the editor and
-   go to definition
-6. ✅ Name resolution and a first type checker (`internal/check`): undefined names with
-   suggestions, arguments, declared types, members, exhaustive `طابق`; programs with errors
-   don't run. Next: smart casts for optional values, generic types, unused-variable warnings
-7. ✅ JS code generator (`internal/codegen/js`) and `dad build`: a static site for programs
-   with an interface, `app.js` for Node otherwise. Every example and test program prints the
-   same output and errors as the interpreter, which stays the reference implementation for
-   `dad run`, `dad dev` and the playground
+## What comes next
 
-## Phase 2 breakdown (in progress)
-1. ✅ Parse `مكون` and `حالة`
-2. ✅ Components and per-instance state in the interpreter; elements `عمود`، `صف`، `بطاقة`،
-   `عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`
-3. ✅ Pages in `dad dev`: render on the server, events from the browser, updates in place,
-   live reload; a right-to-left Kufi stylesheet with light and dark themes
-4. ✅ The playground shows the interface (in WebAssembly, tables in memory)
-5. ✅ Compiled pages work without a server (`dad build`): components render in the browser,
-   tables live in its storage. Next: update only what changed (signals) instead of
-   re-rendering the component tree
-6. More elements: lists, selects, text areas, dialogs, navigation between pages
+These are the next steps, roughly in order:
 
-## Phase 3 breakdown (in progress)
-1. ✅ Parse `جدول`, `خادم` and `مسار`
-2. ✅ Tables in the interpreter, behind a `Store` interface: memory for the playground and
-   tests, SQLite for `dad run` and `dad dev`
-3. ✅ `dad dev`: routes with `{params}`, server functions at `/_dad/call/<name>`, a dev page,
-   live reload that keeps the data
-4. ✅ SQLite store (`modernc.org/sqlite`, `.dad/<program>.db`): migrations from table changes,
-   simple `حيث` lambdas compiled to SQL, earlier JSON data imported
-5. ✅ Components call server functions and tables directly (they run on the server for now)
-6. ✅ `dad serve`: the production server. No developer page, no reloading, `$PORT`,
-   `--data`, a request log, `/_dad/health`, and a clean stop on `SIGTERM`. Next: users and
-   sign-in, permissions on server functions and routes, handling requests in parallel
+1. **Users and sign-in**, and permissions on server functions and routes, so that programs
+   with private data can go online.
+2. **Requests in parallel** in `dad serve`, for busier sites.
+3. **More elements:** lists, selects, text areas and dialogs. Also **several pages** in one
+   program, each with its own address.
+4. **Updating only what changed** on a page (signals), instead of laying out the whole
+   component again.
+5. **A sharper checker:** smart casts after `إذا ن != عدم`, generic types, warnings for unused
+   names.
+6. **Signed installers** for macOS and Windows.
+
+## Done so far
+
+### Phase 1: the core language
+
+1. ✅ The syntax tree (`internal/ast`) and the parser, with Arabic errors that give the line
+   and column (`internal/parser`)
+2. ✅ `dad run`: the interpreter (`internal/interp`), in the terminal and in the
+   [playground](playground.md)
+3. ✅ Golden tests: each example has its expected output in `examples/output/`
+4. ✅ [Programs in several files](modules.md) (`internal/module`): `استورد` and `خاص`,
+   checked across files, and followed by every command and by the editor
+5. ✅ The checker (`internal/check`). Programs with mistakes don't run
+6. ✅ The JavaScript compiler (`internal/codegen/js`) and [`dad build`](build.md)
+
+### Phase 2: the interface
+
+1. ✅ Components with state, and the elements `عمود`، `صف`، `بطاقة`، `عنوان`، `فقرة`، `زر`،
+   `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`
+2. ✅ Pages in `dad dev`: rendered on the server, updated in place, reloaded on save. They use
+   a right-to-left Kufi stylesheet with light and dark themes
+3. ✅ The playground shows the interface (in WebAssembly, tables in memory)
+4. ✅ Static sites from `dad build`: components render in the browser, and tables live in its
+   storage
+
+### Phase 3: server and data
+
+1. ✅ Tables behind a `Store` interface: in memory for the playground and the tests, and in
+   SQLite for `dad run`, `dad dev` and `dad serve`
+2. ✅ Migrations when a table changes, and simple `حيث` conditions run as SQL
+3. ✅ `dad dev`: routes with `{params}`, server functions at `/_dad/call/<name>`, a developer
+   page, and live reload that keeps the data
+4. ✅ [`dad serve`](deploy.md): the production server
+
+### Phases 4 and 5: tooling and distribution
+
+1. ✅ The VS Code extension, with a right-to-left editor, and the Ḍād Mono font
+2. ✅ `dad fmt`, in the Kotlin style
+3. ✅ `dad lsp`, for definitions, references, rename, hover, completion and the outline in
+   any editor
+4. ✅ Release builds for macOS, Windows and Linux on Intel and ARM: Homebrew, winget, `.deb`,
+   `.rpm` and install scripts
+5. ✅ The [tutorial](tutorial/index.md) in English and Arabic, and this site in both
+   languages
 
 ## Costs to know about
-- macOS signed/notarized installer: Apple Developer Program, $99/year (can postpone via Homebrew).
-- Windows signed installer: code-signing certificate (can postpone via winget / zip).
+
+- A signed and notarized macOS installer needs the Apple Developer Program, at $99 a year.
+  Until then, Homebrew and the install script cover macOS.
+- A signed Windows installer needs a code-signing certificate. Until then, winget and the
+  zip archive cover Windows.

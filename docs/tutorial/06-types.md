@@ -1,9 +1,9 @@
-# ٦. الأنواع والتعدادات
+# 6. Types and enums
 
-عرفت أنواعاً جاهزة: `صحيح` و`نص` و`منطقي`. لكن برنامج مكتبة يتعامل مع **كتب**، وبرنامج
-مدرسة يتعامل مع **طلاب**. في هذا الدرس تصنع أنواعك.
+You know some ready-made types: `صحيح`, `نص` and `منطقي`. But a library program deals with
+**books**, and a school program with **students**. In this lesson you make your own types.
 
-## «نوع»: شيء له صفات
+## `نوع`: a thing with properties
 
 ```dad
 نوع كتاب(العنوان: نص، المؤلف: نص، الصفحات: صحيح)
@@ -20,12 +20,15 @@
 كتاب(العنوان: «رجال في الشمس»، المؤلف: «غسان كنفاني»، الصفحات: 112)
 ```
 
-`نوع كتاب(…)` يصف الكتاب: له عنوان ومؤلف وعدد صفحات، وهي **حقوله**. ثم تصنع كتباً كما
-تستدعي دالة، وتقرأ كل حقل بالنقطة: `الأول.العنوان`.
+`نوع كتاب(…)` («type book») describes a book: it has a title, an author and a number of
+pages, its **fields**. Then you make books the way you call a function, and read each field
+with a dot: `الأول.العنوان` («the first one's title»).
 
-### دوال داخل النوع
+### Functions inside the type
 
-ضع الدوال التي تخص النوع بين `{ }` بعده. وداخلها تقرأ الحقول بأسمائها مباشرة:
+Put the functions that belong to the type between `{ }` after it. Inside them, the fields
+are read by name. Here is a rectangle with its area, its perimeter, and whether it is a
+square:
 
 ```dad
 نوع مستطيل(الطول: عشري، العرض: عشري) {
@@ -42,10 +45,10 @@
 المساحة 10.0 والمحيط 13.0 مربع؟ خطأ
 ```
 
-### الحقول لا تتغير، والنسخة تتغير
+### Fields don't change; copies do
 
-حقول الأنواع ثابتة، فلا يتغير الشيء من تحتك وأنت لا تدري. وحين تريد شيئاً مختلفاً قليلاً،
-اصنع **نسخة** منه:
+The fields of a type are constant, so a thing can't change behind your back. When you want
+something slightly different, make a **copy** of it with `نسخة`:
 
 ```dad
 نوع طالب(الاسم: نص، الصف: صحيح)
@@ -61,9 +64,10 @@
 طالب(الاسم: «أحمد»، الصف: 6)
 ```
 
-## «تعداد»: قيمة من اختيارات معدودة
+## `تعداد`: one of a few choices
 
-بعض القيم لا تكون إلا واحدة من خيارات قليلة: إشارة المرور أحمر أو أصفر أو أخضر.
+Some values can only be one of a few options: a traffic light is red (`أحمر`), yellow
+(`أصفر`) or green (`أخضر`).
 
 ```dad
 تعداد إشارة { أحمر، أصفر، أخضر }
@@ -83,8 +87,8 @@
 انطلق
 ```
 
-`طابق` تقارن القيمة بكل حالة، وتختار ما بعد `=>`. ويتأكد ضاد أنك لم تنسَ حالة. احذف سطر
-`أصفر` وانظر:
+`تعداد` means «enum». `طابق` («match») compares the value with each case, and picks what
+follows `=>`. Ḍād makes sure you haven't forgotten a case. Delete the `أصفر` line and see:
 
 ```dad
 // خطأ مقصود
@@ -100,9 +104,13 @@
 خطأ [السطر 4، العمود 32]: «طابق» لا تغطي كل حالات «إشارة»: تنقص «أصفر». أضفها، أو أضف «_ => …» لما تبقى
 ```
 
-### حالات تحمل قيماً
+The message says `طابق` doesn't cover every case of «إشارة»: «أصفر» is missing. Add it, or
+add `_ => …` for the rest.
 
-ولكل حالة من التعداد أن تحمل حقولاً خاصة بها:
+### Cases that carry values
+
+Each case of an enum can carry fields of its own. Here, shapes: a circle, a rectangle and a
+triangle:
 
 ```dad
 تعداد شكل {
@@ -129,16 +137,17 @@
 مثلث(القاعدة: 6.0، الارتفاع: 2.0) مساحته 6.0
 ```
 
-في `دائرة(نق) => …` يأخذ الاسم `نق` قيمة نصف القطر، فتستعمله بعد `=>`.
+In `دائرة(نق) => …`, the name `نق` takes the radius, and you use it after `=>`.
 
-## تمرين
+## Exercise
 
-1. اصنع نوع `منتج(الاسم: نص، السعر: عشري، الكمية: صحيح)` فيه دالة `القيمة()` تُرجع
-   السعر × الكمية. اصنع قائمة من ثلاثة منتجات واطبع مجموع قيمتها.
-2. اصنع تعداد `يوم` بأيام الأسبوع، ودالة `عطلة(ي: يوم): منطقي` تُرجع `صح` للجمعة
-   والسبت.
+1. Make a type `منتج(الاسم: نص، السعر: عشري، الكمية: صحيح)` (a product with a name, a price
+   and a quantity) with a function `القيمة()` that returns price × quantity. Make a list of
+   three products and print their total value.
+2. Make an enum `يوم` with the days of the week, and a function `عطلة(ي: يوم): منطقي` that
+   returns `صح` for Friday and Saturday (`الجمعة` and `السبت`).
 
-??? note "الحل"
+??? note "Solution"
 
     ```dad
     نوع منتج(الاسم: نص، السعر: عشري، الكمية: صحيح) {
@@ -164,6 +173,6 @@
     صح خطأ
     ```
 
-    `_` في `طابق` تعني «أي حالة أخرى».
+    In `طابق`, `_` means «any other case».
 
-**التالي:** [حين يخطئ شيء](07-errors.md)
+**Next:** [When things go wrong](07-errors.md)

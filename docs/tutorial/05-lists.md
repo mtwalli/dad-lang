@@ -1,8 +1,8 @@
-# ٥. القوائم والقواميس
+# 5. Lists and maps
 
-## القائمة
+## The list
 
-القائمة مجموعة قيم مرتبة، تُكتب بين قوسين مربعين:
+A list is an ordered collection of values, written between square brackets:
 
 ```dad
 ثابت الفواكه = ["تفاح"، "موز"، "برتقال"]
@@ -18,10 +18,11 @@
 الأولى: تفاح والأخيرة: برتقال
 ```
 
-- كل عنصر له **رقم** يبدأ من 0: `الفواكه[0]` هي «تفاح»، و`الفواكه[1]` هي «موز».
-- `عدد` عدد العناصر، و`أول` و`آخر` أول عنصر وآخره.
+- Each item has a **number**, starting at 0: `الفواكه[0]` is «تفاح» (apple), and
+  `الفواكه[1]` is «موز» (banana).
+- `عدد` is the number of items, and `أول` and `آخر` are the first and the last.
 
-### المرور على القائمة
+### Going through a list
 
 ```dad
 ثابت الدرجات = [95، 72، 40، 88]
@@ -38,9 +39,9 @@
 درجة: 88
 ```
 
-### إضافة عنصر
+### Adding an item
 
-القائمة في `ثابت` لا يتغير اسمها، لكن تستطيع أن تضيف إليها بـ`أضف`:
+A list held in a `ثابت` keeps its name, but you can still add to it with `أضف` («add»):
 
 ```dad
 ثابت المشتريات = ["خبز"]
@@ -53,9 +54,12 @@
 [«خبز»، «حليب»، «تمر»] صح
 ```
 
-## أن تسأل القائمة
+`يحتوي` («contains») asks whether an item is in the list.
 
-هنا تظهر قوة الدوال المجهولة من الدرس الماضي. القائمة نفسها تعرف كيف تُرشَّح وتُحوَّل:
+## Asking the list
+
+This is where the anonymous functions from the last lesson shine. A list knows how to filter
+and transform itself:
 
 ```dad
 ثابت الدرجات = [95، 72، 40، 88، 55]
@@ -81,16 +85,16 @@
 هل رسب أحد؟ صح
 ```
 
-| تكتب | تحصل على |
+| You write | You get |
 |---|---|
-| `ق.رشح { … }` | قائمة بالعناصر التي يصحّ عليها الشرط |
-| `ق.حول { … }` | قائمة كل عنصر فيها بعد تحويله |
-| `ق.عدد { … }` | كم عنصراً يصحّ عليه الشرط |
-| `ق.أي { … }` و `ق.كل { … }` | هل يصحّ الشرط على عنصر واحد على الأقل؟ وعلى كل العناصر؟ |
-| `ق.مجموع()` و `ق.رتب()` و `ق.عكس()` | المجموع، وقائمة مرتبة، وقائمة معكوسة |
-| `ق.ضم("، ")` | نص فيه العناصر وبينها الفاصل |
+| `ق.رشح { … }` (filter) | a list of the items the condition is true for |
+| `ق.حول { … }` (map) | a list with each item transformed |
+| `ق.عدد { … }` (count) | how many items the condition is true for |
+| `ق.أي { … }` and `ق.كل { … }` (any, all) | is the condition true for at least one item? For every item? |
+| `ق.مجموع()`, `ق.رتب()` and `ق.عكس()` (sum, sort, reverse) | the total, a sorted list and a reversed list |
+| `ق.ضم("، ")` (join) | a text with the items and the separator between them |
 
-وتستطيع أن تصل هذه الأسئلة بعضها ببعض:
+`أقصى` and `أدنى` give the largest and the smallest. You can chain these questions:
 
 ```dad
 ثابت الكلمات = ["ضاد"، "لغة"، "عربية"، "للبرمجة"]
@@ -101,9 +105,10 @@
 «عربية» و«للبرمجة»
 ```
 
-## القاموس
+## The map
 
-القاموس يربط **مفتاحاً** بـ**قيمة**، كما يربط دفتر الهاتف اسماً برقم:
+A map links a **key** to a **value**, the way a phone book links a name to a number. Here,
+countries to their capitals:
 
 ```dad
 متغير العواصم = ["مصر": "القاهرة"، "المغرب": "الرباط"]
@@ -126,16 +131,16 @@
 لا أعرف
 ```
 
-و`[:]` قاموس فارغ. وإن سألت القاموس عن مفتاح ليس فيه أعطاك `عدم`، أي «لا شيء». و`؟؟` تعني: «فإن كانت
-عدماً فخذ هذه». وستعرف المزيد عن `عدم` في الدرس السابع.
+`[:]` is an empty map. If you ask a map for a key it doesn't have, you get `عدم`, «nothing».
+`؟؟` means «if that's nothing, take this instead». You'll learn more about `عدم` in lesson 7.
 
-## تمرين
+## Exercise
 
-1. لديك قائمة أسعار `[20، 3، 40، 8]`. اطبع الأسعار التي تزيد على 5 بعد إضافة ضريبة
-   15٪ إلى كل منها، مقرّبة إلى خانتين عشريتين.
-2. عُدّ كم مرة يتكرر كل حرف في كلمة «مممتاز» باستعمال قاموس.
+1. You have a list of prices, `[20، 3، 40، 8]`. Print the prices above 5 after adding 15% tax
+   to each, rounded to two decimal places.
+2. Use a map to count how many times each letter appears in the word «مممتاز».
 
-??? note "الحل"
+??? note "Solution"
 
     ```dad
     ثابت الأسعار = [20، 3، 40، 8]
@@ -153,4 +158,4 @@
     [«م»: 3، «ت»: 1، «ا»: 1، «ز»: 1]
     ```
 
-**التالي:** [الأنواع والتعدادات](06-types.md)
+**Next:** [Types and enums](06-types.md)

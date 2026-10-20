@@ -1,9 +1,10 @@
-# ٤. الدوال
+# 4. Functions
 
-الدالة عمل له اسم. تكتبه مرة واحدة، ثم تستعمله كلما احتجته، بقيم مختلفة كل مرة.
-استعملت حتى الآن دالة كتبها غيرك، هي `اطبع`. وفي هذا الدرس تكتب دوالك.
+A function is a piece of work with a name. You write it once, then use it whenever you
+need it, with different values each time. So far you have used a function someone else
+wrote, `اطبع`. In this lesson you write your own.
 
-## أول دالة
+## A first function
 
 ```dad
 دالة رحّب(اسم: نص) {
@@ -19,13 +20,16 @@
 أهلاً يا يوسف، نورت!
 ```
 
-- `دالة` تبدأ التعريف، ثم اسم الدالة.
-- بين القوسين **المعاملات**: ما تحتاجه الدالة لتعمل. لكل معامل اسم ونوع: `اسم: نص`.
-- ما بين `{ }` هو **جسم** الدالة، ولا يُنفَّذ إلا حين **تستدعيها**: `رحّب("مريم")`.
+- `دالة` («function») starts the definition, followed by the function's name, here `رحّب`
+  («welcome»).
+- Between the brackets are the **parameters**: what the function needs to work. Each has a
+  name and a type: `اسم: نص` («name: text»).
+- What's between `{ }` is the function's **body**. It only runs when you **call** the
+  function: `رحّب("مريم")`.
 
-## دالة تُرجع قيمة
+## A function that returns a value
 
-أغلب الدوال لا تطبع، بل تحسب شيئاً وتُرجعه لمن استدعاها:
+Most functions don't print. They work something out and give it back to the caller:
 
 ```dad
 دالة مساحة_مستطيل(الطول: عشري، العرض: عشري): عشري {
@@ -42,9 +46,10 @@
 مساحة غرفتين: 18.0
 ```
 
-`: عشري` بعد القوسين هو نوع ما تُرجعه الدالة، و`أرجع` تُنهي الدالة وتعطي القيمة.
+`: عشري` after the brackets is the type of what the function returns, and `أرجع` («return»)
+ends the function and gives back the value.
 
-وحين يكون جسم الدالة سطراً واحداً، اكتبه بعد `=`:
+When the body is a single line, write it after `=`:
 
 ```dad
 دالة مربع(س: صحيح): صحيح = س * س
@@ -57,10 +62,11 @@
 81 صح خطأ
 ```
 
-## قيم افتراضية ومعاملات بأسمائها
+## Defaults and named arguments
 
-أعطِ المعامل قيمة افتراضية، فيصير ذكره اختيارياً. ويمكنك عند الاستدعاء أن تذكر المعامل
-باسمه، فيصير الكلام أوضح:
+Give a parameter a default value, and mentioning it becomes optional. When calling, you can
+also name a parameter, which makes the call clearer. Here is a final price with tax
+(`الضريبة`) and discount (`الخصم`):
 
 ```dad
 دالة سعر_نهائي(السعر: عشري، الضريبة: عشري = 0.15، الخصم: عشري = 0): عشري {
@@ -79,8 +85,8 @@
 50.0
 ```
 
-ويتأكد ضاد من كل استدعاء قبل التشغيل: إن أعطيت قيمة من نوع غير متوقع، أو أخطأت في اسم
-الدالة، أخبرك بذلك واقترح الاسم الصحيح:
+Ḍād checks every call before running. If you give a value of the wrong type, or misspell
+the function's name, it tells you, and suggests the right name:
 
 ```dad
 // خطأ مقصود
@@ -95,10 +101,14 @@
 خطأ [السطر 5، العمود 6]: «مربعات» غير معرّف؛ هل تقصد «مربع»؟
 ```
 
-## الدوال قيم أيضاً
+The first message says the parameter «س» expected a `صحيح` but got a `نص`; the second says
+«مربعات» isn't defined, and asks «did you mean «مربع»?».
 
-يمكنك أن تعطي دالة لدالة أخرى. والدالة **المجهولة** تُكتب بين `{ }`. فإن أخذت قيمة واحدة
-فاسمها داخلها `هو`، وإلا فاكتب أسماء قيمها قبل `=>`:
+## Functions are values too
+
+You can give a function to another function. An **anonymous** function is written between
+`{ }`. If it takes one value, that value is called `هو` («it») inside; otherwise write the
+names of its values before `=>`:
 
 ```dad
 دالة طبّق_مرتين(د: (صحيح) => صحيح، س: صحيح): صحيح = د(د(س))
@@ -116,11 +126,12 @@
 5
 ```
 
-ستستعمل الدوال المجهولة كثيراً مع القوائم في الدرس القادم.
+`طبّق_مرتين` («apply twice») takes a function `د` and a number. You'll use anonymous
+functions a lot with lists in the next lesson.
 
-## دالة تستدعي نفسها
+## A function that calls itself
 
-يمكن للدالة أن تستدعي نفسها، ما دام لذلك نهاية:
+A function can call itself, as long as it comes to an end:
 
 ```dad
 دالة مضروب(ن: صحيح): صحيح = إذا ن <= 1 { 1 } وإلا { ن * مضروب(ن - 1) }
@@ -132,13 +143,14 @@
 مضروب 5 = 120
 ```
 
-## تمرين
+## Exercise
 
-1. اكتب دالة `أكبر(أ: صحيح، ب: صحيح): صحيح` تُرجع الأكبر من العددين.
-2. اكتب دالة `حرارة_فهرنهايت(مئوية: عشري): عشري` تحوّل الحرارة، علماً أن
-   الفهرنهايت = المئوية × 9 ÷ 5 + 32. جرّبها على 0 و100 و37.
+1. Write a function `أكبر(أ: صحيح، ب: صحيح): صحيح` that returns the larger of the two
+   numbers.
+2. Write a function `حرارة_فهرنهايت(مئوية: عشري): عشري` that converts a temperature from
+   Celsius to Fahrenheit: F = C × 9 ÷ 5 + 32. Try it on 0, 100 and 37.
 
-??? note "الحل"
+??? note "Solution"
 
     ```dad
     دالة أكبر(أ: صحيح، ب: صحيح): صحيح = إذا أ > ب { أ } وإلا { ب }
@@ -154,4 +166,4 @@
     32.0 212.0 98.6
     ```
 
-**التالي:** [القوائم والقواميس](05-lists.md)
+**Next:** [Lists and maps](05-lists.md)

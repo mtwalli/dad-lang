@@ -1,9 +1,10 @@
-# ٩. حفظ البيانات
+# 9. Saving data
 
-إذا أغلقت صفحة العداد ثم فتحتها عاد العدد إلى الصفر، لأن الحالة تعيش ما دامت الصفحة
-مفتوحة. أما ما يجب أن يبقى، كالمهام والطلبات والدرجات، فمكانه **جدول**.
+If you close the counter page and open it again, the count is back at zero: state only
+lives while the page is open. What has to last, such as tasks, orders or grades, belongs in a
+**table**.
 
-## «جدول»
+## `جدول`
 
 ```dad
 جدول كتاب {
@@ -33,20 +34,23 @@
 المقروءة: [«ثلاثية غرناطة»]
 ```
 
-- `جدول كتاب { … }` يصف السجلات كما يصفها `نوع`. لكل حقل نوع (`العنوان: نص`)، أو قيمة
-  افتراضية يُعرف منها نوعه (`مقروء = خطأ`).
-- يضيف ضاد إلى كل سجل حقلاً اسمه `رقم`، يعطيه قيمة جديدة عند الحفظ.
-- `كتاب.أنشئ(…)` تصنع سجلاً وتحفظه، و`كتاب.الكل()` تُرجع السجلات كلها، و`كتاب.حيث { … }`
-  ما يصحّ عليه الشرط، و`كتاب.بالرقم(2)` سجلاً واحداً.
-- `السجل.احفظ()` تحفظ ما تغيّر، و`السجل.احذف()` تحذفه.
+- `جدول كتاب { … }` («table book») describes records the way `نوع` does. Each field has a
+  type (`العنوان: نص`, the title) or a default its type comes from (`مقروء = خطأ`, «read» is
+  false).
+- Ḍād adds a field called `رقم` («number») to every record, and gives it a new value when the
+  record is saved.
+- `كتاب.أنشئ(…)` creates a record and saves it, `كتاب.الكل()` returns all of them,
+  `كتاب.حيث { … }` the ones the condition is true for, and `كتاب.بالرقم(2)` a single one.
+- `السجل.احفظ()` saves what changed, and `السجل.احذف()` deletes the record.
 
-شغّل البرنامج مرتين بـ`dad run` وانظر إلى «عدد الكتب»: لا يعود إلى ثلاثة، بل يزيد،
-لأن الكتب محفوظة. يحفظ ضاد البيانات في ملف بجانب برنامجك، في مجلد اسمه `.dad`. احذف ذلك
-المجلد إن أردت أن تبدأ من جديد.
+Run the program twice with `dad run` and look at «عدد الكتب» (the number of books): it doesn't
+go back to three, it grows, because the books are saved. Ḍād keeps the data in a file next
+to your program, in a folder called `.dad`. Delete that folder to start again.
 
-## تطبيق مهام
+## A to-do app
 
-لنجمع كل ما تعلمته في تطبيق حقيقي: جدول للمهام، ودوال تعمل على **الخادم**، وصفحة.
+Let's put together everything you have learned in a real app: a table of tasks, functions
+that run on the **server**, and a page.
 
 ```dad title="مهامي.dad"
 جدول مهمة {
@@ -96,31 +100,33 @@
 dad dev مهامي.dad
 ```
 
-![تطبيق المهام: عنوان «مهامي (2 باقية)»، وحقل وزر «أضف»، وثلاث مهام إحداها منجزة، وزر «امسح المنجزة»](img/tasks.png){ width="460" }
+![The to-do app: the heading «مهامي (2 باقية)» (my tasks, 2 left), a field with the button «أضف» (add), three tasks with one done, and the button «امسح المنجزة» (clear the done ones)](img/tasks.png){ width="460" }
 
-ما الجديد هنا؟
+What's new here?
 
-- `خادم دالة` دالة تعمل على الخادم، حيث الجدول. تستدعيها الصفحة كأي دالة.
-- بعد كل تغيير نقرأ المهام من جديد: `المهام = كل_المهام()`. فتتغير الحالة وتُرسم الصفحة.
-- `مربع_اختيار(م.منجزة) { … }` يعطيك مكاناً تكتب فيه ما يحدث عند الضغط عليه.
+- A `خادم دالة` is a function that runs on the server, where the table is. The page calls it
+  like any other function.
+- After each change we read the tasks again: `المهام = كل_المهام()`. The state changes, and
+  the page is drawn again.
+- `مربع_اختيار(م.منجزة) { … }` gives you a place to write what happens when it is clicked.
 
-افتح التطبيق في نافذتين، وأضف مهمة في إحداهما ثم أعد تحميل الأخرى: ستجدها هناك، لأن
-النافذتين تقرآن الجدول نفسه.
+Open the app in two windows, add a task in one and reload the other: the task is there,
+because both windows read the same table.
 
-### صفحة المطوّر
+### The developer page
 
-وأنت تستعمل `dad dev`، افتح <http://localhost:8080/_dad>: ستجد فيها جداولك وما فيها،
-ودوال الخادم مع نموذج لتجربة كل منها. وهي تتحدث وحدها.
+While `dad dev` runs, open <http://localhost:8080/_dad>. It shows your tables and what is in
+them, and your server functions with a form to try each one. It updates by itself.
 
-## تمرين
+## Exercise
 
-أضف إلى تطبيق المهام حقلاً للأولوية: `عاجلة = خطأ`، ومربع اختيار بجانب الحقل الجديد
-لتحديدها، واعرض المهام العاجلة أولاً، وقبل عنوان كل منها علامة «!».
+Add a priority to the to-do app: a field `عاجلة = خطأ` («urgent»), a check box next to the
+new-task field to set it, and show urgent tasks first, with «!» before each title.
 
-??? note "تلميح"
+??? note "Hint"
 
-    أضف `عاجلة: منطقي = خطأ` إلى معاملات `أضف`، وحالة `حالة العاجلة = خطأ` في المكون.
-    ولترتيب المهام اجمع قائمتين:
+    Add `عاجلة: منطقي = خطأ` to the parameters of `أضف`, and a state `حالة العاجلة = خطأ` to
+    the component. To order the tasks, join two lists:
     `المهام.رشح { هو.عاجلة } + المهام.رشح { ليس هو.عاجلة }`.
 
-**التالي:** [إلى الإنترنت](10-online.md)
+**Next:** [Going online](10-online.md)

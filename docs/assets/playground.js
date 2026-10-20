@@ -2,6 +2,26 @@
 (function () {
   "use strict";
 
+  // Messages in the page's language (the site has English and Arabic pages).
+  var AR = document.documentElement.lang === "ar";
+  var L = AR ? {
+    loading: "جارٍ تحميل ضاد…",
+    ready: "جاهز",
+    fixFirst: "أصلح الأخطاء أولاً، ثم نسّق.",
+    failed: "تعذّر تحميل ضاد. تحقق من اتصالك وأعد تحميل الصفحة.",
+    press: "اضغط «شغّل» لتشغيل البرنامج.",
+    uiOut: "ما يطبعه البرنامج يظهر هنا.",
+    noOut: "انتهى البرنامج دون أن يطبع شيئاً."
+  } : {
+    loading: "Loading Ḍād…",
+    ready: "Ready",
+    fixFirst: "Fix the errors first, then format.",
+    failed: "Ḍād couldn't load. Check your connection and reload the page.",
+    press: "Press Run to run the program.",
+    uiOut: "What the program prints appears here.",
+    noOut: "The program finished without printing anything."
+  };
+
   var assets = (function () {
     var s = document.currentScript;
     return s ? new URL(".", s.src).href : "";
@@ -293,7 +313,7 @@
       res.notices.forEach(function (n) { out.appendChild(el("span", "dad-play__notice", n + "\n")); });
       if (res.error) out.appendChild(el("span", "dad-play__error", res.error + "\n"));
       if (!res.output && !res.error && res.notices.length === 0) {
-        out.textContent = res.ui ? "ما يطبعه البرنامج يظهر هنا." : "انتهى البرنامج دون أن يطبع شيئاً.";
+        out.textContent = res.ui ? L.uiOut : L.noOut;
         out.classList.add("is-empty");
       }
       if (res.ui) showUI(res.ui);
@@ -303,7 +323,7 @@
     function load(name) {
       src.value = SAMPLES[name];
       paint();
-      out.textContent = "اضغط «Run» لتشغيل البرنامج.";
+      out.textContent = L.press;
       out.classList.add("is-empty");
       hideUI();
       showTab("out");
@@ -312,10 +332,10 @@
 
     src.value = SAMPLES[sample.value];
     paint();
-    status.textContent = "Loading Ḍād…";
+    status.textContent = L.loading;
 
     boot().then(function () {
-      status.textContent = "Ready";
+      status.textContent = L.ready;
       status.classList.add("is-ready");
       runBtn.disabled = false;
       load(sample.value);
@@ -329,7 +349,7 @@
         if (typeof window.dadFormat !== "function") return;
         var res = JSON.parse(window.dadFormat(src.value));
         if (res.error) {
-          status.textContent = "Fix the errors first, then format.";
+          status.textContent = L.fixFirst;
           return;
         }
         if (res.text !== src.value) {
@@ -353,7 +373,7 @@
       runBtn.addEventListener("click", run);
       sample.addEventListener("change", function () { load(sample.value); run(); });
     }).catch(function () {
-      status.textContent = "Ḍād couldn't load. Check your connection and reload the page.";
+      status.textContent = L.failed;
       status.classList.add("is-error");
     });
   }

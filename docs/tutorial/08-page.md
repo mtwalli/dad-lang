@@ -1,9 +1,10 @@
-# ٨. صفحتك الأولى
+# 8. Your first page
 
-حتى الآن كانت برامجك تطبع في الطرفية. في هذا الدرس تصنع صفحة ويب فيها أزرار وحقول، بلا
-HTML ولا JavaScript: ضاد يتكفل بذلك، ويجعل الصفحة من اليمين إلى اليسار وبخط عربي جميل.
+Until now your programs printed in the terminal. In this lesson you make a web page with
+buttons and fields, with no HTML and no JavaScript: Ḍād takes care of that, and makes the
+page right to left, in a fine Arabic typeface.
 
-## «مكون»: قطعة من الصفحة
+## `مكون`: a piece of the page
 
 ```dad title="عداد.dad"
 مكون الرئيسية {
@@ -16,43 +17,47 @@ HTML ولا JavaScript: ضاد يتكفل بذلك، ويجعل الصفحة م�
 }
 ```
 
-شغّله بـ`dad dev` بدلاً من `dad run`:
+Run it with `dad dev` instead of `dad run`:
 
 ```sh
 dad dev عداد.dad
 ```
 
-أو بالعربية: `ضاد تطوير عداد.dad`.
+(Or in Arabic: `ضاد تطوير عداد.dad`.) Then open <http://localhost:8080> in your browser and
+click the button: the count in the heading goes up.
 
-ثم افتح <http://localhost:8080> في المتصفح، واضغط الزر: يزيد العدد في العنوان.
+![The counter page: the heading «عدد الضغطات: 3» with the button «اضغطني» under it](img/counter.png){ width="420" }
 
-![صفحة العداد: عنوان «عدد الضغطات: 3» وتحته زر «اضغطني»](img/counter.png){ width="420" }
+Let's read the program:
 
-لنقرأ البرنامج:
+- `مكون` («component») describes a piece of the page. The component called `الرئيسية`
+  («the main one») is what you see when you open the page.
+- `حالة العدد = 0` is a **state**: a value the component remembers, here the number of
+  clicks. Whenever it changes, the page is drawn again.
+- `عمود { … }` («column») puts what is inside it one under the other, and `صف { … }` («row»)
+  side by side.
+- `عنوان` is a heading, and `زر("اضغطني") { … }` is a button labelled «click me»: what's
+  between `{ }` after it happens when it is clicked.
 
-- `مكون الرئيسية` يصف الصفحة. والمكون الذي اسمه `الرئيسية` هو ما يظهر حين تفتحها.
-- `حالة العدد = 0` قيمة **يتذكرها** المكون. وكلما تغيرت الحالة رُسمت الصفحة من جديد.
-- `عمود { … }` يضع ما بداخله بعضه تحت بعض، و`صف { … }` يضعه بعضه بجانب بعض.
-- `زر("اضغطني") { … }` زر، وما بين `{ }` بعده يحدث عند الضغط عليه.
+Leave `dad dev` running: each time you save the file, the page updates by itself.
 
-واترك `dad dev` يعمل: كلما حفظت الملف تحدّثت الصفحة وحدها.
+## The elements
 
-## العناصر
-
-| العنصر | ما هو |
+| Element | What it is |
 |---|---|
-| `عنوان("…")` | عنوان كبير. `عنوان("…"، مستوى: 2)` أصغر منه |
-| `فقرة("…")` | فقرة نص |
-| `زر("…") { … }` | زر. أضف `معطل: صح` ليتوقف عن العمل |
-| `حقل(حالة)` | مكان للكتابة، مربوط بحالة. أضف `تلميح: "…"` ليظهر نص خفيف فيه |
-| `مربع_اختيار(حالة، نص: "…")` | مربع يُعلَّم أو لا |
-| `صورة("رابط")` و`رابط("النص"، "العنوان")` | صورة، ورابط إلى صفحة |
-| `عمود` و`صف` و`بطاقة` | تجمع عناصر: تحت بعضها، أو بجانب بعضها، أو في إطار |
-| `فاصل()` | خط أفقي |
+| `عنوان("…")` | a large heading. `عنوان("…"، مستوى: 2)` is a smaller one |
+| `فقرة("…")` | a paragraph of text |
+| `زر("…") { … }` | a button. Add `معطل: صح` to turn it off |
+| `حقل(حالة)` | a place to type, tied to a state. Add `تلميح: "…"` for faint text inside it |
+| `مربع_اختيار(حالة، نص: "…")` | a check box |
+| `صورة("address")` and `رابط("text"، "address")` | an image, and a link to a page |
+| `عمود`, `صف` and `بطاقة` | group elements: one under the other, side by side, or in a box |
+| `فاصل()` | a horizontal line |
 
-## الحقول
+## Fields
 
-الحقل مربوط بحالة: ما تكتبه فيه يصير قيمتها.
+A field is tied to a state: what you type in it becomes the state's value. This page asks
+for your name, and greets you in Arabic, or in English if you tick the box:
 
 ```dad title="تحية.dad"
 مكون الرئيسية {
@@ -70,11 +75,13 @@ dad dev عداد.dad
 }
 ```
 
-لاحظ أن `إذا` تعمل داخل المكون كما تعمل في أي مكان: الفقرة لا تظهر إلا إذا كتبت اسماً.
+Notice that `إذا` works inside the component as it does anywhere else: the paragraph only
+shows once you have typed a name.
 
-## مكونات بمعاملات
+## Components with parameters
 
-المكون كالدالة: يأخذ معاملات، ويستعمله مكون آخر. ولكل نسخة منه حالتها الخاصة:
+A component is like a function: it takes parameters, and another component uses it. Each
+copy has its own state. Here is a store with a counter for each fruit:
 
 ```dad title="عدادات.dad"
 مكون عداد(الاسم: نص، البداية: صحيح = 0) {
@@ -101,14 +108,14 @@ dad dev عداد.dad
 }
 ```
 
-![أربع بطاقات عداد: تفاح وبرتقال وتمر وتين، لكل منها زرا «زد» و«أنقص»](img/counters.png){ width="420" }
+![Four counter cards, for apples, oranges, dates and figs, each with the buttons «زد» (more) and «أنقص» (less)](img/counters.png){ width="420" }
 
-## تمرين
+## Exercise
 
-اصنع صفحة «آلة حاسبة للبقشيش»: حقل لمبلغ الفاتورة، وثلاثة أزرار للنسب 10٪ و15٪ و20٪،
-وفقرة تعرض البقشيش والمجموع.
+Make a tip calculator page: a field for the bill, three buttons for 10%, 15% and 20%, and a
+paragraph that shows the tip and the total.
 
-??? note "الحل"
+??? note "Solution"
 
     ```dad title="بقشيش.dad"
     مكون الرئيسية {
@@ -129,6 +136,6 @@ dad dev عداد.dad
     }
     ```
 
-    ابدأ الحالة بـ`0.0` لا `0`، ليعرف الحقل أن المبلغ عدد عشري.
+    Start the state at `0.0` rather than `0`, so the field knows the bill is a decimal.
 
-**التالي:** [حفظ البيانات](09-data.md)
+**Next:** [Saving data](09-data.md)

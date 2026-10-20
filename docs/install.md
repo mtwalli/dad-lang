@@ -1,8 +1,8 @@
 # Install Ḍād
 
 !!! note "New to programming?"
-    The [tutorial in Arabic](tutorial/index.md) starts from here and ends with a site
-    online. You can also [run code in your browser](playground.md) without installing
+    The [tutorial](tutorial/index.md) starts from here and ends with a site online. It is
+    also [in Arabic](https://mtwalli.github.io/dad-lang/ar/tutorial/). You can also [run code in your browser](playground.md) without installing
     anything.
 
 ## Install
@@ -179,7 +179,25 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
 
 ## Uninstall
 
-=== "macOS and Linux"
+=== "Homebrew"
+
+    ```sh
+    brew uninstall dad
+    ```
+
+=== "winget"
+
+    ```powershell
+    winget uninstall mtwalli.dad
+    ```
+
+=== "Debian, Ubuntu, Fedora"
+
+    ```sh
+    sudo apt remove dad      # or: sudo dnf remove dad
+    ```
+
+=== "Install script (macOS, Linux)"
 
     ```sh
     rm -rf ~/.dad
@@ -187,7 +205,7 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
 
     Then remove the `PATH` line from your shell profile if you added one.
 
-=== "Windows"
+=== "Install script (Windows)"
 
     Delete `%LOCALAPPDATA%\dad`, then remove that folder from your user `PATH` in
     *Settings → System → About → Advanced system settings → Environment Variables*.

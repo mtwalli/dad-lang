@@ -1,25 +1,40 @@
 {% extends "main.html" %}
 
-{#- Home page: full-width hero above the normal content area. -#}
+{#- Home page: full-width hero above the normal content area, in the page's language. -#}
+{% set ar = config.theme.language == "ar" %}
+{% if ar %}
+  {% set t = {
+    "lede": "ضاد لغة برمجة كلماتها عربية. الواجهة والخادم وقاعدة البيانات في ملف واحد، والمترجم يوزّعها حيث يجب أن تعمل.",
+    "install": "ثبّت ضاد",
+    "learn": "تعلّم ضاد",
+    "try": "جرّبها في المتصفح",
+    "status": "الإصدار 0.2: شغّل وافحص وابنِ وانشر تطبيقات ويب كاملة",
+  } %}
+{% else %}
+  {% set t = {
+    "lede": "Ḍād is a programming language with Arabic keywords. The interface, the server and the database live in one file, and the compiler splits them for you.",
+    "install": "Install Ḍād",
+    "learn": "Tutorial",
+    "try": "Try it in your browser",
+    "status": "Version 0.2: run, check, build and serve whole web apps",
+  } %}
+{% endif %}
+
 {% block tabs %}
   {{ super() }}
   <section class="dad-hero">
     <div class="dad-hero__inner md-grid">
       <div class="dad-hero__text md-typeset">
         <h1 class="dad-hero__title" lang="ar" dir="rtl">لغة الضاد… للويب كلّه</h1>
-        <p class="dad-hero__lede">
-          Ḍād is a programming language with Arabic keywords. The interface, the server
-          and the database live in one file, and the compiler splits them for you.
-        </p>
+        <p class="dad-hero__lede">{{ t.lede }}</p>
         <div class="dad-hero__actions">
-          <a href="{{ 'install/' | url }}" class="md-button md-button--primary">Install Ḍād</a>
-          <a href="{{ 'tutorial/' | url }}" class="md-button" lang="ar">تعلّم ضاد</a>
-          <a href="{{ 'playground/' | url }}" class="md-button">Try it in your browser</a>
-          <a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang" class="md-button">Get the VS Code extension</a>
+          <a href="{{ 'install/' | url }}" class="md-button md-button--primary">{{ t.install }}</a>
+          <a href="{{ 'tutorial/' | url }}" class="md-button">{{ t.learn }}</a>
+          <a href="{{ 'playground/' | url }}" class="md-button">{{ t.try }}</a>
         </div>
         <a class="dad-hero__status" href="{{ 'ROADMAP/' | url }}">
           <span class="dad-hero__dot" aria-hidden="true"></span>
-          Version 0.2: run, check, build and serve whole web apps
+          {{ t.status }}
         </a>
       </div>
       <div class="dad-hero__glyph" aria-hidden="true"><span>ض</span></div>

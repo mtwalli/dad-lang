@@ -79,6 +79,10 @@ git tag v0.2.0 && git push origin v0.2.0
 ## Documentation site
 The docs are built with [MkDocs](https://www.mkdocs.org/) + [Material](https://squidfunk.github.io/mkdocs-material/)
 and published to GitHub Pages by `.github/workflows/docs.yml` on every push to `main`.
+The site is in English and Arabic ([mkdocs-static-i18n](https://github.com/ultrabug/mkdocs-static-i18n)):
+each page `page.md` has its Arabic version next to it as `page.ar.md`, served right to left
+under `/ar/`. The tests run every tutorial example in both languages and check that every
+Ḍād example on the site is laid out as `dad fmt` would.
 
 ```sh
 pip install -r requirements-docs.txt

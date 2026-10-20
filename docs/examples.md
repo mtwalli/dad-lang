@@ -1,8 +1,9 @@
 # Examples
 
 These sample programs live in the [`examples/`](https://github.com/mtwalli/dad-lang/tree/main/examples) folder of the repository.
-Examples 1 to 4 run today with `dad run` or in the [playground](playground.md). Each one is
-followed by its output. Example 5 needs tables, a server and components, which come in Phases 2 and 3.
+Run any of them with `dad run`, or try them in the [playground](playground.md). Programs that
+print something are followed by their output. Examples 5 and 6 have an interface: run them
+with `dad dev` and open <http://localhost:8080>.
 
 ## 1. Hello — functions, default and named arguments
 
@@ -52,7 +53,7 @@ Output:
 --8<-- "examples/output/04-safety.txt"
 ```
 
-## 5. To-do app — data, server and UI in one file
+## 5. To-do app — data, server and interface in one file
 
 ```dad
 --8<-- "examples/05-todo.dad"

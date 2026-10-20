@@ -124,8 +124,12 @@ func tutorialPage(t *testing.T, page string) {
 			t.Errorf("line %d: %v\n%s", b.start, diags, b.text)
 			continue
 		}
-		// is there an output block right after it?
-		if i+1 >= len(bs) || !strings.Contains(bs[i+1].info, "dad-out") || !onlyBlank(lines[b.end+1:bs[i+1].start-1]) {
+		// is there an output block right after it, or after the command that runs it?
+		o := i + 1
+		if o+1 < len(bs) && bs[o].info == "sh" && strings.HasPrefix(bs[o].text, "dad run ") {
+			b, o = bs[o], o+1
+		}
+		if o >= len(bs) || !strings.Contains(bs[o].info, "dad-out") || !onlyBlank(lines[b.end+1:bs[o].start-1]) {
 			continue
 		}
 		if !wrong {
@@ -137,11 +141,11 @@ func tutorialPage(t *testing.T, page string) {
 			}
 			got.WriteString(out.String())
 		}
-		want := bs[i+1].text
+		want := bs[o].text
 		if *update {
-			replace[i+1] = got.String()
+			replace[o] = got.String()
 		} else if strings.TrimSpace(want) != strings.TrimSpace(got.String()) {
-			t.Errorf("line %d: the page shows\n%s\nbut the example prints\n%s", bs[i+1].start, want, got.String())
+			t.Errorf("line %d: the page shows\n%s\nbut the example prints\n%s", bs[o].start, want, got.String())
 		}
 	}
 	if *update && len(replace) > 0 {
@@ -174,4 +178,27 @@ func onlyBlank(lines []string) bool {
 		}
 	}
 	return true
+}
+
+// Every Ḍād example on the site, in English and in Arabic, is laid out as «dad fmt»
+// would lay it out. Fragments that don't parse, snippets of example files, and the
+// «before» half of the formatting example are left alone.
+func TestDocsCodeLayout(t *testing.T) {
+	pages, _ := filepath.Glob("../../docs/*.md")
+	more, _ := filepath.Glob("../../docs/tutorial/*.md")
+	for _, page := range append(pages, more...) {
+		data, err := os.ReadFile(page)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, b := range blocks(strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n")) {
+			if !strings.HasPrefix(b.info, "dad") || strings.Contains(b.text, "--8<--") ||
+				strings.Contains(b.text, "// Before") || strings.Contains(b.text, "// قبل") {
+				continue
+			}
+			if formatted, err := format.Source(b.text); err == nil && formatted != b.text {
+				t.Errorf("%s, line %d: not laid out as «dad fmt» would:\n%s", filepath.Base(page), b.start, formatted)
+			}
+		}
+	}
 }

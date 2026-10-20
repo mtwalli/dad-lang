@@ -4,7 +4,7 @@
 which live in one SQLite file on the server.
 
 ```sh
-dad serve todo.dad                        # or: ضاد انشر todo.dad
+dad serve todo.dad
 dad serve todo.dad --port 3000 --data /var/lib/todo/todo.db
 ```
 
