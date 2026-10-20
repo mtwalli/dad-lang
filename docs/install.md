@@ -1,14 +1,47 @@
 # Install Ḍād
 
-!!! note "What works today"
-    `dad run` runs Ḍād programs: values, functions, lambdas, types, enums, matching,
-    optionals and errors. Tables, components and routes (`جدول`, `مكون`, `مسار`) come in
-    Phases 2 and 3 (see the [roadmap](ROADMAP.md)). You can also
-    [run code in your browser](playground.md) without installing anything.
+!!! note "New to programming?"
+    The [tutorial in Arabic](tutorial/index.md) starts from here and ends with a site
+    online. You can also [run code in your browser](playground.md) without installing
+    anything.
 
 ## Install
 
-=== "macOS and Linux"
+=== "Homebrew (macOS, Linux)"
+
+    ```sh
+    brew install mtwalli/dad/dad
+    ```
+
+    `brew upgrade dad` updates it later.
+
+=== "winget (Windows)"
+
+    ```powershell
+    winget install mtwalli.dad
+    ```
+
+    Open a new terminal afterwards. `winget upgrade mtwalli.dad` updates it later.
+
+=== "Debian, Ubuntu"
+
+    Download `dad_<version>_amd64.deb` (or `_arm64.deb`) from the
+    [releases page](https://github.com/mtwalli/dad-lang/releases/latest), then:
+
+    ```sh
+    sudo apt install ./dad_*_amd64.deb
+    ```
+
+=== "Fedora, RHEL"
+
+    Download `dad-<version>-1.x86_64.rpm` (or `.aarch64.rpm`) from the
+    [releases page](https://github.com/mtwalli/dad-lang/releases/latest), then:
+
+    ```sh
+    sudo dnf install ./dad-*.x86_64.rpm
+    ```
+
+=== "Install script (macOS, Linux)"
 
     ```sh
     curl -fsSL https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.sh | sh
@@ -18,7 +51,7 @@
     puts `dad` in `~/.dad/bin`, together with the Arabic alias `ضاد`. If that folder isn't
     on your `PATH` yet, the script prints the one line to add.
 
-=== "Windows"
+=== "Install script (Windows)"
 
     In PowerShell:
 
@@ -31,7 +64,7 @@
 
 === "With Go"
 
-    If you have Go 1.24 or newer:
+    If you have Go 1.26 or newer:
 
     ```sh
     go install github.com/mtwalli/dad-lang/cmd/dad@latest
@@ -53,7 +86,8 @@ To install a specific version, set `DAD_VERSION`, for example
 dad version
 ```
 
-You should see the version number, for example `ضاد 0.1.6`.
+You should see the version number, for example `ضاد 0.2.0`. On macOS and Linux, Homebrew,
+the packages and the install script also give you the command's Arabic name, `ضاد`.
 
 ## Your first file
 
@@ -136,6 +170,7 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
 | `dad fmt <file or folder>` | `ضاد نسق <ملف>` | Format files in place (`--check` lists the ones that need it). See [Formatting](editor.md#formatting) |
 | `dad lsp` | `ضاد خادم_اللغة` | The language server, for editors: definitions, references, rename, completion. See [the editor guide](editor.md#the-language-server) |
 | `dad dev <file>` | `ضاد تطوير <ملف>` | Serve routes and server functions on `localhost:8080`, reloading on save (`--port` to change it). See [Server and data](server.md) |
+| `dad serve <file>` | `ضاد انشر <ملف>` | Run the program as a production server: no developer page, no reloading, every network interface, `$PORT` (`--port`, `--host`, `--data`). See [Putting a program online](deploy.md) |
 | `dad build <file>` | `ضاد ابن <ملف>` | Compile to JavaScript: a static site for a program with an interface, otherwise `app.js` for Node (`--out` to choose the folder). See [Building for the web](build.md) |
 | `dad check <file>` | `ضاد فحص <ملف>` | Check a file without running it: syntax, names, arguments, types and `طابق` cases (`--json` for tools) |
 | `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |

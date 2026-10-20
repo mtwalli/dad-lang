@@ -9,6 +9,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -20,6 +23,7 @@ import (
 	"github.com/mtwalli/dad-lang/internal/format"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/module"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
@@ -289,10 +293,58 @@ func (s *Server) handle(m *message) {
 	}
 }
 
+// analyze checks a document. A saved file is checked with the files it
+// imports, read from the editor when they are open there, or from the disk.
+func (s *Server) analyze(uri, text string) (*check.Info, []lexer.Diagnostic) {
+	path, ok := uriPath(uri)
+	if !ok {
+		return check.Analyze(text)
+	}
+	read := func(p string) (string, error) {
+		if filepath.Clean(p) == filepath.Clean(path) {
+			return text, nil
+		}
+		for u, d := range s.docs {
+			if up, ok := uriPath(u); ok && filepath.Clean(up) == filepath.Clean(p) {
+				return d.text, nil
+			}
+		}
+		b, err := os.ReadFile(p)
+		return string(b), err
+	}
+	return check.AnalyzeProgram(module.Load(path, read))
+}
+
+// pathURI turns a path into a file:// URI.
+func pathURI(p string) string {
+	abs, err := filepath.Abs(p)
+	if err == nil {
+		p = abs
+	}
+	p = filepath.ToSlash(p)
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p // C:/… on Windows
+	}
+	return (&url.URL{Scheme: "file", Path: p}).String()
+}
+
+// uriPath turns a file:// URI into a path.
+func uriPath(uri string) (string, bool) {
+	u, err := url.Parse(uri)
+	if err != nil || u.Scheme != "file" {
+		return "", false
+	}
+	p := u.Path
+	if len(p) >= 3 && p[0] == '/' && p[2] == ':' {
+		p = p[1:] // file:///C:/… on Windows
+	}
+	return filepath.FromSlash(p), true
+}
+
 // update analyses a new version of a document and publishes its problems.
 func (s *Server) update(uri, text string) {
 	d := newDocument(strings.ReplaceAll(text, "\r\n", "\n"))
-	info, diags := check.Analyze(d.text)
+	info, diags := s.analyze(uri, d.text)
 	if info != nil {
 		d.info = info
 	} else if old := s.docs[uri]; old != nil {
@@ -365,6 +417,10 @@ func (s *Server) definition(params json.RawMessage) any {
 	d, uri, def, _, _ := s.at(params)
 	if def == nil {
 		return nil
+	}
+	if o := def.Origin; o != nil {
+		// an imported name: go to the file that declares it
+		return Location{URI: pathURI(o.Path), Range: newDocument(strings.ReplaceAll(o.Src, "\r\n", "\n")).rangeOf(o.Pos, o.Len)}
 	}
 	return Location{URI: uri, Range: d.rangeOf(def.Pos, d.info.NameLen(def.Pos))}
 }
@@ -465,7 +521,7 @@ func (s *Server) completion(params json.RawMessage) any {
 			runes := []rune(lines[line-1])
 			cut := col - 1 - len([]rune(m[0])) + len([]rune(m[1]))
 			lines[line-1] = string(runes[:cut]) + string(runes[min(col-1, len(runes)):])
-			if fixed, _ := check.Analyze(strings.Join(lines, "\n")); fixed != nil {
+			if fixed, _ := s.analyze(p.TextDocument.URI, strings.Join(lines, "\n")); fixed != nil {
 				info = fixed
 			}
 		}

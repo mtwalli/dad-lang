@@ -54,6 +54,7 @@ func (in *Interp) declareTable(d *ast.TableDecl, env *Env) {
 	st := &StructType{Name: d.Name, Fields: fields, Methods: map[string]*ast.FuncDecl{}, Env: env, Table: true}
 	in.tables = append(in.tables, st)
 	in.defineName(env, d.Name, st, d.Pos)
+	in.types[d.Name] = st
 	if m, ok := in.Store.(Migrator); ok {
 		if err := m.Prepare(d.Name, in.schema(st)); err != nil {
 			in.fail(d.Pos, "%v", err)
@@ -371,8 +372,5 @@ func (in *Interp) FromJSON(v any, t *ast.TypeRef) Value {
 }
 
 func (in *Interp) lookupType(name string) Value {
-	if b := in.globals.lookup(name); b != nil {
-		return b.val
-	}
-	return nil
+	return in.types[name]
 }

@@ -1,11 +1,13 @@
 package check
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
 	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/module"
 	"github.com/mtwalli/dad-lang/internal/parser"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
@@ -20,9 +22,18 @@ type Def struct {
 	Kind     string    // "function", "method", "type", "table", "enum", "case", "component", "field", "parameter", "constant", "variable", "state"
 	Detail   string    // how it is declared: «دالة مربع(س: صحيح): صحيح»
 	Type     *Type
-	Parent   *Def   // the type a field, method or case belongs to
-	Children []*Def // fields, methods and cases of a type
-	Global   bool   // declared at the top of the file
+	Parent   *Def    // the type a field, method or case belongs to
+	Children []*Def  // fields, methods and cases of a type
+	Global   bool    // declared at the top of the file
+	Origin   *Origin // for an imported name: where the other file declares it
+}
+
+// Origin is a declaration in another file.
+type Origin struct {
+	Path string
+	Src  string
+	Pos  token.Pos // the name, in that file
+	Len  int       // its length in runes
 }
 
 // Info is what the checker learned about a file.
@@ -51,6 +62,40 @@ func Analyze(src string) (*Info, []lexer.Diagnostic) {
 	info.c = c
 	c.file(f)
 	all := append(diags, c.diags...)
+	sort.SliceStable(all, func(i, j int) bool { return before(all[i].Pos, all[j].Pos) })
+	return info, all
+}
+
+// AnalyzeProgram checks a program and records its main file for editors. The
+// problems returned are the main file's; a problem in a file it imports is
+// shown at the «استورد» that brings it in.
+func AnalyzeProgram(p *module.Program) (*Info, []lexer.Diagnostic) {
+	main := p.Main
+	c := newChecker()
+	for _, m := range p.Modules {
+		if m != main {
+			c.module(m, nil)
+		}
+	}
+	if main.File == nil {
+		return nil, main.Diags
+	}
+	toks, _ := lexer.Tokenize(main.Src)
+	info := &Info{Refs: map[token.Pos]*Def{}, Toks: toks, byPos: map[token.Pos]token.Token{}}
+	for _, t := range toks {
+		info.byPos[t.Pos] = t
+	}
+	c.module(main, info)
+	for imp, dep := range main.Deps {
+		for _, d := range dep.Diags {
+			if !d.Warning {
+				main.Diags = append(main.Diags, lexer.Diagnostic{Pos: imp.Pos,
+					Msg: fmt.Sprintf("في «%s» خطأ [السطر %d]: %s", dep.Name(), d.Pos.Line, d.Msg)})
+				break
+			}
+		}
+	}
+	all := append([]lexer.Diagnostic(nil), main.Diags...)
 	sort.SliceStable(all, func(i, j int) bool { return before(all[i].Pos, all[j].Pos) })
 	return info, all
 }

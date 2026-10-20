@@ -92,7 +92,7 @@ func (in *Interp) callValue(fn Value, ci *callInfo) Value {
 	case *StructType:
 		return &Struct{Type: f, Vals: in.bindArgs(f.Fields, ci, newEnv(f.Env), "«"+f.Name+"»")}
 	case *Variant:
-		return &EnumVal{Variant: f, Vals: in.bindArgs(f.Fields, ci, newEnv(in.globals), "«"+f.Name+"»")}
+		return &EnumVal{Variant: f, Vals: in.bindArgs(f.Fields, ci, newEnv(f.Env), "«"+f.Name+"»")}
 	case *EnumVal:
 		if len(ci.args) == 0 && len(ci.named) == 0 {
 			return f
@@ -153,6 +153,11 @@ func (in *Interp) callFunc(f *Func, ci *callInfo) Value {
 
 // runBody runs a function body; returned reports whether «أرجع» was used.
 func (in *Interp) runBody(f *Func, env *Env) (result Value, returned bool) {
+	if p := in.fileOf(f.Env); p != "" && p != in.file {
+		outer := in.file
+		in.file = p
+		defer func() { in.file = outer }()
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			if rs, ok := r.(returnSig); ok {
@@ -663,7 +668,7 @@ func (in *Interp) numberMethod(v Value, name string, ci *callInfo) (Value, bool)
 
 func (in *Interp) installBuiltins() {
 	def := func(name string, fn func(in *Interp, ci *callInfo) Value) {
-		in.globals.define(name, &Builtin{Name: name, Fn: fn}, false)
+		in.builtins.define(name, &Builtin{Name: name, Fn: fn}, false)
 	}
 	def("اطبع", func(in *Interp, ci *callInfo) Value {
 		if len(ci.named) > 0 {

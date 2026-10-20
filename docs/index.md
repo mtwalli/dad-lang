@@ -75,11 +75,11 @@ hide:
 
 <ol class="dad-timeline">
   <li class="is-done"><span>Specification</span><small>Keywords, grammar and the Arabic-aware lexer</small></li>
-  <li class="is-next"><span>Core language</span><small>Parser, <code>dad run</code> and the checker done; compiling to JavaScript next</small></li>
-  <li class="is-next"><span>Interface</span><small><a href="ui/">Components, state and elements</a> work in <code>dad dev</code> and the playground, and <a href="build/"><code>dad build</code></a> makes static sites</small></li>
-  <li class="is-next"><span>Server and data</span><small>Tables, server functions, routes and <a href="server/"><code>dad dev</code></a> work, with SQLite</small></li>
-  <li class="is-next"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a> <a href="playground/">web playground</a> and <a href="editor/#the-language-server">language server</a> done</small></li>
-  <li><span>Installers</span><small>macOS, Windows and Linux</small></li>
+  <li class="is-done"><span>Core language</span><small><code>dad run</code>, the checker, <a href="modules/">programs in several files</a>, and compiling to JavaScript</small></li>
+  <li class="is-next"><span>Interface</span><small><a href="ui/">Components, state and elements</a> in <code>dad dev</code> and the playground; <a href="build/"><code>dad build</code></a> makes static sites. Next: more elements, pages</small></li>
+  <li class="is-next"><span>Server and data</span><small>Tables in SQLite, server functions, routes, <a href="server/"><code>dad dev</code></a> and <a href="deploy/"><code>dad serve</code></a>. Next: users and sign-in</small></li>
+  <li class="is-done"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a>, <a href="playground/">web playground</a>, <code>dad fmt</code> and the <a href="editor/#the-language-server">language server</a></small></li>
+  <li class="is-done"><span>Installers</span><small><a href="install/">Homebrew, winget, .deb, .rpm</a> and a <a href="tutorial/">tutorial in Arabic</a></small></li>
 </ol>
 
 [Read the full roadmap](ROADMAP.md){ .md-button } [Read the specification](SPEC.md){ .md-button }

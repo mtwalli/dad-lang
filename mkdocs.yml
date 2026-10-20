@@ -11,10 +11,24 @@ docs_dir: docs
 nav:
   - Home: index.md
   - Install: install.md
+  - "تعلّم ضاد (Tutorial)":
+      - tutorial/index.md
+      - ١. البداية: tutorial/01-start.md
+      - ٢. القيم والأسماء: tutorial/02-values.md
+      - ٣. القرارات والتكرار: tutorial/03-control.md
+      - ٤. الدوال: tutorial/04-functions.md
+      - ٥. القوائم والقواميس: tutorial/05-lists.md
+      - ٦. الأنواع والتعدادات: tutorial/06-types.md
+      - ٧. حين يخطئ شيء: tutorial/07-errors.md
+      - ٨. صفحتك الأولى: tutorial/08-page.md
+      - ٩. حفظ البيانات: tutorial/09-data.md
+      - ١٠. إلى الإنترنت: tutorial/10-online.md
   - Editor: editor.md
+  - Programs in several files: modules.md
   - Interface: ui.md
   - Server and data: server.md
   - Building for the web: build.md
+  - Putting a program online: deploy.md
   - Playground: playground.md
   - Language specification: SPEC.md
   - Grammar: grammar.md
@@ -55,6 +69,7 @@ plugins:
 
 hooks:
   - overrides/hooks/cache_bust.py
+  - overrides/hooks/rtl.py
 
 extra_css:
   - assets/dad.css

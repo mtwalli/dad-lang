@@ -45,6 +45,19 @@ func TestBuild(t *testing.T) {
 		}
 	}
 
+	// A program of several files builds into one app.js.
+	shop := filepath.Join(dir, "shop")
+	if code := cmdBuild([]string{"../../examples/07-modules/الرئيسي.dad", "--out", shop}); code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if nodePath, err := exec.LookPath("node"); err == nil {
+		out, err := exec.Command(nodePath, filepath.Join(shop, "app.js")).CombinedOutput()
+		want, _ := os.ReadFile("../../examples/output/07-modules.txt")
+		if err != nil || string(out) != strings.ReplaceAll(string(want), "\r\n", "\n") {
+			t.Errorf("node app.js: %v %q", err, out)
+		}
+	}
+
 	// A program with mistakes is not built.
 	bad := filepath.Join(dir, "bad.dad")
 	os.WriteFile(bad, []byte("اطبع(غير_معرف)\n"), 0o644)

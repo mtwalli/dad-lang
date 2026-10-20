@@ -57,3 +57,33 @@ Output:
 ```dad
 --8<-- "examples/05-todo.dad"
 ```
+
+## 6. Counters — an interface with no server
+
+```dad
+--8<-- "examples/06-counter.dad"
+```
+
+## 7. A program in three files
+
+`نماذج.dad` declares the products, `أسعار.dad` the discounts, and `الرئيسي.dad` imports
+both. Run it with `dad run examples/07-modules/الرئيسي.dad`. See
+[Programs in several files](modules.md).
+
+```dad title="نماذج.dad"
+--8<-- "examples/07-modules/نماذج.dad"
+```
+
+```dad title="أسعار.dad"
+--8<-- "examples/07-modules/أسعار.dad"
+```
+
+```dad title="الرئيسي.dad"
+--8<-- "examples/07-modules/الرئيسي.dad"
+```
+
+Output:
+
+``` { .text .dad-out }
+--8<-- "examples/output/07-modules.txt"
+```

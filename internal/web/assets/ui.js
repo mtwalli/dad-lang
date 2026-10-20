@@ -39,7 +39,9 @@
       if (!id) return;
       var v = typeof value === "function" ? value() : value;
       return post({ s: session, v: version, id: id, value: v }).then(apply, function () {
-        showError("انقطع الاتصال بالبرنامج. هل ما زال «ضاد تطوير» يعمل؟");
+        showError(root.hasAttribute("data-live")
+          ? "انقطع الاتصال بالبرنامج. هل ما زال «ضاد تطوير» يعمل؟"
+          : "انقطع الاتصال بالخادم. أعد تحميل الصفحة بعد قليل.");
       });
     });
     return queue;

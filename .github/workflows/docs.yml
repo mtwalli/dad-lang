@@ -37,6 +37,8 @@ jobs:
           mkdir -p docs/assets/playground
           GOOS=js GOARCH=wasm go build -trimpath -ldflags "-s -w" -o docs/assets/playground/dad.wasm ./cmd/wasm
           cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" docs/assets/playground/
+          # the page script, stylesheet and fonts of the playground's Interface tab
+          cp -R internal/web/assets docs/assets/ui
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

@@ -89,7 +89,7 @@ func (in *Interp) Components() []*Component { return in.components }
 // otherwise the last declared component that takes no arguments.
 func (in *Interp) RootComponent() *Component {
 	var last *Component
-	for _, c := range in.components {
+	for _, c := range in.components[in.mainComps:] {
 		if c.Name == "الرئيسية" || c.Name == "التطبيق" || c.Name == "تطبيق" {
 			return c
 		}

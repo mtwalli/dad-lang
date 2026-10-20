@@ -44,10 +44,19 @@ func ParseFile(src string) (file *ast.File, diags []lexer.Diagnostic) {
 			diags = append(diags, lexer.Diagnostic{Pos: pe.pos, Msg: pe.msg})
 		}
 	}()
-	file = &ast.File{}
+	file = &ast.File{Private: map[string]bool{}}
 	p.skipNL()
 	for !p.at(token.EOF) {
-		file.Stmts = append(file.Stmts, p.parseStmt())
+		private := p.at(token.PRIVATE)
+		s := p.parseStmt()
+		if private {
+			if name := ast.DeclName(s); name != "" {
+				file.Private[name] = true
+			} else {
+				p.failf(s.P(), "«خاص» تسبق تعريفاً: دالة أو نوع أو ثابت…")
+			}
+		}
+		file.Stmts = append(file.Stmts, s)
 		p.endStmt()
 		p.skipNL()
 	}
@@ -369,9 +378,12 @@ func (p *parser) parseEnum() ast.Stmt {
 func (p *parser) parseImport() ast.Stmt {
 	t := p.next()
 	im := &ast.Import{At: ast.At{Pos: t.Pos}}
-	im.Names = append(im.Names, p.expectIdent())
-	for p.accept(token.COMMA) {
+	for {
+		im.NamesPos = append(im.NamesPos, p.cur().Pos)
 		im.Names = append(im.Names, p.expectIdent())
+		if !p.accept(token.COMMA) {
+			break
+		}
 	}
 	p.expect(token.FROM, "من")
 	im.From = p.expect(token.STRING, "نص").Value

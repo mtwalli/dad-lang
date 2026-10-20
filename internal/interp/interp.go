@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
+	"github.com/mtwalli/dad-lang/internal/module"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
@@ -54,8 +55,9 @@ func (e *Env) define(name string, v Value, mutable bool) bool {
 
 // RuntimeError stops the program. Its message is in Arabic.
 type RuntimeError struct {
-	Pos token.Pos
-	Msg string
+	Pos  token.Pos
+	Msg  string
+	File string // the file the position is in, in a program of several files
 }
 
 func (e *RuntimeError) Error() string {
@@ -64,8 +66,9 @@ func (e *RuntimeError) Error() string {
 }
 
 type thrown struct {
-	val Value
-	pos token.Pos
+	val  Value
+	pos  token.Pos
+	file string
 }
 type returnSig struct{ val Value }
 type breakSig struct{}
@@ -88,7 +91,14 @@ type Interp struct {
 
 	steps      int64
 	depth      int
-	globals    *Env
+	globals    *Env             // the main file's top-level names
+	builtins   *Env             // اطبع and the other built-in functions, around every file
+	types      map[string]Value // every نوع, جدول and تعداد by name, from all files
+	modEnvs    map[*module.Module]*Env
+	mainComps  int // components before this index come from imported files
+	serverFn   map[string]*Func
+	file       string          // the file running now, for error messages
+	envFile    map[*Env]string // each file's top-level scope → its path
 	ext        map[string]map[string]*Func
 	variants   map[string]*Variant
 	tables     []*StructType
@@ -105,9 +115,15 @@ func New(out io.Writer) *Interp {
 	// Interface elements live in a scope around the program's own, so a program
 	// can still use their names (عنوان، صف…) for its own things.
 	prelude := newEnv(nil)
+	builtins := newEnv(prelude)
 	in := &Interp{
 		Out:      out,
-		globals:  newEnv(prelude),
+		builtins: builtins,
+		globals:  newEnv(builtins),
+		types:    map[string]Value{},
+		modEnvs:  map[*module.Module]*Env{},
+		serverFn: map[string]*Func{},
+		envFile:  map[*Env]string{},
 		ext:      map[string]map[string]*Func{},
 		variants: map[string]*Variant{},
 		Store:    NewMemoryStore(),
@@ -118,12 +134,12 @@ func New(out io.Writer) *Interp {
 }
 
 func (in *Interp) fail(pos token.Pos, format string, args ...any) {
-	panic(&RuntimeError{Pos: pos, Msg: fmt.Sprintf(format, args...)})
+	panic(&RuntimeError{Pos: pos, Msg: fmt.Sprintf(format, args...), File: in.file})
 }
 
 // raise throws a catchable مشكلة.
 func (in *Interp) raise(pos token.Pos, format string, args ...any) {
-	panic(thrown{val: &Problem{Message: fmt.Sprintf(format, args...)}, pos: pos})
+	panic(thrown{val: &Problem{Message: fmt.Sprintf(format, args...)}, pos: pos, file: in.file})
 }
 
 func (in *Interp) step(pos token.Pos) {
@@ -141,18 +157,89 @@ func (in *Interp) Run(file *ast.File) (err error) {
 		}
 	}()
 
+	in.runFile(file, in.globals, nil)
+	return nil
+}
+
+// RunProgram runs a program of several files: each file once, after the
+// files it imports, in a scope of its own.
+func (in *Interp) RunProgram(p *module.Program) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = in.recovered(r)
+		}
+	}()
+	for _, m := range p.Modules {
+		env := newEnv(in.builtins)
+		if m == p.Main {
+			env = in.globals
+			in.mainComps = len(in.components)
+		}
+		in.modEnvs[m] = env
+		in.envFile[env] = m.Path
+		in.file = m.Path
+		in.runFile(m.File, env, m)
+	}
+	return nil
+}
+
+// fileOf is the file whose code a closure's scope belongs to.
+func (in *Interp) fileOf(env *Env) string {
+	if len(in.envFile) == 0 {
+		return ""
+	}
+	for e := env; e != nil; e = e.parent {
+		if p, ok := in.envFile[e]; ok {
+			return p
+		}
+	}
+	return ""
+}
+
+// runFile declares a file's names, then runs its statements.
+func (in *Interp) runFile(file *ast.File, env *Env, m *module.Module) {
+	for _, s := range file.Stmts {
+		if im, ok := s.(*ast.Import); ok {
+			in.importNames(im, env, m)
+		}
+	}
 	hoisted := map[ast.Stmt]bool{}
 	for _, s := range file.Stmts {
-		if in.declare(s, in.globals) {
+		if _, ok := s.(*ast.Import); ok || in.declare(s, env) {
 			hoisted[s] = true
 		}
 	}
 	for _, s := range file.Stmts {
 		if !hoisted[s] {
-			in.exec(s, in.globals)
+			in.exec(s, env)
 		}
 	}
-	return nil
+}
+
+// importNames binds imported names to the values the other file gave them.
+// Importing a تعداد brings its cases.
+func (in *Interp) importNames(im *ast.Import, env *Env, m *module.Module) {
+	var from *Env
+	if m != nil {
+		from = in.modEnvs[m.Deps[im]]
+	}
+	if from == nil {
+		in.fail(im.Pos, "الاستيراد يحتاج ملفاً محفوظاً؛ هنا ضع الكود في ملف واحد")
+	}
+	for _, name := range im.Names {
+		b, ok := from.vars[name]
+		if !ok {
+			in.fail(im.Pos, "«%s» غير موجود في «%s»", name, m.Deps[im].Name())
+		}
+		in.defineName(env, name, b.val, im.Pos)
+		if et, ok := b.val.(*EnumType); ok {
+			for _, v := range et.Variants {
+				if vb, ok := from.vars[v.Name]; ok && env.vars[v.Name] == nil {
+					env.define(v.Name, vb.val, false)
+				}
+			}
+		}
+	}
 }
 
 // recovered turns a panic from the interpreter into an error; other panics go on.
@@ -161,7 +248,7 @@ func (in *Interp) recovered(r any) error {
 	case *RuntimeError:
 		return x
 	case thrown:
-		return &RuntimeError{Pos: x.pos, Msg: "مشكلة لم تُعالَج: " + problemMessage(x.val)}
+		return &RuntimeError{Pos: x.pos, Msg: "مشكلة لم تُعالَج: " + problemMessage(x.val), File: x.file}
 	case returnSig:
 		return &RuntimeError{Msg: "«أرجع» مستخدمة خارج دالة"}
 	case breakSig:
@@ -183,9 +270,11 @@ func problemMessage(v Value) string {
 func (in *Interp) declare(s ast.Stmt, env *Env) bool {
 	switch d := s.(type) {
 	case *ast.FuncDecl:
-		in.defineName(env, d.Name, &Func{Name: d.Name, Params: d.Params, Body: d.Body, Env: env, Result: d.Result}, d.Pos)
+		f := &Func{Name: d.Name, Params: d.Params, Body: d.Body, Env: env, Result: d.Result}
+		in.defineName(env, d.Name, f, d.Pos)
 		if d.Server {
 			in.serverFns = append(in.serverFns, d.Name)
+			in.serverFn[d.Name] = f
 		}
 	case *ast.TableDecl:
 		in.declareTable(d, env)
@@ -201,11 +290,13 @@ func (in *Interp) declare(s ast.Stmt, env *Env) bool {
 			st.Methods[m.Name] = m
 		}
 		in.defineName(env, d.Name, st, d.Pos)
+		in.types[d.Name] = st
 	case *ast.EnumDecl:
 		et := &EnumType{Name: d.Name}
 		in.defineName(env, d.Name, et, d.Pos)
+		in.types[d.Name] = et
 		for _, v := range d.Variants {
-			variant := &Variant{Enum: et, Name: v.Name, Fields: v.Fields}
+			variant := &Variant{Enum: et, Name: v.Name, Fields: v.Fields, Env: env}
 			et.Variants = append(et.Variants, variant)
 			in.variants[v.Name] = variant
 			if len(v.Fields) == 0 {
@@ -303,7 +394,7 @@ func (in *Interp) exec(s ast.Stmt, env *Env) Value {
 			}
 		}
 	case *ast.Import:
-		in.fail(s.Pos, "الاستيراد من ملفات أخرى غير مدعوم بعد؛ ضع الكود في ملف واحد حالياً")
+		in.fail(s.Pos, "«استورد» تُكتب في أعلى الملف، لا داخل كتلة")
 	default:
 		if !in.declare(s, env) {
 			in.fail(s.P(), "عبارة غير مدعومة")
@@ -568,7 +659,7 @@ func (in *Interp) eval(e ast.Expr, env *Env) Value {
 		if s, ok := v.(string); ok {
 			v = &Problem{Message: s}
 		}
-		panic(thrown{val: v, pos: e.Pos})
+		panic(thrown{val: v, pos: e.Pos, file: in.file})
 	case *ast.Block:
 		return in.evalBlock(e, env)
 	}
@@ -906,8 +997,8 @@ func (in *Interp) isType(v Value, t *ast.TypeRef) bool {
 		ev, ok := v.(*EnumVal)
 		return ok && ev.Variant == variant
 	}
-	if b := in.globals.lookup(t.Name); b != nil {
-		switch tt := b.val.(type) {
+	if tv := in.types[t.Name]; tv != nil {
+		switch tt := tv.(type) {
 		case *StructType:
 			s, ok := v.(*Struct)
 			return ok && s.Type == tt
@@ -950,8 +1041,8 @@ func (in *Interp) knownType(name string) bool {
 	if _, ok := in.variants[name]; ok {
 		return true
 	}
-	if b := in.globals.lookup(name); b != nil {
-		switch b.val.(type) {
+	if tv := in.types[name]; tv != nil {
+		switch tv.(type) {
 		case *StructType, *EnumType:
 			return true
 		}
@@ -1065,7 +1156,7 @@ func parseNumber(s string) (float64, bool) {
 func BuiltinNames() []string {
 	in := New(io.Discard)
 	var out []string
-	for e := in.globals; e != nil; e = e.parent {
+	for e := in.builtins; e != nil; e = e.parent {
 		for name := range e.vars {
 			out = append(out, name)
 		}

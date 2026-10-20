@@ -13,10 +13,15 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      # Optional: add these repository secrets to also publish the extension to the
-      # VS Code Marketplace and Open VSX. Without them those steps are skipped.
+      # Optional repository secrets; without them those steps are skipped:
+      #   VSCE_PAT, OVSX_PAT    publish the extension to the VS Code Marketplace and Open VSX
+      #   HOMEBREW_TAP_TOKEN    push the formula to github.com/mtwalli/homebrew-dad
+      #   WINGET_TOKEN          open the pull request to microsoft/winget-pkgs
+      #                         (after the first version was submitted by hand)
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -48,6 +53,12 @@ jobs:
             fi
           done
 
+      - name: Linux packages (.deb and .rpm)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rpm
+          sh tools/release/packages.sh "${GITHUB_REF_NAME#v}"
+
       - name: Test and package the VS Code extension
         run: |
           set -eu
@@ -59,19 +70,60 @@ jobs:
           node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("package.json"));p.version=process.argv[1];fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")' "$version"
           npx --yes @vscode/vsce@3 package --no-dependencies -o ../../dist/dad-lang.vsix
 
-      - name: Checksums
+      - name: Checksums, Homebrew formula and winget manifests
         run: |
+          set -eu
           (cd dist && sha256sum * > checksums.txt)
+          python3 tools/release/manifests.py "${GITHUB_REF_NAME#v}"
+          mkdir -p build/brew
+          mv dist/dad.rb build/brew/dad.rb
+          cp build/brew/dad.rb dist/dad.rb
+          (cd dist && zip -qr winget-manifests.zip winget && rm -rf winget)
           cp install.sh install.ps1 dist/
           ls -l dist
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # the section «## <version>» up to the next «## »
+          awk -v v="$version" '
+            $0 ~ "^## " { if (on) exit; on = ($2 == v || $2 == "v" v) ; next }
+            on { print }
+          ' CHANGELOG.md > build/notes.md
+          if [ ! -s build/notes.md ]; then
+            echo "No section for $version in CHANGELOG.md; using generated notes." >&2
+          fi
 
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/* \
-            --title "Ḍād $GITHUB_REF_NAME" \
-            --generate-notes
+          if [ -s build/notes.md ]; then
+            gh release create "$GITHUB_REF_NAME" dist/* --title "Ḍād $GITHUB_REF_NAME" --notes-file build/notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" dist/* --title "Ḍād $GITHUB_REF_NAME" --generate-notes
+          fi
+
+      - name: Update the Homebrew tap
+        if: env.HOMEBREW_TAP_TOKEN != ''
+        run: |
+          set -eu
+          git clone --depth 1 "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/mtwalli/homebrew-dad.git" build/tap
+          mkdir -p build/tap/Formula
+          cp build/brew/dad.rb build/tap/Formula/dad.rb
+          cd build/tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/dad.rb
+          git diff --cached --quiet || { git commit -m "dad ${GITHUB_REF_NAME#v}" && git push; }
+
+      - name: Submit to winget
+        if: env.WINGET_TOKEN != ''
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: mtwalli.dad
+          installers-regex: '_windows_.*\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
 
       - name: Publish to the VS Code Marketplace
         if: env.VSCE_PAT != ''

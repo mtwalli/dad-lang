@@ -13,6 +13,7 @@ import (
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
 	"github.com/mtwalli/dad-lang/internal/lsp"
+	"github.com/mtwalli/dad-lang/internal/module"
 )
 
 // version is set at build time with -ldflags "-X main.version=…".
@@ -28,6 +29,8 @@ const usage = `ضاد — لغة برمجة عربية
                          (--check لعرض الملفات غير المنسّقة، و«-» للدخل القياسي)
   ضاد تطوير <ملف.dad>    شغّل الخادم على http://localhost:8080 مع إعادة التحميل
                          (--port لاختيار منفذ آخر)
+  ضاد انشر <ملف.dad>     شغّل البرنامج خادماً للنشر: بلا أدوات المطوّر ولا إعادة تحميل،
+                         على كل الواجهات (--port أو $PORT، --host، --data لمسار قاعدة البيانات)
   ضاد ابن <ملف.dad>      حوّل البرنامج إلى JavaScript: موقع ثابت لبرامج الواجهات،
                          أو app.js يعمل بـ node (--out لاختيار المجلد)
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
@@ -43,6 +46,8 @@ Usage (ASCII aliases):
   dad lsp                  the language server, for editors (LSP over stdin/stdout)
   dad dev <file.dad>       serve routes and server functions on localhost:8080,
                            reloading when the file changes (--port to change it)
+  dad serve <file.dad>     run the program as a production server: no developer tools,
+                           no reloading (--port or $PORT, --host, --data for the database)
   dad build <file.dad>     compile to JavaScript: a static site for programs with
                            an interface, otherwise app.js for node (--out dir)
   dad tokens <file.dad>    print the tokens in a file
@@ -61,13 +66,18 @@ func main() {
 	cmd = strings.ReplaceAll(cmd, "ِ", "") // «ابنِ» is «ابن»
 	switch cmd {
 	case "شغل", "run":
-		os.Exit(withFile("شغل", cmdRun))
+		os.Exit(withPath("شغل", cmdRun))
 	case "فحص", "check":
 		args := os.Args[2:]
 		if len(args) == 2 && args[0] == "--json" {
-			os.Exit(runWith(args[1], cmdCheckJSON))
+			os.Exit(cmdCheckJSON("", args[1]))
 		}
-		os.Exit(withFile("فحص", cmdCheck))
+		// «--json --path file.dad -»: the editor's unsaved text of file.dad, whose
+		// imports are read from the disk
+		if len(args) == 4 && args[0] == "--json" && args[1] == "--path" {
+			os.Exit(cmdCheckJSON(args[2], args[3]))
+		}
+		os.Exit(withPath("فحص", cmdCheck))
 	case "خادم_اللغة", "lsp":
 		if err := lsp.Serve(os.Stdin, os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -77,6 +87,8 @@ func main() {
 		os.Exit(cmdFmt(os.Args[2:]))
 	case "تطوير", "dev":
 		os.Exit(cmdDev(os.Args[2:]))
+	case "انشر", "serve":
+		os.Exit(cmdServe(os.Args[2:]))
 	case "ابن", "build":
 		os.Exit(cmdBuild(os.Args[2:]))
 	case "رموز", "tokens":
@@ -87,7 +99,7 @@ func main() {
 		fmt.Print(usage)
 	default:
 		if strings.HasSuffix(cmd, ".dad") && len(os.Args) == 2 {
-			os.Exit(runFile(cmd))
+			os.Exit(cmdRun(cmd))
 		}
 		fmt.Fprintf(os.Stderr, "أمر غير معروف «%s»\n\n%s", os.Args[1], usage)
 		os.Exit(2)
@@ -103,7 +115,46 @@ func withFile(name string, run func(path, src string) int) int {
 	return runWith(os.Args[2], run)
 }
 
-func runFile(path string) int { return runWith(path, cmdRun) }
+// withPath passes the single file argument to run.
+func withPath(name string, run func(path string) int) int {
+	if len(os.Args) != 3 {
+		fmt.Fprintf(os.Stderr, "الاستخدام: ضاد %s <ملف.dad>\n", name)
+		return 2
+	}
+	return run(os.Args[2])
+}
+
+func readFile(path string) (string, error) {
+	b, err := os.ReadFile(path)
+	return string(b), err
+}
+
+// loadProgram reads and checks a program: its main file and every file it
+// imports ("-" reads one file from standard input). It prints the problems
+// and reports whether the program can run.
+func loadProgram(path string) (*module.Program, bool) {
+	var p *module.Program
+	if path == "-" {
+		src, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "تعذرت قراءة الدخل القياسي: %v\n", err)
+			return nil, false
+		}
+		p = module.Single("-", string(src))
+		check.Program(p)
+	} else {
+		p, _ = check.Load(path, readFile)
+	}
+	diags := p.Diags()
+	for _, d := range diags {
+		if d.Pos.Line == 0 && d.Path == path && p.Main.File == nil {
+			fmt.Fprintf(os.Stderr, "تعذرت قراءة الملف «%s»\n", path)
+			continue
+		}
+		fmt.Fprintln(os.Stderr, d)
+	}
+	return p, !module.HasErrors(diags)
+}
 
 func runWith(path string, run func(path, src string) int) int {
 	var src []byte
@@ -126,10 +177,9 @@ func printDiags(path string, diags []lexer.Diagnostic) {
 	}
 }
 
-func cmdRun(path, src string) int {
-	file, diags := check.Source(src)
-	printDiags(path, diags)
-	if file == nil || lexer.HasErrors(diags) {
+func cmdRun(path string) int {
+	prog, ok := loadProgram(path)
+	if !ok {
 		return 1 // like a compiler: a program with mistakes doesn't start
 	}
 	in := interp.New(os.Stdout)
@@ -139,7 +189,7 @@ func cmdRun(path, src string) int {
 		return 1
 	}
 	in.Store = store
-	err = in.Run(file)
+	err = in.RunProgram(prog)
 	storeNotes(store)
 	if len(in.Notices) > 0 {
 		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s.\n", strings.Join(in.Notices, "، "))
@@ -151,20 +201,35 @@ func cmdRun(path, src string) int {
 		fmt.Fprintf(os.Stderr, "ملاحظة: للمسارات ودوال الخادم شغّل «ضاد تطوير %s».\n", filepath.Base(path))
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %s\n", path, err)
+		fmt.Fprintf(os.Stderr, "%s: %s\n", errorFile(path, err), err)
 		return 1
 	}
 	return 0
 }
 
-func cmdCheck(path, src string) int {
-	file, diags := check.Source(src)
-	printDiags(path, diags)
-	if file == nil || lexer.HasErrors(diags) {
+// errorFile is the file a runtime error happened in.
+func errorFile(path string, err error) string {
+	if re, ok := err.(*interp.RuntimeError); ok && re.File != "" {
+		return re.File
+	}
+	return path
+}
+
+func cmdCheck(path string) int {
+	prog, ok := loadProgram(path)
+	if !ok {
 		return 1
 	}
-	toks, _ := lexer.Tokenize(src)
-	fmt.Printf("✓ %s: لا أخطاء (%d رمزاً)\n", path, len(toks))
+	toks := 0
+	for _, m := range prog.Modules {
+		t, _ := lexer.Tokenize(m.Src)
+		toks += len(t)
+	}
+	files := ""
+	if n := len(prog.Modules); n > 1 {
+		files = fmt.Sprintf("، %d ملفات", n)
+	}
+	fmt.Printf("✓ %s: لا أخطاء (%d رمزاً%s)\n", path, toks, files)
 	return 0
 }
 
@@ -189,8 +254,34 @@ type jsonDiag struct {
 	Warning bool   `json:"warning"`
 }
 
-func cmdCheckJSON(_ string, src string) int {
-	_, diags := check.Source(src)
+// cmdCheckJSON checks a file for an editor. With a path, the file's imports
+// are read from the disk and src (or standard input, for "-") is its text.
+func cmdCheckJSON(path, src string) int {
+	text, err := readFile(src)
+	if src == "-" {
+		var b []byte
+		b, err = io.ReadAll(os.Stdin)
+		text = string(b)
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "تعذرت قراءة الملف «%s»: %v\n", src, err)
+		return 1
+	}
+	var diags []lexer.Diagnostic
+	if path == "" && src == "-" {
+		_, diags = check.Source(text)
+	} else {
+		if path == "" {
+			path = src
+		}
+		clean := filepath.Clean(path)
+		_, diags = check.AnalyzeProgram(module.Load(path, func(p string) (string, error) {
+			if filepath.Clean(p) == clean {
+				return text, nil
+			}
+			return readFile(p)
+		}))
+	}
 	out := struct {
 		Diagnostics []jsonDiag `json:"diagnostics"`
 	}{Diagnostics: []jsonDiag{}}

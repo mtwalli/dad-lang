@@ -80,6 +80,7 @@ type Variant struct {
 	Enum   *EnumType
 	Name   string
 	Fields []*ast.Param
+	Env    *Env // where defaults of its fields are evaluated
 }
 
 type EnumVal struct {

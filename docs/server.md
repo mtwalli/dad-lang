@@ -132,3 +132,5 @@ each one, your tables and their rows, and your routes. It updates by itself.
   the error until you fix it.
 - Top-level code (such as `اطبع`) runs on every reload, and its output appears in the terminal.
 - The server only listens on your own computer (`127.0.0.1`).
+
+When the program is ready for other people, run it with [`dad serve`](deploy.md).

@@ -11,10 +11,12 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
+	"github.com/mtwalli/dad-lang/internal/module"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
@@ -50,14 +52,103 @@ func (p *Program) Browser(file string) string {
 		"  if (root) $.mount(root);\n})($dad);\n"
 }
 
-// Compile compiles a parsed, checked file.
+// Compile compiles a parsed, checked file that imports nothing.
 func Compile(f *ast.File) *Program {
-	c := &compiler{variants: map[string]bool{}, types: map[string]*ast.TypeDecl{}, tables: map[string]*ast.TableDecl{}, used: map[string]int{}}
-	c.collect(f.Stmts)
-	c.scope = &scope{names: map[string]*sym{}}
-	c.frames = []*frame{{kind: frameTop}}
-	p := &Program{}
+	m := &module.Module{Path: "app.dad", File: f, Deps: map[*ast.Import]*module.Module{}}
+	return CompileProgram(&module.Program{Main: m, Modules: []*module.Module{m}})
+}
 
+// CompileProgram compiles a checked program of one or more files. Each
+// imported file runs once, in a function of its own, and gives the names it
+// exports to the files that import them.
+func CompileProgram(prog *module.Program) *Program {
+	p := &Program{}
+	shared := &compiler{variants: map[string]bool{}, types: map[string]*ast.TypeDecl{}, tables: map[string]*ast.TableDecl{}}
+	for _, m := range prog.Modules {
+		shared.collect(m.File.Stmts)
+	}
+	vars := map[*module.Module]string{}
+	var out strings.Builder
+	for i, m := range prog.Modules {
+		c := &compiler{variants: shared.variants, types: shared.types, tables: shared.tables, used: map[string]int{}}
+		c.scope = &scope{names: map[string]*sym{}}
+		c.frames = []*frame{{kind: frameTop}}
+		if m == prog.Main {
+			c.indent = 1
+			c.file(m, vars, p)
+			root := rootComponent(m.File)
+			if root != "" {
+				p.Root = root
+				c.line("return " + c.scope.lookup(root).js + ";")
+			} else {
+				c.line("return null;")
+			}
+			out.WriteString(c.out.String())
+			continue
+		}
+		v := "$$m" + strconv.Itoa(i+1)
+		vars[m] = v
+		c.indent = 2
+		c.file(m, vars, p)
+		var exports []string
+		for _, name := range exportedNames(m.File) {
+			exports = append(exports, quote(name)+": "+c.scope.lookup(name).js)
+		}
+		c.line("return {" + strings.Join(exports, ", ") + "};")
+		out.WriteString("  // " + filepath.ToSlash(m.Path) + "\n  const " + v + " = (() => {\n" + c.out.String() + "  })();\n")
+	}
+	p.Body = out.String()
+	return p
+}
+
+// exportedNames are the names a file gives to files that import it.
+func exportedNames(f *ast.File) []string {
+	var out []string
+	for _, s := range f.Stmts {
+		name := ast.DeclName(s)
+		if name == "" || f.Private[name] {
+			continue
+		}
+		if _, ok := s.(*ast.ContractDecl); ok {
+			continue
+		}
+		out = append(out, name)
+		if e, ok := s.(*ast.EnumDecl); ok {
+			for _, v := range e.Variants {
+				out = append(out, v.Name)
+			}
+		}
+	}
+	return out
+}
+
+// file compiles one file: its imports, its declarations, then its statements.
+func (c *compiler) file(m *module.Module, vars map[*module.Module]string, p *Program) {
+	f := m.File
+	for _, s := range f.Stmts {
+		im, ok := s.(*ast.Import)
+		if !ok {
+			continue
+		}
+		dep := m.Deps[im]
+		from := vars[dep]
+		for _, name := range im.Names {
+			names := []string{name}
+			for _, ds := range dep.File.Stmts {
+				if e, ok := ds.(*ast.EnumDecl); ok && e.Name == name {
+					for _, v := range e.Variants {
+						names = append(names, v.Name)
+					}
+				}
+			}
+			for i, n := range names {
+				if i > 0 && c.scope.names[n] != nil {
+					continue
+				}
+				c.line("const " + c.declare(n, symConst) + " = " + from + "[" + quote(n) + "];")
+			}
+		}
+	}
 	// Every top-level name is visible everywhere in the file: functions run
 	// later than they are declared and may use constants declared after them.
 	for _, s := range f.Stmts {
@@ -65,13 +156,14 @@ func Compile(f *ast.File) *Program {
 	}
 	var decls, stmts []ast.Stmt
 	for _, s := range f.Stmts {
-		if isDecl(s) {
+		switch {
+		case isImport(s):
+		case isDecl(s):
 			decls = append(decls, s)
-		} else {
+		default:
 			stmts = append(stmts, s)
 		}
 	}
-	c.indent = 1
 	for _, s := range decls {
 		switch d := s.(type) {
 		case *ast.RouteDecl:
@@ -84,15 +176,11 @@ func Compile(f *ast.File) *Program {
 		c.stmt(s, tailNone)
 	}
 	c.stmts(stmts, tailNone)
-	root := rootComponent(f)
-	if root != "" {
-		p.Root = root
-		c.line("return " + c.scope.lookup(root).js + ";")
-	} else {
-		c.line("return null;")
-	}
-	p.Body = c.out.String()
-	return p
+}
+
+func isImport(s ast.Stmt) bool {
+	_, ok := s.(*ast.Import)
+	return ok
 }
 
 // rootComponent is the component a page shows: one named الرئيسية, التطبيق or

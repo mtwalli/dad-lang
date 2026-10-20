@@ -40,10 +40,13 @@ working end-to-end, crudely), then deepen each layer.
 3. ✅ `dad run file.dad` — a tree-walking interpreter (`internal/interp`) so programs run
    today, in the terminal and in the [playground](playground.md)
 4. ✅ Golden tests: each example has expected output in `examples/output/`
-5. ✅ Name resolution and a first type checker (`internal/check`): undefined names with
+5. ✅ Programs in several files (`internal/module`): `استورد … من "./ملف"`, `خاص`,
+   checked across files, followed by `dad run`, `dad dev`, `dad build`, the editor and
+   go to definition
+6. ✅ Name resolution and a first type checker (`internal/check`): undefined names with
    suggestions, arguments, declared types, members, exhaustive `طابق`; programs with errors
    don't run. Next: smart casts for optional values, generic types, unused-variable warnings
-6. ✅ JS code generator (`internal/codegen/js`) and `dad build`: a static site for programs
+7. ✅ JS code generator (`internal/codegen/js`) and `dad build`: a static site for programs
    with an interface, `app.js` for Node otherwise. Every example and test program prints the
    same output and errors as the interpreter, which stays the reference implementation for
    `dad run`, `dad dev` and the playground
@@ -69,6 +72,9 @@ working end-to-end, crudely), then deepen each layer.
 4. ✅ SQLite store (`modernc.org/sqlite`, `.dad/<program>.db`): migrations from table changes,
    simple `حيث` lambdas compiled to SQL, earlier JSON data imported
 5. ✅ Components call server functions and tables directly (they run on the server for now)
+6. ✅ `dad serve`: the production server. No developer page, no reloading, `$PORT`,
+   `--data`, a request log, `/_dad/health`, and a clean stop on `SIGTERM`. Next: users and
+   sign-in, permissions on server functions and routes, handling requests in parallel
 
 ## Costs to know about
 - macOS signed/notarized installer: Apple Developer Program, $99/year (can postpone via Homebrew).

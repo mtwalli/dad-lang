@@ -316,8 +316,9 @@ type (
 
 	Import struct {
 		At
-		Names []string
-		From  string
+		Names    []string
+		NamesPos []token.Pos
+		From     string
 	}
 
 	// TableDecl is a database table: «جدول مهمة { عنوان: نص، منجزة = خطأ }».
@@ -399,4 +400,27 @@ func (*StateDecl) stmtNode()     {}
 // File is a parsed source file.
 type File struct {
 	Stmts []Stmt
+	// Private holds the top-level names marked «خاص»: other files can't import them.
+	Private map[string]bool
+}
+
+// DeclName is the name a top-level statement declares, or "".
+func DeclName(s Stmt) string {
+	switch d := s.(type) {
+	case *FuncDecl:
+		return d.Name
+	case *TypeDecl:
+		return d.Name
+	case *EnumDecl:
+		return d.Name
+	case *TableDecl:
+		return d.Name
+	case *ComponentDecl:
+		return d.Name
+	case *ContractDecl:
+		return d.Name
+	case *Let:
+		return d.Name
+	}
+	return ""
 }

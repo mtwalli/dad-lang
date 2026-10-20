@@ -19,7 +19,7 @@ import (
 
 	"github.com/mtwalli/dad-lang/internal/check"
 	"github.com/mtwalli/dad-lang/internal/interp"
-	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/module"
 	"github.com/mtwalli/dad-lang/internal/sqlitestore"
 	"github.com/mtwalli/dad-lang/internal/web"
 )
@@ -27,7 +27,7 @@ import (
 //go:embed devpage.html
 var devPage []byte
 
-// dataPath is where a program's tables are kept: .dad/<name>.db next to it.
+// dataPath is where a program's tables are kept by default: .dad/<name>.db next to it.
 func dataPath(path string) string {
 	base := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 	return filepath.Join(filepath.Dir(path), ".dad", base+".db")
@@ -40,7 +40,11 @@ func openStore(path string) (interp.Store, error) {
 	if path == "-" {
 		return interp.NewMemoryStore(), nil
 	}
-	db := dataPath(path)
+	return openStoreAt(dataPath(path))
+}
+
+// openStoreAt opens the database in a file of its own.
+func openStoreAt(db string) (interp.Store, error) {
 	_, statErr := os.Stat(db)
 	st, err := sqlitestore.Open(db)
 	if err != nil {
@@ -68,19 +72,23 @@ func storeNotes(store interp.Store) {
 	st.FinishImport()
 }
 
-// devServer runs one Ḍād program as a web server and reloads it when the file changes.
+// devServer runs one Ḍād program as a web server. For «dad dev» it reloads the
+// program when a file changes and serves the developer tools; for «dad serve»
+// (production) it runs the program it started with and serves only the program.
 type devServer struct {
-	path  string
-	store interp.Store
-	out   io.Writer
+	path       string
+	store      interp.Store
+	out        io.Writer
+	production bool
 
 	mu       sync.Mutex
 	in       *interp.Interp
 	sessions map[string]*interp.UISession // open pages, by id
 	order    []string                     // session ids, oldest first
+	lastUsed map[string]time.Time         // when each page last sent an event
 	err      string                       // the last load error, in Arabic
 	version  int
-	mtime    time.Time
+	mtimes   map[string]time.Time // every file of the program, as last loaded
 }
 
 // load parses and runs the file. A program that doesn't parse leaves the last good
@@ -88,27 +96,25 @@ type devServer struct {
 func (s *devServer) load() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if fi, err := os.Stat(s.path); err == nil {
-		s.mtime = fi.ModTime()
-	}
 	s.version++
-	src, err := os.ReadFile(s.path)
-	if err != nil {
-		s.err = fmt.Sprintf("تعذرت قراءة الملف «%s»: %v", s.path, err)
-		return
-	}
-	file, diags := check.Source(string(src))
-	for _, d := range diags {
-		if !d.Warning {
-			fmt.Fprintf(os.Stderr, "%s: %s\n", s.path, d)
+	prog, diags := check.Load(s.path, readFile)
+	s.mtimes = map[string]time.Time{}
+	for _, p := range prog.Paths() {
+		if fi, err := os.Stat(p); err == nil {
+			s.mtimes[p] = fi.ModTime()
 		}
 	}
-	if file == nil || lexer.HasErrors(diags) {
+	for _, d := range diags {
+		if !d.Warning {
+			fmt.Fprintln(os.Stderr, d)
+		}
+	}
+	if module.HasErrors(diags) {
 		// The last program that worked keeps running until this one is fixed.
 		var errs []string
 		for _, d := range diags {
 			if !d.Warning {
-				errs = append(errs, d.String())
+				errs = append(errs, s.relative(d))
 			}
 		}
 		s.err = strings.Join(errs, "\n")
@@ -116,15 +122,16 @@ func (s *devServer) load() {
 	}
 	in := interp.New(s.out)
 	in.Store = s.store
-	in.MaxSteps = 50_000_000
+	in.MaxSteps = 50_000_000 // for each request: a loop that never ends doesn't hang the server
 	s.err = ""
-	if err := in.Run(file); err != nil {
+	if err := in.RunProgram(prog); err != nil {
 		s.err = err.Error()
-		fmt.Fprintf(os.Stderr, "%s: %s\n", s.path, err)
+		fmt.Fprintf(os.Stderr, "%s: %s\n", errorFile(s.path, err), err)
 	}
 	storeNotes(s.store)
 	s.sessions = map[string]*interp.UISession{} // pages reload with the new program
 	s.order = nil
+	s.lastUsed = map[string]time.Time{}
 	if s.version == 1 && len(in.Notices) > 0 {
 		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s.\n", strings.Join(in.Notices, "، "))
 	}
@@ -140,12 +147,16 @@ func (s *devServer) watch(stop <-chan struct{}) {
 		case <-stop:
 			return
 		case <-t.C:
-			fi, err := os.Stat(s.path)
 			s.mu.Lock()
-			changed := err == nil && !fi.ModTime().Equal(s.mtime)
+			changed := ""
+			for p, mt := range s.mtimes {
+				if fi, err := os.Stat(p); err == nil && !fi.ModTime().Equal(mt) {
+					changed = p
+				}
+			}
 			s.mu.Unlock()
-			if changed {
-				fmt.Fprintf(os.Stderr, "↻ أُعيد تحميل %s\n", s.path)
+			if changed != "" {
+				fmt.Fprintf(os.Stderr, "↻ أُعيد تحميل %s\n", changed)
 				s.load()
 			}
 		}
@@ -187,6 +198,26 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 	path := r.URL.Path
 
+	if s.production {
+		switch {
+		case path == "/_dad/health":
+			writeJSON(w, 200, map[string]any{"ok": s.in != nil})
+			return
+		case strings.HasPrefix(path, "/_dad/call/"):
+			s.call(w, r, strings.TrimPrefix(path, "/_dad/call/"))
+			return
+		case strings.HasPrefix(path, web.AssetsPath):
+			web.Handler().ServeHTTP(w, r)
+			return
+		case path == "/_dad/ui/event":
+			s.uiEvent(w, r)
+			return
+		case path == "/_dad" || strings.HasPrefix(path, "/_dad/"):
+			// the developer tools show every table's rows: never in production
+			writeError(w, 404, "غير موجود")
+			return
+		}
+	}
 	switch {
 	case path == "/_dad/version":
 		writeJSON(w, 200, map[string]any{"version": s.version, "error": s.err})
@@ -219,8 +250,10 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				s.appPage(w, root)
 				return
 			}
-			s.page(w)
-			return
+			if !s.production {
+				s.page(w)
+				return
+			}
 		}
 		writeError(w, 404, fmt.Sprintf("لا يوجد مسار «%s %s»", r.Method, path))
 		return
@@ -251,21 +284,52 @@ func (s *devServer) appPage(w http.ResponseWriter, root *interp.Component) {
 	if err != nil {
 		msg = err.Error()
 	} else {
-		s.sessions[id] = sess
-		s.order = append(s.order, id)
-		if len(s.order) > maxSessions {
-			delete(s.sessions, s.order[0])
-			s.order = s.order[1:]
-		}
+		s.addSession(id, sess)
+	}
+	live := s.version
+	if s.production {
+		live = 0 // nothing reloads in production
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	io.WriteString(w, web.Page(web.PageOptions{
-		Title: root.Name, Body: body, Session: id, Version: sess.Version, Error: msg, Live: s.version,
+		Title: root.Name, Body: body, Session: id, Version: sess.Version, Error: msg, Live: live,
 	}))
 }
 
-const maxSessions = 200
+// Open pages keep their state on the server. «dad dev» keeps the last 200;
+// «dad serve» keeps up to 10000, and forgets a page left alone for a day.
+const (
+	maxSessions     = 200
+	maxProdSessions = 10000
+	sessionIdle     = 24 * time.Hour
+)
+
+func (s *devServer) addSession(id string, sess *interp.UISession) {
+	limit := maxSessions
+	if s.production {
+		limit = maxProdSessions
+		now := time.Now()
+		kept := s.order[:0]
+		for _, old := range s.order {
+			if now.Sub(s.lastUsed[old]) > sessionIdle {
+				delete(s.sessions, old)
+				delete(s.lastUsed, old)
+			} else {
+				kept = append(kept, old)
+			}
+		}
+		s.order = kept
+	}
+	s.sessions[id] = sess
+	s.lastUsed[id] = time.Now()
+	s.order = append(s.order, id)
+	if len(s.order) > limit {
+		delete(s.sessions, s.order[0])
+		delete(s.lastUsed, s.order[0])
+		s.order = s.order[1:]
+	}
+}
 
 func newSessionID() string {
 	b := make([]byte, 12)
@@ -298,6 +362,7 @@ func (s *devServer) uiEvent(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]any{"reload": true}) // the program was reloaded
 		return
 	}
+	s.lastUsed[ev.Session] = time.Now()
 	reply := map[string]any{}
 	if err := s.in.Event(sess, ev.Version, ev.ID, ev.Value); err != nil && !errors.Is(err, interp.ErrStale) {
 		reply["error"] = err.Error()
@@ -428,4 +493,13 @@ func cmdDev(args []string) int {
 		return 1
 	}
 	return 0
+}
+
+// relative shows a problem the way the page shows it: the file name only for
+// imported files.
+func (s *devServer) relative(d module.Diag) string {
+	if filepath.Clean(d.Path) == filepath.Clean(s.path) {
+		return d.Diagnostic.String()
+	}
+	return filepath.Base(d.Path) + ": " + d.Diagnostic.String()
 }

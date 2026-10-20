@@ -233,6 +233,12 @@ One file = one module. Everything not marked `خاص` is exported.
 ```dad
 استورد نقطة، شكل من "./أشكال"
 ```
+*(Implemented.)* The file is found next to the importing file (`.dad` may be left out).
+Each file runs once, after the files it imports, in a scope of its own. Importing a `تعداد`
+brings its cases. An imported name is a constant holding the value the other file gave it.
+Imports may not form a circle. Types, tables, enums and their cases, and server functions are
+known by name across the program, so they may not be declared in two files. See
+[Programs in several files](modules.md).
 
 ### 4.11 Checking before running
 Programs are checked before they run, and a program with errors doesn't start (`dad run`,

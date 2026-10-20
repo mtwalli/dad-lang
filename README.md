@@ -20,7 +20,13 @@ compiler is written in Go.
 ```
 
 ## Status
-Phase 1: the parser and interpreter are done, so `dad run file.dad` runs programs. Phase 3 has started: tables (`جدول`, stored in SQLite), server functions (`خادم`) and routes (`مسار`) work, and `dad dev file.dad` serves them with live reload. Phase 2 has started too: components (`مكون`) with state (`حالة`) and elements such as `زر` and `حقل` render as live, right-to-left pages in `dad dev`, so `examples/05-todo.dad` works end to end. Programs are checked before they run: undefined names (with suggestions), wrong arguments and types, missing fields and `طابق` cases are reported in Arabic by `dad check`, VS Code and the playground. `dad lsp` gives any editor go to definition, references, rename and completion. `dad build file.dad` compiles a program to JavaScript: a page becomes a static site that needs no server, and the tests check that it prints exactly what the interpreter prints. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Version 0.2 is the first public release. You can write a whole web app in Ḍād, with
+its interface (`مكون`), server functions (`خادم`), tables in SQLite (`جدول`) and routes
+(`مسار`), in one or several files. `dad dev` runs it with live reload, `dad serve` puts it
+online, and `dad build` turns it into a static site. Programs are checked before they run,
+with messages in Arabic, in the terminal, in VS Code and in any editor through `dad lsp`.
+New to programming? Start with the [tutorial in Arabic](https://mtwalli.github.io/dad-lang/tutorial/).
+What comes next is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 - [docs/SPEC.md](docs/SPEC.md): language specification (draft)
 - [docs/grammar.ebnf](docs/grammar.ebnf): grammar
@@ -28,7 +34,10 @@ Phase 1: the parser and interpreter are done, so `dad run file.dad` runs program
 
 ## Install
 
-macOS and Linux:
+Homebrew (macOS, Linux): `brew install mtwalli/dad/dad`. winget (Windows): `winget install mtwalli.dad`.
+Debian/Ubuntu and Fedora/RHEL packages are on the [releases page](https://github.com/mtwalli/dad-lang/releases/latest).
+
+Or with the install script, on macOS and Linux:
 ```sh
 curl -fsSL https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.sh | sh
 ```
@@ -48,7 +57,7 @@ For VS Code, install [Ḍād from the Marketplace](https://marketplace.visualstu
 (search "Ḍād" in the Extensions view). See [editors/vscode](editors/vscode) and the [editor guide](https://mtwalli.github.io/dad-lang/editor/).
 
 ## Build & test
-Requires Go 1.24+.
+Requires Go 1.26+, and Node 18+ for the tests of compiled programs (skipped without it).
 
 ```sh
 go test ./...
@@ -57,9 +66,11 @@ go build -o dad ./cmd/dad
 ```
 
 ## Releasing
-Push a version tag; `.github/workflows/release.yml` builds binaries for macOS, Linux and
-Windows (amd64 and arm64) and the VS Code extension (`dad-lang.vsix`), publishes them with `checksums.txt` as a GitHub release, and the
-install scripts pick up the newest release automatically.
+Add a section to [CHANGELOG.md](CHANGELOG.md) and push a version tag.
+`.github/workflows/release.yml` builds the binaries, the `.deb` and `.rpm` packages, the
+VS Code extension, the Homebrew formula and the winget manifests, and publishes the
+release. [tools/release/README.md](tools/release/README.md) has the one-time setup for
+Homebrew, winget and the Marketplace.
 
 ```sh
 git tag v0.2.0 && git push origin v0.2.0
@@ -82,6 +93,7 @@ internal/token/     token kinds and keywords
 internal/lexer/     Arabic-aware lexer + tests
 internal/ast/       syntax tree
 internal/parser/    parser with Arabic error messages
+internal/module/    loads a program of several files (استورد، خاص)
 internal/interp/    interpreter behind `dad run` and `dad dev`, tables and storage
 internal/codegen/js/ compiler to JavaScript and its runtime, behind `dad build`
 internal/sqlitestore/ SQLite storage and migrations for tables

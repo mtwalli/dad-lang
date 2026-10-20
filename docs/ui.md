@@ -63,7 +63,7 @@ page shows the new value.
 
 Each copy of a component has its own state: the two counters above count separately.
 State lasts as long as the page is open; to keep data for longer, save it in a
-[table](server.md#tables-جدول).
+[table](server.md#tables).
 
 ## Elements
 

@@ -206,11 +206,11 @@ func (c *checker) fromRef(r *ast.TypeRef) (*Type, bool) {
 		if b, isBuiltin := builtinTypes[r.Name]; isBuiltin {
 			bt := *b
 			t = &bt
-		} else if d, isDecl := c.types[r.Name]; isDecl {
+		} else if d, isDecl := c.types[r.Name]; isDecl && c.visibleType(r.Name) {
 			t = d
 		} else if c.contracts[r.Name] || anyType[r.Name] {
 			t = nil // a contract (any value that has its methods), or any value at all
-		} else if en, isVariant := c.variantOf[r.Name]; isVariant {
+		} else if en, isVariant := c.variantOf[r.Name]; isVariant && c.visibleType(r.Name) {
 			t = c.types[en] // «ش من نوع دائرة»: a case of a تعداد
 		} else {
 			return nil, false
@@ -233,7 +233,11 @@ func (c *checker) checkRef(r *ast.TypeRef) *Type {
 	t, ok := c.fromRef(r)
 	if !ok {
 		name := firstUnknown(c, r)
-		c.errorf(r.Pos, "النوع «%s» غير معروف%s", name, c.suggestType(name))
+		if owner := c.owners[name]; owner != nil && owner != c.mod {
+			c.errorf(r.Pos, "النوع «%s» معرّف في «%s»؛ استورده أولاً: استورد %s من \"./%s\"", name, owner.Name(), name, owner.Name())
+		} else {
+			c.errorf(r.Pos, "النوع «%s» غير معروف%s", name, c.suggestType(name))
+		}
 	}
 	return t
 }
@@ -244,7 +248,8 @@ func firstUnknown(c *checker, r *ast.TypeRef) string {
 	}
 	if r.Kind == ast.NamedType {
 		_, isVariant := c.variantOf[r.Name]
-		if _, ok := builtinTypes[r.Name]; !ok && c.types[r.Name] == nil && !c.contracts[r.Name] && !isVariant && !anyType[r.Name] {
+		declared := c.types[r.Name] != nil || isVariant
+		if _, ok := builtinTypes[r.Name]; !ok && (!declared || !c.visibleType(r.Name)) && !c.contracts[r.Name] && !anyType[r.Name] {
 			return r.Name
 		}
 	}

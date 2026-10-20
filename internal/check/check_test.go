@@ -1,6 +1,8 @@
 package check_test
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -133,5 +135,57 @@ func TestAcceptsCorrectPrograms(t *testing.T) {
 		if got := problems(t, src); len(got) > 0 {
 			t.Errorf("unexpected problems %q in\n%s", got, src)
 		}
+	}
+}
+
+func TestImports(t *testing.T) {
+	files := map[string]string{
+		"main.dad": `استورد مساحة، سر، غير_موجود، شكل من "./أشكال"
+دالة ف(ن: نقطة) = ن
+دالة ج(ش: شكل) = طابق ش {
+    دائرة(نق) => نق
+    مربع => 0
+}
+اطبع(مساحة(2)، دائرة(1))
+مساحة = 3
+`,
+		"أشكال.dad": `دالة مساحة(ض: صحيح): صحيح = ض * ض
+خاص ثابت سر = 1
+نوع نقطة(س: صحيح)
+تعداد شكل { دائرة(نق: صحيح)، مربع }
+`,
+		"مكرر.dad": `استورد مساحة من "./أشكال"
+نوع نقطة(ص: صحيح)
+`,
+	}
+	read := func(p string) (string, error) {
+		if s, ok := files[p]; ok {
+			return s, nil
+		}
+		return "", os.ErrNotExist
+	}
+	_, diags := check.Load("main.dad", read)
+	var got []string
+	for _, d := range diags {
+		got = append(got, fmt.Sprintf("%s:%d: %s", d.Path, d.Pos.Line, d.Msg))
+	}
+	want := []string{
+		"main.dad:1: «سر» خاص بالملف «أشكال»، فلا يمكن استيراده",
+		"main.dad:1: «غير_موجود» غير موجود في «أشكال»",
+		"main.dad:2: النوع «نقطة» معرّف في «أشكال»؛ استورده أولاً: استورد نقطة من \"./أشكال\"",
+		"main.dad:8: لا يمكن تغيير «مساحة»",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("got:\n%s", strings.Join(got, "\n"))
+	}
+	for i := range want {
+		if !strings.HasPrefix(got[i], want[i]) {
+			t.Errorf("got  %s\nwant %s", got[i], want[i])
+		}
+	}
+
+	_, diags = check.Load("مكرر.dad", read)
+	if len(diags) != 1 || !strings.Contains(diags[0].Msg, "النوع «نقطة» معرّف أيضاً في «أشكال»") {
+		t.Errorf("duplicate type: %v", diags)
 	}
 }

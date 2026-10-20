@@ -15,6 +15,7 @@ import (
 	"github.com/mtwalli/dad-lang/internal/codegen/js"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/module"
 )
 
 // Every program must print the same thing run by the interpreter and
@@ -331,6 +332,84 @@ console.log(JSON.stringify(pages));
 			}
 			if len(events) < 5 || len(distinct) < 3 {
 				t.Errorf("only %d events and %d different pages were tried", len(events), len(distinct))
+			}
+		})
+	}
+}
+
+// Programs of several files: each file compiles to a module of its own.
+func TestPrograms(t *testing.T) {
+	nodePath := node(t)
+	disk := func(p string) (string, error) {
+		b, err := os.ReadFile(p)
+		return string(b), err
+	}
+	memory := func(files map[string]string) module.Reader {
+		return func(p string) (string, error) {
+			if s, ok := files[filepath.ToSlash(p)]; ok {
+				return s, nil
+			}
+			return "", os.ErrNotExist
+		}
+	}
+	programs := map[string]struct {
+		main string
+		read module.Reader
+	}{
+		"example": {"../../../examples/07-modules/الرئيسي.dad", disk},
+		"names": {"main.dad", memory(map[string]string{
+			"main.dad": `استورد عد، زد، شكل، العدد، نقطة من "./عداد"
+استورد وصف من "./أشكال"
+دالة مساعد() = "مساعد الرئيسي"
+زد()
+زد()
+اطبع(عد()، العدد، مساعد()، وصف(دائرة(2))، وصف(مربع)، شكل.مربع)
+ثابت ن = نقطة(1، 2)
+اطبع(ن، ن.مجموع()، ن من نوع نقطة، (5).مضاعف())
+ارفع مشكلة("من الرئيسي")
+`,
+			"عداد.dad": `متغير العدد = 0
+خاص دالة مساعد() = 1
+دالة زد() { العدد += مساعد() }
+دالة عد() = العدد
+تعداد شكل { دائرة(نق: صحيح)، مربع }
+نوع نقطة(س: صحيح، ص: صحيح) {
+    دالة مجموع() = س + ص
+}
+امتداد صحيح { دالة مضاعف() = هذا * 2 }
+`,
+			"أشكال.dad": `استورد شكل من "./عداد"
+دالة وصف(ش: شكل): نص = طابق ش {
+    دائرة(نق) => "دائرة {نق}"
+    مربع => "مربع"
+}
+`,
+		})},
+	}
+	for name, p := range programs {
+		t.Run(name, func(t *testing.T) {
+			prog, diags := check.Load(p.main, p.read)
+			if len(diags) > 0 {
+				t.Fatalf("%v", diags)
+			}
+			var want bytes.Buffer
+			if err := interp.New(&want).RunProgram(prog); err != nil {
+				want.WriteString("ERROR: " + err.Error() + "\n")
+			}
+			dir := t.TempDir()
+			write(t, filepath.Join(dir, "dad-runtime.js"), js.Runtime)
+			write(t, filepath.Join(dir, "app.js"), js.CompileProgram(prog).Node("app.dad"))
+			cmd := exec.Command(nodePath, "app.js")
+			cmd.Dir = dir
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			cmd.Run()
+			got := stdout.String()
+			if msg, ok := strings.CutPrefix(strings.TrimSpace(stderr.String()), "app.dad: "); ok {
+				got += "ERROR: " + msg + "\n"
+			}
+			if got != want.String() {
+				t.Errorf("--- interpreter\n%s\n--- compiled\n%s\n%s", want.String(), got, stderr.String())
 			}
 		})
 	}

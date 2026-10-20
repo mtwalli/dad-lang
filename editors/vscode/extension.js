@@ -21,6 +21,7 @@ let diagnostics;
 let cachedPath = null;
 let warnedMissing = false;
 let warnedOld = false;
+let pathFlag = true; // dad check understands «--path» (v0.2 and newer): imports are checked too
 let output = null; // the Ḍād output panel
 const timers = new Map(); // document uri → debounce timer
 const pending = new Map(); // document uri → running check process
@@ -121,8 +122,10 @@ function parseCheckOutput(doc, stdout) {
 
 // ---------- checking ----------
 
-function check(doc) {
+function check(doc, withPath) {
   if (doc.languageId !== "dad") return;
+  // A saved file is checked with the files it imports, which dad reads from the disk.
+  if (withPath === undefined) withPath = pathFlag && doc.uri.scheme === "file";
   const exe = dadPath();
   if (!exe) {
     warnMissing();
@@ -135,7 +138,8 @@ function check(doc) {
 
   let child;
   try {
-    child = cp.spawn(exe, ["check", "--json", "-"], { windowsHide: true });
+    const args = withPath ? ["check", "--json", "--path", doc.uri.fsPath, "-"] : ["check", "--json", "-"];
+    child = cp.spawn(exe, args, { windowsHide: true });
   } catch {
     warnMissing();
     return;
@@ -162,6 +166,11 @@ function check(doc) {
     try {
       diagnostics.set(doc.uri, parseCheckOutput(doc, out));
     } catch {
+      if (withPath) {
+        pathFlag = false; // an older dad: check the text alone
+        check(doc, false);
+        return;
+      }
       warnOld();
     }
   });
@@ -349,7 +358,8 @@ function activate(context) {
       check(doc);
       font.maybeOffer(context, doc);
     }),
-    vscode.workspace.onDidSaveTextDocument((doc) => check(doc)),
+    // saving a file can fix or break the files that import it
+    vscode.workspace.onDidSaveTextDocument(() => vscode.workspace.textDocuments.forEach((d) => check(d))),
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (e.document.languageId === "dad" && cfg().get("checkOnType", true)) scheduleCheck(e.document, 300);
     }),
@@ -361,13 +371,14 @@ function activate(context) {
       if (e.affectsConfiguration("dad.path")) {
         lsp.restart();
         cachedPath = null;
+        pathFlag = true;
         warnedMissing = false;
         warnedOld = false;
-        vscode.workspace.textDocuments.forEach(check);
+        vscode.workspace.textDocuments.forEach((d) => check(d));
       }
     })
   );
-  vscode.workspace.textDocuments.forEach(check);
+  vscode.workspace.textDocuments.forEach((d) => check(d));
   font.maybeOffer(context, vscode.workspace.textDocuments.find((d) => d.languageId === "dad"));
 }
 

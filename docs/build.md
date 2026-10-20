@@ -36,10 +36,10 @@ without asking a server.
   them.
 - **Server functions** (`خادم دالة`) run in the page, like any function.
 - **Routes** (`مسار`) need a server, so they are left out. `dad build` says so. Serve them
-  with `dad dev`.
+  with `dad dev` or `dad serve`.
 
-To share records between visitors, keep using `dad dev`, which runs the program on a
-server with SQLite. A production server is on the [roadmap](ROADMAP.md).
+To share records between visitors, run the program on a server with
+[`dad serve`](deploy.md): everyone then sees the same tables, kept in SQLite.
 
 ## Programs without an interface
 

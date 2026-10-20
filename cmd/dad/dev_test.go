@@ -215,3 +215,33 @@ func between(s, a, b string) string {
 	s = s[i+len(a):]
 	return s[:strings.Index(s, b)]
 }
+
+// A change to an imported file reloads the program too.
+func TestDevWatchesImports(t *testing.T) {
+	s, ts, path := startDev(t, "استورد التحية من \"./نصوص\"\nمسار جلب \"/\" = التحية\n")
+	lib := filepath.Join(filepath.Dir(path), "نصوص.dad")
+	os.WriteFile(lib, []byte("ثابت التحية = \"أهلاً\"\n"), 0o644)
+	s.load()
+	if s.err != "" {
+		t.Fatal(s.err)
+	}
+	stop := make(chan struct{})
+	defer close(stop)
+	go s.watch(stop)
+	later := time.Now().Add(2 * time.Second)
+	os.WriteFile(lib, []byte("ثابت التحية = \"مرحباً\"\n"), 0o644)
+	os.Chtimes(lib, later, later)
+	for i := 0; i < 50; i++ {
+		time.Sleep(50 * time.Millisecond)
+		res, err := http.Get(ts.URL + "/")
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		if strings.Contains(string(b), "مرحباً") {
+			return
+		}
+	}
+	t.Error("the change to the imported file was not picked up")
+}

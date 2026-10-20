@@ -16,6 +16,7 @@ import (
 	"github.com/mtwalli/dad-lang/internal/ast"
 	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/lexer"
+	"github.com/mtwalli/dad-lang/internal/module"
 	"github.com/mtwalli/dad-lang/internal/parser"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
@@ -123,6 +124,12 @@ type checker struct {
 	deferred  []func()
 	fr        *frame
 
+	// programs of several files
+	mod      *module.Module             // the file being checked; nil for a lone source text
+	scopes   map[*module.Module]*scope  // each checked file's top-level names
+	imported map[*scope]map[string]bool // names a file imported rather than declared
+	owners   map[string]*module.Module  // file that declares each type, table, enum, case and server function
+
 	// for editors (Analyze): definitions of functions, members and parameters
 	info       *Info
 	funcDefs   map[*ast.FuncDecl]*Def
@@ -145,6 +152,9 @@ func newChecker() *checker {
 		funcDefs:   map[*ast.FuncDecl]*Def{},
 		memberDefs: map[string]map[string]*Def{},
 		paramDefs:  map[*ast.Param]*Def{},
+		scopes:     map[*module.Module]*scope{},
+		imported:   map[*scope]map[string]bool{},
+		owners:     map[string]*module.Module{},
 	}
 	// Built-ins live in a scope around the program's own, like in the interpreter.
 	prelude := &scope{names: map[string]*symbol{}}
@@ -208,9 +218,13 @@ func (c *checker) collect(s ast.Stmt) {
 	g := c.global
 	switch d := s.(type) {
 	case *ast.FuncDecl:
+		if d.Server {
+			c.claim(d.Name, d.Pos, "دالة الخادم")
+		}
 		fd := c.funcDef(d, "function", nil)
 		c.define(g, d.Name, &symbol{kind: sFunc, decl: d, params: d.Params, typ: tFunc, what: "«" + d.Name + "»", def: fd}, d.Pos)
 	case *ast.TypeDecl:
+		c.claim(d.Name, d.Pos, "النوع")
 		c.types[d.Name] = &Type{Kind: Struct, Name: d.Name}
 		c.structs[d.Name] = &structInfo{name: d.Name, fields: d.Fields, methods: map[string]*ast.FuncDecl{}}
 		td := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "type", "نوع "+d.Name+paramsSig(d.Fields), &Type{Kind: TypeValue, Name: d.Name}, nil)
@@ -223,6 +237,7 @@ func (c *checker) collect(s ast.Stmt) {
 	case *ast.TableDecl:
 		fields := append([]*ast.Param{}, d.Fields...)
 		fields = append(fields, &ast.Param{At: d.At, Name: "رقم", Type: &ast.TypeRef{Kind: ast.NamedType, Name: "صحيح"}, Default: &ast.IntLit{}})
+		c.claim(d.Name, d.Pos, "الجدول")
 		c.types[d.Name] = &Type{Kind: Struct, Name: d.Name}
 		c.structs[d.Name] = &structInfo{name: d.Name, fields: fields, methods: map[string]*ast.FuncDecl{}, table: true}
 		td := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "table", "جدول "+d.Name+paramsSig(d.Fields), &Type{Kind: TypeValue, Name: d.Name}, nil)
@@ -230,11 +245,13 @@ func (c *checker) collect(s ast.Stmt) {
 		c.define(g, d.Name, &symbol{kind: sType, typ: &Type{Kind: TypeValue, Name: d.Name}, params: fields,
 			result: c.types[d.Name], what: "«" + d.Name + "»", def: td}, d.Pos)
 	case *ast.EnumDecl:
+		c.claim(d.Name, d.Pos, "التعداد")
 		c.types[d.Name] = &Type{Kind: Enum, Name: d.Name}
 		c.enums[d.Name] = &enumInfo{name: d.Name, variants: d.Variants}
 		ed := c.def(d.Name, c.nameAfter(d.Pos, d.Name), "enum", "تعداد "+d.Name, &Type{Kind: EnumType, Name: d.Name}, nil)
 		c.define(g, d.Name, &symbol{kind: sEnum, typ: &Type{Kind: EnumType, Name: d.Name}, def: ed}, d.Pos)
 		for _, v := range d.Variants {
+			c.claim(v.Name, v.Pos, "الحالة")
 			c.variantOf[v.Name] = d.Name
 			vd := c.def(v.Name, c.nameAfter(v.Pos, v.Name), "case", v.Name+paramsSig(v.Fields)+" — "+d.Name, c.types[d.Name], ed)
 			if vd != nil {
@@ -261,10 +278,7 @@ func (c *checker) collect(s ast.Stmt) {
 		c.define(g, d.Name, &symbol{kind: sComponent, typ: &Type{Kind: Component}, params: d.Params, result: tNull,
 			what: "المكون «" + d.Name + "»", def: cd}, d.Pos)
 	case *ast.Import:
-		c.errorf(d.Pos, "الاستيراد من ملفات أخرى غير مدعوم بعد؛ ضع الكود في ملف واحد حالياً")
-		for _, n := range d.Names {
-			g.names[n] = &symbol{kind: sVar}
-		}
+		c.importDecl(d)
 	}
 }
 
@@ -684,7 +698,7 @@ func (c *checker) stmt(st ast.Stmt, s *scope) *Type {
 		c.define(s, d.Name, &symbol{kind: sFunc, decl: d, params: d.Params, typ: tFunc, what: "«" + d.Name + "»", def: fd}, d.Pos)
 		c.funcDeclNow(d, s)
 	case *ast.Import:
-		c.errorf(d.Pos, "الاستيراد من ملفات أخرى غير مدعوم بعد؛ ضع الكود في ملف واحد حالياً")
+		c.errorf(d.Pos, "«استورد» تُكتب في أعلى الملف، لا داخل كتلة")
 	default:
 		// other declarations inside a block are handled like top-level ones
 		c.collect(st)
@@ -780,4 +794,171 @@ func Source(src string) (*ast.File, []lexer.Diagnostic) {
 		return a.Line < b.Line || a.Line == b.Line && a.Col < b.Col
 	})
 	return f, all
+}
+
+// ---------------------------------------------------------------- programs of several files
+
+// Program checks every file of a program, each after the files it imports,
+// and adds the problems to each module's Diags.
+func Program(p *module.Program) {
+	c := newChecker()
+	for _, m := range p.Modules {
+		c.module(m, nil)
+	}
+}
+
+// Load reads a program, checks it, and returns it with its problems.
+func Load(path string, read module.Reader) (*module.Program, []module.Diag) {
+	p := module.Load(path, read)
+	Program(p)
+	return p, p.Diags()
+}
+
+// module checks one file of a program; info records it for editors.
+func (c *checker) module(m *module.Module, info *Info) {
+	if m.File == nil {
+		return
+	}
+	c.global = &scope{names: map[string]*symbol{}, parent: c.global.root()}
+	c.mod, c.info, c.diags = m, info, nil
+	if info != nil {
+		info.c = c
+	}
+	c.file(m.File)
+	c.scopes[m] = c.global
+	m.Diags = append(m.Diags, c.diags...)
+	c.diags = nil
+}
+
+// root is the scope of built-ins around every file.
+func (s *scope) root() *scope {
+	for s.parent != nil {
+		s = s.parent
+	}
+	return s
+}
+
+// claim records the file that declares a name every file shares: types,
+// tables, enums and their cases are known by name across the program, and
+// server functions are called by name from the page.
+func (c *checker) claim(name string, pos token.Pos, what string) {
+	if c.mod == nil {
+		return
+	}
+	if other := c.owners[name]; other != nil && other != c.mod {
+		c.errorf(pos, "%s «%s» معرّف أيضاً في «%s»؛ أسماء الأنواع والجداول والتعدادات وحالاتها ودوال الخادم لا تتكرر بين ملفات البرنامج", what, name, other.Name())
+		return
+	}
+	c.owners[name] = c.mod
+}
+
+// importDecl brings names from another file: «استورد نقطة، شكل من "./أشكال"».
+// Importing a تعداد brings its cases too.
+func (c *checker) importDecl(d *ast.Import) {
+	g := c.global
+	if c.imported[g] == nil {
+		c.imported[g] = map[string]bool{}
+	}
+	var dep *module.Module
+	if c.mod != nil {
+		dep = c.mod.Deps[d]
+	} else {
+		c.errorf(d.Pos, "الاستيراد يحتاج ملفاً محفوظاً؛ هنا ضع الكود في ملف واحد")
+	}
+	from := c.scopes[dep]
+	for i, n := range d.Names {
+		pos := d.NamesPos[i]
+		if from == nil {
+			// the file is missing, makes a circle or doesn't parse: reported already
+			g.names[n] = &symbol{kind: sVar}
+			continue
+		}
+		sym := from.names[n]
+		switch {
+		case sym == nil || c.imported[from][n]:
+			var exported []string
+			for name := range from.names {
+				if !c.imported[from][name] && !dep.File.Private[name] {
+					exported = append(exported, name)
+				}
+			}
+			sort.Strings(exported)
+			c.errorf(pos, "«%s» غير موجود في «%s»%s", n, dep.Name(), didYouMean(n, exported))
+			g.names[n] = &symbol{kind: sVar}
+		case dep.File.Private[n] || dep.File.Private[c.variantOf[n]]:
+			c.errorf(pos, "«%s» خاص بالملف «%s»، فلا يمكن استيراده", n, dep.Name())
+			g.names[n] = &symbol{kind: sVar}
+		default:
+			c.importName(n, sym, pos, dep)
+			if sym.kind == sEnum {
+				for _, v := range c.enums[n].variants {
+					if vs := from.names[v.Name]; vs != nil && g.names[v.Name] == nil {
+						c.importName(v.Name, vs, pos, dep)
+					}
+				}
+			}
+		}
+	}
+}
+
+func (c *checker) importName(name string, sym *symbol, pos token.Pos, dep *module.Module) {
+	cp := *sym
+	cp.mutable = false
+	detail := "مستورد من «" + dep.Name() + "»"
+	kind := "constant"
+	switch sym.kind {
+	case sFunc:
+		detail, kind = funcSig(sym.decl)+" — "+detail, "function"
+	case sType:
+		detail, kind = "نوع "+name+paramsSig(sym.params)+" — "+detail, "type"
+	case sEnum:
+		detail, kind = "تعداد "+name+" — "+detail, "enum"
+	case sVariant:
+		detail, kind = name+paramsSig(sym.params)+" — "+detail, "case"
+	case sComponent:
+		detail, kind = "مكون "+name+paramsSig(sym.params)+" — "+detail, "component"
+	default:
+		if sym.typ != nil {
+			detail = name + ": " + sym.typ.String() + " — " + detail
+		}
+	}
+	cp.def = c.def(name, pos, kind, detail, sym.typ, nil)
+	if cp.def != nil {
+		cp.def.Origin = origin(dep, name)
+	}
+	c.define(c.global, name, &cp, pos)
+	c.imported[c.global][name] = true
+}
+
+// visibleType reports whether a type declared in another file was imported.
+func (c *checker) visibleType(name string) bool {
+	owner := c.owners[name]
+	if c.mod == nil || owner == nil || owner == c.mod {
+		return true
+	}
+	return c.global.lookup(name) != nil
+}
+
+// origin finds where a file declares a top-level name, or a case of its enums.
+func origin(m *module.Module, name string) *Origin {
+	var at token.Pos
+	for _, s := range m.File.Stmts {
+		if ast.DeclName(s) == name {
+			at = s.P()
+		}
+		if e, ok := s.(*ast.EnumDecl); ok {
+			for _, v := range e.Variants {
+				if v.Name == name {
+					at = v.Pos
+				}
+			}
+		}
+	}
+	toks, _ := lexer.Tokenize(m.Src)
+	for _, t := range toks {
+		if t.Kind == token.IDENT && t.Value == name && !before(t.Pos, at) {
+			return &Origin{Path: m.Path, Src: m.Src, Pos: t.Pos, Len: len([]rune(t.Lit))}
+		}
+	}
+	return nil
 }

@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -222,5 +225,46 @@ func TestLanguageServer(t *testing.T) {
 	def = c.request("textDocument/definition", at(0, 25)).(map[string]any)
 	if s := def["range"].(map[string]any)["start"].(map[string]any); s["character"] != 5.0 {
 		t.Errorf("UTF-16 columns: %v", def)
+	}
+}
+
+// A file is checked with the files it imports; definitions lead into them.
+func TestImports(t *testing.T) {
+	dir := t.TempDir()
+	lib := filepath.Join(dir, "أشكال.dad")
+	os.WriteFile(lib, []byte("// أشكال\nدالة مساحة(ض: عشري): عشري = ض * ض\nخاص ثابت سر = 1\n"), 0o644)
+	main := filepath.Join(dir, "main.dad")
+	mainURI := (&url.URL{Scheme: "file", Path: filepath.ToSlash(main)}).String()
+	if !strings.HasPrefix(filepath.ToSlash(main), "/") {
+		mainURI = (&url.URL{Scheme: "file", Path: "/" + filepath.ToSlash(main)}).String()
+	}
+	c := start(t)
+	c.notify("textDocument/didOpen", map[string]any{"textDocument": map[string]any{"uri": mainURI, "languageId": "dad", "version": 1,
+		"text": "استورد مساحة، سر من \"./أشكال\"\nاطبع(مساحة(2))\n"}})
+	pos := func(line, char int) map[string]any {
+		return map[string]any{"textDocument": map[string]any{"uri": mainURI}, "position": map[string]any{"line": line, "character": char}}
+	}
+	c.request("textDocument/hover", pos(1, 6))
+	var diags []any
+	c.mu.Lock()
+	for _, n := range c.notes {
+		if n["method"] == "textDocument/publishDiagnostics" {
+			diags = n["params"].(map[string]any)["diagnostics"].([]any)
+		}
+	}
+	c.mu.Unlock()
+	if len(diags) != 1 || !strings.Contains(fmt.Sprint(diags[0]), "«سر» خاص بالملف «أشكال»") {
+		t.Errorf("diagnostics: %v", diags)
+	}
+	h := c.request("textDocument/hover", pos(1, 6)).(map[string]any)
+	if v := h["contents"].(map[string]any)["value"].(string); !strings.Contains(v, "دالة مساحة(ض: عشري): عشري — مستورد من «أشكال»") {
+		t.Errorf("hover: %v", v)
+	}
+	def := c.request("textDocument/definition", pos(1, 6)).(map[string]any)
+	if u, _ := url.Parse(def["uri"].(string)); filepath.Base(filepath.FromSlash(u.Path)) != "أشكال.dad" {
+		t.Errorf("definition: %v", def)
+	}
+	if r := def["range"].(map[string]any)["start"].(map[string]any); r["line"] != 1.0 || r["character"] != 5.0 {
+		t.Errorf("definition range: %v", def)
 	}
 }

@@ -863,3 +863,52 @@ html body {
 .dad-play__output > [role="tabpanel"][hidden] {
   display: none !important;
 }
+
+/* ---------- the Arabic tutorial: right to left ---------- */
+
+.dad-rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: "IBM Plex Sans Arabic", var(--md-text-font-family), sans-serif;
+  line-height: 1.9;
+}
+
+.dad-rtl ul,
+.dad-rtl ol {
+  margin-right: 0.625em;
+  margin-left: 0;
+}
+
+.dad-rtl .admonition,
+.dad-rtl details {
+  border-left: none;
+  border-right: 0.2rem solid var(--md-default-fg-color--lightest);
+}
+
+/* Commands stay left to right */
+.dad-rtl .language-sh,
+.dad-rtl .language-powershell,
+.dad-rtl .language-text:not(.dad-out) {
+  direction: ltr;
+  text-align: left;
+}
+
+.dad-rtl table {
+  direction: rtl;
+}
+
+.dad-rtl img {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+}
+
+.dad-rtl th,
+.dad-rtl td {
+  text-align: right !important;
+}
+
+/* the page's table of contents reads right to left too */
+body:has(.dad-rtl) .md-sidebar--secondary .md-nav {
+  direction: rtl;
+  text-align: right;
+}

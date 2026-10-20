@@ -68,8 +68,74 @@ func TestExamples(t *testing.T) {
 	for _, out := range outs {
 		name := strings.TrimSuffix(filepath.Base(out), ".txt")
 		t.Run(name, func(t *testing.T) {
+			if fi, err := os.Stat("../../examples/" + name); err == nil && fi.IsDir() {
+				goldenProgram(t, "../../examples/"+name+"/الرئيسي.dad", out)
+				return
+			}
 			golden(t, "../../examples/"+name+".dad", out)
 		})
+	}
+}
+
+// goldenProgram runs a program of several files, whose main file is الرئيسي.dad.
+func goldenProgram(t *testing.T, mainPath, wantPath string) {
+	prog, diags := check.Load(mainPath, func(p string) (string, error) {
+		b, err := os.ReadFile(p)
+		return string(b), err
+	})
+	if len(diags) > 0 {
+		t.Fatalf("%v", diags)
+	}
+	var out bytes.Buffer
+	in := interp.New(&out)
+	if err := in.RunProgram(prog); err != nil {
+		t.Fatal(err)
+	}
+	want, _ := os.ReadFile(wantPath)
+	if got := out.String(); got != strings.ReplaceAll(string(want), "\r\n", "\n") {
+		t.Errorf("output mismatch\n--- got\n%s\n--- want\n%s", got, want)
+	}
+}
+
+// Files keep their own names: two files may each have a «مساعد» of their own,
+// and an imported name is a copy of the value the other file gave it.
+func TestModules(t *testing.T) {
+	files := map[string]string{
+		"main.dad": `استورد عد، زد، شكل، العدد من "./عداد"
+استورد وصف من "./أشكال"
+دالة مساعد() = "مساعد الرئيسي"
+زد()
+زد()
+اطبع(عد()، العدد، مساعد()، وصف(دائرة(2))، وصف(مربع)، شكل.مربع)
+`,
+		"عداد.dad": `متغير العدد = 0
+خاص دالة مساعد() = 1
+دالة زد() { العدد += مساعد() }
+دالة عد() = العدد
+تعداد شكل { دائرة(نق: صحيح)، مربع }
+`,
+		"أشكال.dad": `استورد شكل من "./عداد"
+دالة وصف(ش: شكل): نص = طابق ش {
+    دائرة(نق) => "دائرة {نق}"
+    مربع => "مربع"
+}
+`,
+	}
+	prog, diags := check.Load("main.dad", func(p string) (string, error) {
+		if s, ok := files[filepath.ToSlash(p)]; ok {
+			return s, nil
+		}
+		return "", os.ErrNotExist
+	})
+	if len(diags) > 0 {
+		t.Fatalf("%v", diags)
+	}
+	var out bytes.Buffer
+	if err := interp.New(&out).RunProgram(prog); err != nil {
+		t.Fatal(err)
+	}
+	if got := out.String(); got != "2 0 مساعد الرئيسي دائرة 2 مربع مربع\n" {
+		t.Errorf("got %q", got)
 	}
 }
 

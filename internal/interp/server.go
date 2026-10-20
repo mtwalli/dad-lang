@@ -40,7 +40,7 @@ func (in *Interp) Routes() []*Route { return in.routes }
 func (in *Interp) ServerFunctions() []ServerFunc {
 	var out []ServerFunc
 	for _, name := range in.serverFns {
-		f, _ := in.globals.lookup(name).val.(*Func)
+		f := in.serverFn[name]
 		sf := ServerFunc{Name: name, Params: []ServerParam{}}
 		for _, p := range f.Params {
 			sf.Params = append(sf.Params, ServerParam{Name: p.Name, Type: typeString(p.Type), Optional: p.Default != nil || (p.Type != nil && p.Type.Optional)})
@@ -78,7 +78,7 @@ func (in *Interp) CallServer(name string, args map[string]any) (result any, err 
 	if !isServer {
 		return nil, fmt.Errorf("لا توجد دالة خادم باسم «%s»", name)
 	}
-	f := in.globals.lookup(name).val.(*Func)
+	f := in.serverFn[name]
 	err = in.safely(func() {
 		ci := &callInfo{pos: f.Params0Pos(), name: name}
 		for _, p := range f.Params {

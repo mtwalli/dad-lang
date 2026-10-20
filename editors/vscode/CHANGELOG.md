@@ -2,6 +2,11 @@
 
 ## Next release
 
+- Programs in several files: a saved file is checked together with the files it imports
+  (`استورد`), and saving a file checks the files that import it again. Go to definition on
+  an imported name opens the file that declares it. With an older `dad`, files are checked
+  alone, as before.
+
 - Go to definition, find all references, rename, the outline, and hovers that show how a
   name is declared, from Ḍād's language server (`dad lsp`). After a `.`, completion lists the
   real fields and methods of the value. Needs a `dad` with `dad lsp`; with an older one these
