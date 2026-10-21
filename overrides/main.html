@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{#- Arabic pages search only the Arabic pages: see overrides/hooks/search.py -#}
+{% block scripts %}
+  {%- if config.theme.language == "ar" %}
+  <script>
+    (function () {
+      var open = XMLHttpRequest.prototype.open
+      XMLHttpRequest.prototype.open = function (method, url) {
+        var args = Array.prototype.slice.call(arguments)
+        args[1] = String(url).replace(/\/search\/search_index\.json$/, "/search/search_index.ar.json")
+        return open.apply(this, args)
+      }
+    })()
+  </script>
+  {%- endif %}
+  {{ super() }}
+{% endblock %}

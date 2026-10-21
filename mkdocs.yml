@@ -120,6 +120,7 @@ plugins:
 hooks:
   - overrides/hooks/cache_bust.py
   - overrides/hooks/anchors.py
+  - overrides/hooks/search.py
 
 extra_css:
   - assets/dad.css
