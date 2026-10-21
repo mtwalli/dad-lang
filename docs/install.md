@@ -1,19 +1,22 @@
-# Install Ḍād
+---
+icon: lucide/download
+---
 
-!!! note "New to programming?"
-    The [tutorial](tutorial/index.md) starts from here and ends with a site online. It is
-    also [in Arabic](https://mtwalli.github.io/dad-lang/ar/tutorial/). You can also [run code in your browser](playground.md) without installing
-    anything.
+# تثبيت ضاد
 
-## Install
+!!! note "جديد على البرمجة؟"
+    يبدأ [دليل المبتدئين](tutorial/index.md) من هنا، وينتهي بموقع على الإنترنت. ويمكنك
+    أيضاً أن [تجرّب الكود في المتصفح](playground.md) دون أن تثبّت شيئاً.
 
-=== "Homebrew (macOS, Linux)"
+## التثبيت
+
+=== "Homebrew (macOS وLinux)"
 
     ```sh
     brew install mtwalli/dad/dad
     ```
 
-    `brew upgrade dad` updates it later.
+    ولتحديثه فيما بعد: `brew upgrade dad`.
 
 === "winget (Windows)"
 
@@ -21,77 +24,74 @@
     winget install mtwalli.dad
     ```
 
-    Open a new terminal afterwards. `winget upgrade mtwalli.dad` updates it later.
+    ثم افتح طرفية جديدة. ولتحديثه فيما بعد: `winget upgrade mtwalli.dad`.
 
-=== "Debian, Ubuntu"
+=== "Debian وUbuntu"
 
-    Download `dad_<version>_amd64.deb` (or `_arm64.deb`) from the
-    [releases page](https://github.com/mtwalli/dad-lang/releases/latest), then:
+    نزّل `dad_<الإصدار>_amd64.deb` (أو `_arm64.deb`) من
+    [صفحة الإصدارات](https://github.com/mtwalli/dad-lang/releases/latest)، ثم:
 
     ```sh
     sudo apt install ./dad_*_amd64.deb
     ```
 
-=== "Fedora, RHEL"
+=== "Fedora وRHEL"
 
-    Download `dad-<version>-1.x86_64.rpm` (or `.aarch64.rpm`) from the
-    [releases page](https://github.com/mtwalli/dad-lang/releases/latest), then:
+    نزّل `dad-<الإصدار>-1.x86_64.rpm` (أو `.aarch64.rpm`) من
+    [صفحة الإصدارات](https://github.com/mtwalli/dad-lang/releases/latest)، ثم:
 
     ```sh
     sudo dnf install ./dad-*.x86_64.rpm
     ```
 
-=== "Install script (macOS, Linux)"
+=== "سكربت التثبيت (macOS وLinux)"
 
     ```sh
     curl -fsSL https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.sh | sh
     ```
 
-    The script downloads the latest release for your system, verifies its checksum and
-    puts `dad` in `~/.dad/bin`, together with the Arabic alias `ضاد`. If that folder isn't
-    on your `PATH` yet, the script prints the one line to add.
+    ينزّل السكربت أحدث إصدار لجهازك، ويتحقق من بصمته، ويضع `dad` في `~/.dad/bin` ومعه
+    الاسم العربي `ضاد`. وإن لم يكن ذلك المجلد في `PATH` بعد، طبع لك السطر الذي تضيفه.
 
-=== "Install script (Windows)"
+=== "سكربت التثبيت (Windows)"
 
-    In PowerShell:
+    في PowerShell:
 
     ```powershell
     irm https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.ps1 | iex
     ```
 
-    The script installs `dad.exe` in `%LOCALAPPDATA%\dad\bin` and adds it to your `PATH`.
-    Open a new terminal afterwards.
+    يثبّت السكربت `dad.exe` في `%LOCALAPPDATA%\dad\bin` ويضيفه إلى `PATH`. افتح طرفية
+    جديدة بعده.
 
-=== "With Go"
+=== "بلغة Go"
 
-    If you have Go 1.26 or newer:
+    إن كان عندك Go 1.26 أو أحدث:
 
     ```sh
     go install github.com/mtwalli/dad-lang/cmd/dad@latest
     ```
 
-=== "Download manually"
+=== "تنزيل يدوي"
 
-    Download the archive for your system from the
-    [releases page](https://github.com/mtwalli/dad-lang/releases/latest), unpack it and
-    put `dad` (or `dad.exe`) anywhere on your `PATH`. `checksums.txt` lists the SHA-256 of
-    every archive.
+    نزّل الأرشيف المناسب لجهازك من
+    [صفحة الإصدارات](https://github.com/mtwalli/dad-lang/releases/latest)، وفكّه، وضع `dad`
+    (أو `dad.exe`) في أي مجلد ضمن `PATH`. وفي `checksums.txt` بصمة SHA-256 لكل أرشيف.
 
-To install a specific version, set `DAD_VERSION`, for example
-`DAD_VERSION=v0.1.0`, before running the script.
+ولتثبيت إصدار بعينه، اضبط `DAD_VERSION` قبل تشغيل السكربت، مثل `DAD_VERSION=v0.1.0`.
 
-## Check the installation
+## تأكد من التثبيت
 
 ```sh
 dad version
 ```
 
-You should see the version number, for example `ضاد 0.2.0`. On macOS and Linux, Homebrew,
-the packages and the install script also give you the command's Arabic name, `ضاد`.
+سيظهر رقم الإصدار، مثل `ضاد 0.2.0`. وعلى macOS وLinux يعطيك Homebrew والحزم وسكربت
+التثبيت اسم الأمر بالعربية أيضاً: `ضاد`.
 
-## Your first file
+## أول ملف
 
-Save this as `hello.dad`:
+احفظ هذا باسم `hello.dad`:
 
 ```dad
 // أول برنامج بلغة ضاد
@@ -99,18 +99,18 @@ Save this as `hello.dad`:
 اطبع("مرحبا يا {اسم}!")
 ```
 
-Run it from the folder where you saved it:
+وشغّله من المجلد الذي حفظته فيه:
 
 ```sh
-dad run hello.dad        # or: ضاد شغل hello.dad
+dad run hello.dad
 ```
 
 ``` { .text .dad-out }
 مرحبا يا العالم!
 ```
 
-`dad hello.dad` works too. Any `.dad` file runs the same way, for example the
-[examples](examples.md) in the repository:
+وبالعربية: `ضاد شغل hello.dad`. ويعمل `dad hello.dad` أيضاً. وهكذا يعمل أي ملف `.dad`،
+ومنها [الأمثلة](examples.md) في المستودع:
 
 ```sh
 git clone https://github.com/mtwalli/dad-lang
@@ -118,9 +118,9 @@ cd dad-lang
 dad run examples/03-shapes.dad
 ```
 
-### When something goes wrong
+### حين يخطئ شيء
 
-Errors found while running stop the program and point to the line, in Arabic:
+الأخطاء التي تظهر أثناء التشغيل توقف البرنامج، وتدلّك على السطر بالعربية:
 
 ```dad
 ثابت أ = 10
@@ -131,53 +131,54 @@ Errors found while running stop the program and point to the line, in Arabic:
 hello.dad: خطأ أثناء التشغيل [السطر 2، العمود 8]: مشكلة لم تُعالَج: قسمة على صفر
 ```
 
-To find mistakes without running anything, use `check`:
+ولتجد الأخطاء دون أن تشغّل شيئاً، استعمل `check` (بالعربية: `ضاد فحص`):
 
 ```sh
-dad check hello.dad      # or: ضاد فحص hello.dad
+dad check hello.dad
 ```
 
 ``` { .text .dad-out }
 ✓ hello.dad: لا أخطاء (11 رمزاً)
 ```
 
-Now add a line with a mistake. Ḍād writes numbers with the digits 0-9 only, so a number
-typed with Arabic-Indic digits is an error:
+أضف الآن سطراً فيه خطأ. يكتب ضاد الأعداد بالأرقام 0-9 فقط، فالعدد المكتوب بالأرقام
+العربية المشرقية خطأ:
 
 ```dad
 ثابت عمر = ١٢
 ```
 
-Check again. Ḍād reports the problem in Arabic, with its line and column:
+افحص مرة أخرى. يخبرك ضاد بالمشكلة، وبسطرها وعمودها:
 
 ``` { .text .dad-out }
 hello.dad: خطأ [السطر 4، العمود 12]: اكتب الأعداد بالأرقام 0-9: «١٢» تُكتب «12»
 ```
 
-To see how Ḍād reads your code, print its tokens:
+ولترى كيف يقرأ ضاد الكود، اطبع رموزه (بالعربية: `ضاد رموز`):
 
 ```sh
-dad tokens hello.dad     # or: ضاد رموز hello.dad
+dad tokens hello.dad
 ```
 
-For highlighting, errors as you type and a Run button, install the [Ḍād extension for VS Code](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang) (or search for **Ḍād** in the Extensions view). The [editor guide](editor.md) has the details.
+وللتلوين، والأخطاء وأنت تكتب، وزر للتشغيل، ثبّت [إضافة ضاد لـVS Code](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang)
+(أو ابحث عن **Ḍād** في قائمة الإضافات). وفي [دليل المحرر](editor.md) التفاصيل.
 
-## Commands
+## الأوامر
 
-| Command | Arabic | What it does |
+| الأمر | بالعربية | ما يفعله |
 |---|---|---|
-| `dad run <file>` | `ضاد شغل <ملف>` | Run a program (`dad <file>` also works) |
-| `dad fmt <file or folder>` | `ضاد نسق <ملف>` | Format files in place (`--check` lists the ones that need it). See [Formatting](editor.md#formatting) |
-| `dad lsp` | `ضاد خادم_اللغة` | The language server, for editors: definitions, references, rename, completion. See [the editor guide](editor.md#the-language-server) |
-| `dad dev <file>` | `ضاد تطوير <ملف>` | Serve routes and server functions on `localhost:8080`, reloading on save (`--port` to change it). See [Server and data](server.md) |
-| `dad serve <file>` | `ضاد انشر <ملف>` | Run the program as a production server: no developer page, no reloading, every network interface, `$PORT` (`--port`, `--host`, `--data`). See [Putting a program online](deploy.md) |
-| `dad build <file>` | `ضاد ابن <ملف>` | Compile to JavaScript: a static site for a program with an interface, otherwise `app.js` for Node (`--out` to choose the folder). See [Building for the web](build.md) |
-| `dad check <file>` | `ضاد فحص <ملف>` | Check a file without running it: syntax, names, arguments, types and `طابق` cases (`--json` for tools) |
-| `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |
-| `dad version` | `ضاد إصدار` | Print the installed version |
-| `dad help` | `ضاد مساعدة` | List the commands |
+| `dad run <ملف>` | `ضاد شغل <ملف>` | يشغّل البرنامج (ويعمل `dad <ملف>` أيضاً) |
+| `dad fmt <ملف أو مجلد>` | `ضاد نسق <ملف>` | ينسّق الملفات ويحفظها (`--check` يعرض ما يحتاج تنسيقاً). انظر [التنسيق](editor.md#formatting) |
+| `dad lsp` | `ضاد خادم_اللغة` | خادم اللغة للمحررات: التعريفات والمراجع وإعادة التسمية والإكمال. انظر [دليل المحرر](editor.md#the-language-server) |
+| `dad dev <ملف>` | `ضاد تطوير <ملف>` | يشغّل البرنامج خادماً على `localhost:8080`، ويعيد التحميل عند الحفظ (`--port` لمنفذ آخر). انظر [الخادم والبيانات](server.md) |
+| `dad serve <ملف>` | `ضاد انشر <ملف>` | يشغّل البرنامج خادماً للنشر: بلا صفحة مطوّر ولا إعادة تحميل، على كل الواجهات، ومع `$PORT` (`--port` و`--host` و`--data`). انظر [النشر على الإنترنت](deploy.md) |
+| `dad build <ملف>` | `ضاد ابن <ملف>` | يحوّل البرنامج إلى JavaScript: موقعاً ثابتاً إن كانت له واجهة، وإلا `app.js` لـNode (`--out` لاختيار المجلد). انظر [البناء للويب](build.md) |
+| `dad check <ملف>` | `ضاد فحص <ملف>` | يفحص الملف دون تشغيله: الصياغة والأسماء والمعاملات والأنواع وحالات `طابق` (`--json` للأدوات) |
+| `dad tokens <ملف>` | `ضاد رموز <ملف>` | يطبع كل رمز مع سطره وعموده |
+| `dad version` | `ضاد إصدار` | يطبع الإصدار المثبّت |
+| `dad help` | `ضاد مساعدة` | يعرض الأوامر |
 
-## Uninstall
+## إزالة ضاد
 
 === "Homebrew"
 
@@ -191,26 +192,26 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
     winget uninstall mtwalli.dad
     ```
 
-=== "Debian, Ubuntu, Fedora"
+=== "Debian وUbuntu وFedora"
 
     ```sh
     sudo apt remove dad      # or: sudo dnf remove dad
     ```
 
-=== "Install script (macOS, Linux)"
+=== "سكربت التثبيت (macOS وLinux)"
 
     ```sh
     rm -rf ~/.dad
     ```
 
-    Then remove the `PATH` line from your shell profile if you added one.
+    ثم احذف سطر `PATH` من ملف إعدادات الطرفية إن كنت أضفته.
 
-=== "Install script (Windows)"
+=== "سكربت التثبيت (Windows)"
 
-    Delete `%LOCALAPPDATA%\dad`, then remove that folder from your user `PATH` in
-    *Settings → System → About → Advanced system settings → Environment Variables*.
+    احذف المجلد `%LOCALAPPDATA%\dad`، ثم احذفه من `PATH` الخاص بك من
+    *الإعدادات ← النظام ← حول ← إعدادات النظام المتقدمة ← متغيرات البيئة*.
 
-=== "With Go"
+=== "بلغة Go"
 
     ```sh
     rm "$(go env GOPATH)/bin/dad"

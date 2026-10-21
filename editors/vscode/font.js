@@ -74,7 +74,7 @@ async function installCommand(context) {
       `Ḍād: couldn't install the font (${err.message}). You can install it by hand: see the editor guide.`,
       "Open guide"
     ).then((c) => {
-      if (c) vscode.env.openExternal(vscode.Uri.parse("https://mtwalli.github.io/dad-lang/editor/"));
+      if (c) vscode.env.openExternal(vscode.Uri.parse("https://mtwalli.github.io/dad-lang/en/editor/"));
     });
   }
 }

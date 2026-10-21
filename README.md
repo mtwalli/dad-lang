@@ -50,11 +50,11 @@ irm https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.ps1 | iex
 With Go: `go install github.com/mtwalli/dad-lang/cmd/dad@latest`
 
 Then run a program: `dad run examples/01-hello.dad` (or `ضاد شغل …`). No install needed for the
-[browser playground](https://mtwalli.github.io/dad-lang/playground/).
-Full guide: [mtwalli.github.io/dad-lang/install](https://mtwalli.github.io/dad-lang/install/).
+[browser playground](https://mtwalli.github.io/dad-lang/en/playground/).
+Full guide: [mtwalli.github.io/dad-lang/en/install](https://mtwalli.github.io/dad-lang/en/install/).
 
 For VS Code, install [Ḍād from the Marketplace](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang)
-(search "Ḍād" in the Extensions view). See [editors/vscode](editors/vscode) and the [editor guide](https://mtwalli.github.io/dad-lang/editor/).
+(search "Ḍād" in the Extensions view). See [editors/vscode](editors/vscode) and the [editor guide](https://mtwalli.github.io/dad-lang/en/editor/).
 
 ## Build & test
 Requires Go 1.26+, and Node 18+ for the tests of compiled programs (skipped without it).
@@ -79,9 +79,10 @@ git tag v0.2.0 && git push origin v0.2.0
 ## Documentation site
 The docs are built with [MkDocs](https://www.mkdocs.org/) + [Material](https://squidfunk.github.io/mkdocs-material/)
 and published to GitHub Pages by `.github/workflows/docs.yml` on every push to `main`.
-The site is in English and Arabic ([mkdocs-static-i18n](https://github.com/ultrabug/mkdocs-static-i18n)):
-each page `page.md` has its Arabic version next to it as `page.ar.md`, served right to left
-under `/ar/`. The tests run every tutorial example in both languages and check that every
+The site is in Arabic and English ([mkdocs-static-i18n](https://github.com/ultrabug/mkdocs-static-i18n)):
+Arabic is the main site, right to left at the root, and English is under `/en/`. Each page
+`page.md` (Arabic) has its English version next to it as `page.en.md`. Old `/ar/…` links
+forward to the root. The tests run every tutorial example in both languages and check that every
 Ḍād example on the site is laid out as `dad fmt` would.
 
 ```sh

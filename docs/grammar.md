@@ -1,7 +1,11 @@
-# Grammar
+---
+icon: lucide/braces
+---
 
-This is the formal grammar of Ḍād in EBNF notation (draft 0). The lexical rules are described in
-[the specification, §2](SPEC.md#2-lexical-structure).
+# القواعد النحوية
+
+هذه القواعد الرسمية للغة ضاد بصيغة EBNF (المسودة 0). أما القواعد اللفظية (كيف تُقرأ الحروف
+والكلمات والأعداد) ففي [المواصفات، القسم 2](SPEC.md#2-lexical-structure).
 
 ```ebnf
 --8<-- "docs/grammar.ebnf"

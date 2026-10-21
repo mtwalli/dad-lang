@@ -1,9 +1,12 @@
-# Interface
+---
+icon: lucide/layout-panel-top
+---
 
-A Ḍād program can have an interface: pages made of components (`مكون`) that keep state
-(`حالة`) and lay out elements such as `عمود`, `زر` and `حقل`. Pages are right to left and
-in Arabic type from the start. Run the program with `dad dev` and open
-<http://localhost:8080>, or try it in the [playground](playground.md).
+# الواجهة
+
+يمكن أن تكون لبرنامج ضاد واجهة: صفحات من مكونات (`مكون`) تحفظ حالتها (`حالة`) وترتّب
+عناصر مثل `عمود` و`زر` و`حقل`. والصفحات من اليمين إلى اليسار وبخط عربي منذ البداية. شغّل
+البرنامج بـ`dad dev` وافتح <http://localhost:8080>، أو جرّبه في [الملعب](playground.md).
 
 ```dad
 مكون الرئيسية {
@@ -15,14 +18,13 @@ in Arabic type from the start. Run the program with `dad dev` and open
 }
 ```
 
-Click **زد** and the heading changes. Nothing else is needed: no HTML, no JavaScript, no
-build step. When the page is ready to share, `dad build` turns it into a static site that
-needs no server (see [Building for the web](build.md)).
+اضغط **زد** فيتغير العنوان. ولا يلزم شيء آخر: لا HTML ولا JavaScript ولا خطوة بناء. وحين
+تصير الصفحة جاهزة للمشاركة، يحوّلها `dad build` إلى موقع ثابت لا يحتاج خادماً (انظر
+[البناء للويب](build.md)).
 
-## Components — `مكون`
+## المكونات: `مكون` { #components }
 
-A component is a function that lays out part of a page. It can take parameters, like any
-function, and use other components:
+المكون دالة ترتّب جزءاً من الصفحة. ويأخذ معاملات كأي دالة، ويستعمل مكونات أخرى:
 
 ```dad
 مكون عداد(اسم: نص، بداية: صحيح = 0) {
@@ -44,58 +46,55 @@ function, and use other components:
 }
 ```
 
-The page shows the component named `الرئيسية` (or `التطبيق`). If there is none, it shows the
-last component that needs no arguments.
+تعرض الصفحة المكون الذي اسمه `الرئيسية` (أو `التطبيق`). فإن لم يوجد، عرضت آخر مكون لا
+يحتاج معاملات.
 
-Inside a component, ordinary code works as everywhere else: `إذا` shows elements only when
-something is true, and `لكل` repeats them.
+وداخل المكون يعمل الكود العادي كما يعمل في كل مكان: `إذا` تُظهر العناصر حين يصحّ شيء
+فقط، و`لكل` تكررها.
 
 ```dad
 إذا اسم != "" { فقرة("أهلاً يا {اسم}") }
 لكل م في مهام { فقرة(م.عنوان) }
 ```
 
-## State — `حالة`
+## الحالة: `حالة` { #state }
 
-`حالة ع = 0` is a variable that keeps its value while the page is open. The value after `=`
-is only used the first time. Change it anywhere, in a button's block for example, and the
-page shows the new value.
+`حالة ع = 0` متغير يحفظ قيمته ما دامت الصفحة مفتوحة. ولا تُستعمل القيمة بعد `=` إلا أول
+مرة. غيّرها في أي مكان، في كتلة زر مثلاً، فتعرض الصفحة القيمة الجديدة.
 
-Each copy of a component has its own state: the two counters above count separately.
-State lasts as long as the page is open; to keep data for longer, save it in a
-[table](server.md#tables).
+ولكل نسخة من المكون حالتها: العدّادان أعلاه يعدّان كلٌّ وحده. وتبقى الحالة ما دامت الصفحة
+مفتوحة؛ ولتحفظ البيانات مدة أطول، احفظها في [جدول](server.md#tables).
 
-## Elements
+## العناصر { #elements }
 
-| Element | What it shows | Example |
+| العنصر | ما يعرضه | مثال |
 |---|---|---|
-| `عمود` | Its children, top to bottom | `عمود { … }` |
-| `صف` | Its children side by side, from the right | `صف { … }` |
-| `بطاقة` | A boxed group | `بطاقة { … }` |
-| `عنوان` | A heading; `مستوى: 2` for a smaller one | `عنوان("مهامي")` |
-| `فقرة` | A paragraph | `فقرة("مرحباً")` |
-| `زر` | A button; its block runs when it is clicked | `زر("أضف") { … }` |
-| `حقل` | A text field that edits a state | `حقل(اسم، تلميح: "اسمك")` |
-| `مربع_اختيار` | A check box | `مربع_اختيار(م.منجزة) { … }` |
-| `صورة` | An image | `صورة("شعار.png"، وصف: "الشعار")` |
-| `رابط` | A link | `رابط("الموقع"، "https://…")` |
-| `فاصل` | A line between sections | `فاصل()` |
+| `عمود` | ما بداخله، بعضه تحت بعض | `عمود { … }` |
+| `صف` | ما بداخله، بعضه بجانب بعض من اليمين | `صف { … }` |
+| `بطاقة` | مجموعة في إطار | `بطاقة { … }` |
+| `عنوان` | عنوان؛ و`مستوى: 2` لعنوان أصغر | `عنوان("مهامي")` |
+| `فقرة` | فقرة | `فقرة("مرحباً")` |
+| `زر` | زر؛ تعمل كتلته عند الضغط عليه | `زر("أضف") { … }` |
+| `حقل` | حقل نص يحرّر حالة | `حقل(اسم، تلميح: "اسمك")` |
+| `مربع_اختيار` | مربع اختيار | `مربع_اختيار(م.منجزة) { … }` |
+| `صورة` | صورة | `صورة("شعار.png"، وصف: "الشعار")` |
+| `رابط` | رابط | `رابط("الموقع"، "https://…")` |
+| `فاصل` | خط بين الأقسام | `فاصل()` |
 
-Options are named arguments:
+والخيارات معاملات مسماة:
 
-| Element | Options |
+| العنصر | الخيارات |
 |---|---|
-| `عمود`, `صف` | `محاذاة: "وسط"` (or `"بداية"`, `"نهاية"`), `مسافة: 24` (pixels) |
-| `عنوان` | `مستوى: 1` to `6` |
+| `عمود` و`صف` | `محاذاة: "وسط"` (أو `"بداية"` أو `"نهاية"`)، و`مسافة: 24` (بالبكسل) |
+| `عنوان` | `مستوى: 1` إلى `6` |
 | `زر` | `معطل: صح` |
-| `حقل` | `تلميح: "…"`, `صيغة: "رقم"` (or `"نص"`, `"كلمة_سر"`, `"بريد"`), `معطل: صح` |
-| `مربع_اختيار` | `نص: "…"` (a label next to it), `معطل: صح` |
-| `صورة` | `وصف: "…"` (for screen readers), `عرض: 120` |
+| `حقل` | `تلميح: "…"`، و`صيغة: "رقم"` (أو `"نص"` أو `"كلمة_سر"` أو `"بريد"`)، و`معطل: صح` |
+| `مربع_اختيار` | `نص: "…"` (تسمية بجانبه)، و`معطل: صح` |
+| `صورة` | `وصف: "…"` (لقارئات الشاشة)، و`عرض: 120` |
 
-### Fields
+### الحقول { #fields }
 
-Give `حقل` a state and it edits it: what you type goes into the state, and changing the
-state changes the field.
+أعطِ `حقل` حالةً فيحرّرها: ما تكتبه يصير في الحالة، وتغيير الحالة يغيّر الحقل.
 
 ```dad
 حالة اسم = ""
@@ -103,14 +102,14 @@ state changes the field.
 فقرة("أهلاً يا {اسم}")
 ```
 
-A field for a number state (`حالة خطوة = 1`) is a number field, and its state stays a
-number. A block after the field runs on each change, with the new text as `هو`.
-Pressing <kbd>Enter</kbd> in a field presses the button next to it.
+والحقل المربوط بحالة عددية (`حالة خطوة = 1`) حقل أعداد، وتبقى حالته عدداً. والكتلة بعد
+الحقل تعمل عند كل تغيير، والنص الجديد فيها `هو`. والضغط على <kbd>Enter</kbd> في الحقل
+يضغط الزر الذي بجانبه.
 
-### Check boxes
+### مربعات الاختيار { #check-boxes }
 
-`مربع_اختيار` takes صح or خطأ. Given a state, it changes it. Given another value, such as a
-record's field, its block runs with the new value as `هو`:
+يأخذ `مربع_اختيار` صح أو خطأ. فإن أعطيته حالة غيّرها. وإن أعطيته قيمة أخرى، كحقل في سجل،
+عملت كتلته والقيمة الجديدة فيها `هو`:
 
 ```dad
 حالة مفعل = خطأ
@@ -119,27 +118,25 @@ record's field, its block runs with the new value as `هو`:
 مربع_اختيار(م.منجزة) { بدل(م) }
 ```
 
-## With a server and data
+## مع خادم وبيانات { #with-a-server-and-data }
 
-Components can call [server functions and tables](server.md) directly. This is the whole
-to-do app in `examples/05-todo.dad`: a table, three server functions, an API route and the
-page.
+تستطيع المكونات أن تستدعي [دوال الخادم والجداول](server.md) مباشرة. هذا تطبيق المهام
+كاملاً من `examples/05-todo.dad`: جدول، وثلاث دوال خادم، ومسار للبرامج الأخرى، والصفحة.
 
 ```dad
 --8<-- "examples/05-todo.dad"
 ```
 
-## How it runs
+## كيف تعمل { #how-it-runs }
 
-With `dad dev` and `dad serve`, components run on the server. The page in the browser sends
-each click and change to the program, the program runs the block and lays out the page
-again, and the page updates in place, keeping focus and what you are typing. Phoenix
-LiveView and Blazor Server work this way. With [`dad build`](build.md), the same components
-are compiled to JavaScript and run in the browser, with no server. The program stays the same
-either way.
+في `dad dev` و`dad serve` تعمل المكونات على الخادم. ترسل الصفحة في المتصفح كل ضغطة وتغيير
+إلى البرنامج، فيشغّل البرنامج الكتلة ويرتّب الصفحة من جديد، وتتحدّث الصفحة في مكانها
+محتفظة بالتركيز وبما تكتبه. وهكذا يعمل Phoenix LiveView وBlazor Server. ومع
+[`dad build`](build.md) تُترجم المكونات نفسها إلى JavaScript وتعمل في المتصفح بلا خادم.
+والبرنامج واحد في الحالتين.
 
-The look comes from a built-in stylesheet: right to left, Noto Kufi Arabic, light and dark
-themes that follow the system setting.
+ويأتي الشكل من ملف تنسيق مدمج: من اليمين إلى اليسار، بخط Noto Kufi Arabic، وبمظهرين فاتح
+وداكن يتبعان إعداد الجهاز.
 
-When you save the file, `dad dev` reloads the program and the page reloads with it. Data in
-tables is kept; state starts again. Errors in a block appear at the bottom of the page.
+وحين تحفظ الملف يعيد `dad dev` تحميل البرنامج، وتُعاد الصفحة معه. وتبقى البيانات في
+الجداول، أما الحالة فتبدأ من جديد. والأخطاء في الكتل تظهر أسفل الصفحة.

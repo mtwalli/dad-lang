@@ -1,12 +1,12 @@
-# 10. Going online
+# ١٠. إلى الإنترنت
 
-Your app runs on your computer. In this last lesson you organise it in several files, then
-put it on the internet, in one of two ways.
+تطبيقك يعمل على جهازك. في هذا الدرس الأخير تنظّمه في عدة ملفات، ثم تضعه على الإنترنت
+بطريقتين.
 
-## A program in several files
+## برنامج في عدة ملفات
 
-When a program grows, split it into files, each with its own subject. Each file gives the
-others what they need, and imports what it needs itself with `استورد` («import»):
+حين يكبر البرنامج، قسّمه إلى ملفات، لكل ملف موضوع. كل ملف يعطي غيره ما يحتاجه، ويستورد
+ما يحتاجه هو بـ`استورد`:
 
 ```dad title="حساب.dad"
 // أدوات الحساب، يستعملها أي ملف
@@ -38,75 +38,72 @@ dad run الفاتورة.dad
 المجموع: 39.68
 ```
 
-- `حساب.dad` («calculation») has the tax tools, and `الفاتورة.dad` («the invoice») uses them.
-  `استورد مع_الضريبة، المجموع من "./حساب"` brings these two functions in from `حساب.dad`,
-  next to it.
-- Everything at the top of a file is given to the files that import it, except what starts
-  with `خاص` («private»). No other file can import `الضريبة` (the tax rate), so the file is
-  free to change it.
-- You only run the **main** file; Ḍād finds the others by itself.
+- `استورد مع_الضريبة، المجموع من "./حساب"` تأتي بهاتين الدالتين من الملف `حساب.dad`
+  الذي بجانبه.
+- كل ما في أعلى الملف يُعطى لمن يستورده، إلا ما بدأ بـ`خاص`. لا يستطيع ملف آخر أن يستورد
+  `الضريبة`، فيبقى للملف أن يغيّرها كما يشاء.
+- تشغّل الملف **الرئيسي** فقط، ويجد ضاد الملفات الأخرى بنفسه.
 
-The page [Programs in several files](../modules.md) has the details.
+وفي [صفحة البرامج متعددة الملفات](../modules.md) التفاصيل.
 
-## Way one: a static site
+## الطريقة الأولى: موقع ثابت
 
-`dad build` turns your program into a ready-made site:
+`dad build` يحوّل برنامجك إلى موقع جاهز:
 
 ```sh
 dad build مهامي.dad
 ```
 
-(Or in Arabic: `ضاد ابن مهامي.dad`.) A folder `dist/مهامي` appears, with `index.html` and
-what it needs. Open it in a browser directly, or upload it to any static site host, such as
-GitHub Pages or Netlify, even a free one.
+أو بالعربية: `ضاد ابن مهامي.dad`.
 
-On this site the whole program runs in the visitor's browser, and **needs no server**. That
-has a price: tables are saved in each visitor's own browser, so nobody sees anyone else's
-tasks. That suits a personal tool, such as your own task list or the tip calculator.
+يظهر مجلد `dist/مهامي` فيه `index.html` وما يلزمه. افتحه في المتصفح مباشرة، أو ارفعه
+إلى أي استضافة للمواقع الثابتة، مثل GitHub Pages أو Netlify، ولو كانت مجانية.
 
-## Way two: a server for everyone
+في هذا الموقع يعمل البرنامج كله في متصفح الزائر، **ولا يحتاج خادماً**. لكن لهذا ثمناً:
+تُحفظ الجداول في متصفح كل زائر وحده، فلا يرى أحد مهام غيره. وهذا مناسب لأداة شخصية،
+كقائمة مهامك أو حاسبة البقشيش.
 
-When everyone should see the same data, as in a shop or a guest book, run the program as a
-server:
+## الطريقة الثانية: خادم للجميع
+
+حين تريد أن يرى الجميع البيانات نفسها، كمتجر أو دفتر زوار، شغّل البرنامج خادماً:
 
 ```sh
 dad serve مهامي.dad
 ```
 
-(Or in Arabic: `ضاد انشر مهامي.dad`.) This is the server you have used with `dad dev`, set up
-for going online: it doesn't reload, shows nobody the developer page, and accepts
-connections from any device. Run it on a computer connected to the internet, or on a
-platform such as Fly.io or Render: the [deployment guide](../deploy.md) shows how.
+أو بالعربية: `ضاد انشر مهامي.dad`.
 
-!!! warning "Before you go online"
+هذا هو الخادم الذي جرّبته مع `dad dev`، لكنه مهيأ للنشر: لا يعيد التحميل، ولا يعرض صفحة
+المطوّر لأحد، ويقبل الاتصال من أي جهاز. ضعه على جهاز متصل بالإنترنت، أو على منصة مثل
+Fly.io أو Render، تجد طريقته في [دليل النشر](../deploy.md).
 
-    Ḍād has no sign-in or permissions yet: every visitor can call every server function. So
-    don't put data online this way that not everyone may see or change.
+!!! warning "قبل أن تنشر"
+
+    لا يوجد في ضاد بعدُ تسجيل دخول ولا صلاحيات: كل زائر يستطيع أن يستدعي كل دوال
+    الخادم. فلا تنشر بهذه الطريقة بيانات لا يجوز أن يراها الجميع أو يغيّرها.
 
 | | `dad build` | `dad serve` |
 |---|---|---|
-| Needs | static file hosting | a computer that is always on |
-| The data | in each visitor's browser | in one file on the server, seen by everyone |
-| Suits | personal tools, games, calculators | shared apps |
+| يحتاج | استضافة ملفات ثابتة | جهازاً يعمل دائماً |
+| البيانات | في متصفح كل زائر | في ملف واحد على الخادم، يراه الجميع |
+| مناسب لـ | الأدوات الشخصية والألعاب والحاسبات | التطبيقات المشتركة |
 
-## Where next?
+## إلى أين بعد هذا؟
 
-You have finished the tutorial. Congratulations! You know how to write a Ḍād program, from
-the first line to a site on the internet.
+أنهيت الدليل. مبروك! صرت تعرف كيف تكتب برنامجاً بضاد، من أول سطر إلى موقع على الإنترنت.
 
-- Read the [examples](../examples.md) to see bigger programs.
-- Go back to the [interface](../ui.md) and [server and data](../server.md) pages for the
-  details.
-- The [language specification](../SPEC.md) has everything, for those who want precision.
-- Found a mistake, or have an idea? Write it on the
-  [project's GitHub page](https://github.com/mtwalli/dad-lang/issues).
+- اقرأ [الأمثلة](../examples.md) لترى برامج أكبر.
+- ارجع إلى [صفحة الواجهة](../ui.md) و[صفحة الخادم والبيانات](../server.md) للتفاصيل.
+- [مواصفات اللغة](../SPEC.md) فيها كل شيء، لمن يريد الدقة.
+- ووجدت خطأً، أو عندك فكرة؟ اكتبها في
+  [صفحة المشروع على GitHub](https://github.com/mtwalli/dad-lang/issues).
 
-## One last exercise
+## تمرين أخير
 
-Move the table and the server functions of the to-do app from lesson 9 into a file
-`بيانات.dad` («data»), and leave only the component in `مهامي.dad`, importing what it needs.
+انقل الجدول ودوال الخادم من تطبيق المهام في الدرس التاسع إلى ملف `بيانات.dad`، واترك
+المكون وحده في `مهامي.dad` يستورد ما يحتاجه.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad title="بيانات.dad"
     جدول مهمة {
@@ -146,5 +143,5 @@ Move the table and the server functions of the to-do app from lesson 9 into a fi
     }
     ```
 
-    Run it with `dad dev مهامي.dad`: Ḍād finds `بيانات.dad` by itself, and reloads when you
-    save either file.
+    شغّله بـ`dad dev مهامي.dad`: يجد ضاد `بيانات.dad` بنفسه، ويعيد التحميل إذا حفظت أياً
+    من الملفين.

@@ -1,12 +1,13 @@
 ---
+icon: lucide/house
 template: home.html
-title: Home
+title: الرئيسية
 hide:
   - navigation
   - toc
 ---
 
-## A whole app in one file
+## تطبيق كامل في ملف واحد
 
 <div class="dad-showcase" markdown>
 
@@ -32,54 +33,54 @@ hide:
 </div>
 
 <dl class="dad-legend">
-  <dt lang="ar">جدول</dt>
-  <dd>A database table. Ḍād creates the SQLite schema and a typed API for it.</dd>
-  <dt lang="ar">خادم دالة</dt>
-  <dd>A function that runs on the server. The interface calls it like any local function.</dd>
-  <dt lang="ar">مكون</dt>
-  <dd>A reactive interface component, right-to-left by default.</dd>
+  <dt><span class="dad-ico dad-ico--database" aria-hidden="true"></span>جدول</dt>
+  <dd>جدول في قاعدة البيانات. ينشئ ضاد بنيته في SQLite، وطريقة مضبوطة الأنواع للتعامل معه.</dd>
+  <dt><span class="dad-ico dad-ico--server" aria-hidden="true"></span>خادم دالة</dt>
+  <dd>دالة تعمل على الخادم، وتستدعيها الواجهة كأي دالة أخرى.</dd>
+  <dt><span class="dad-ico dad-ico--layout-panel-top" aria-hidden="true"></span>مكون</dt>
+  <dd>قطعة من الواجهة تتحدّث وحدها حين تتغير حالتها، ومن اليمين إلى اليسار من الأساس.</dd>
 </dl>
 
 </div>
 
-## Principles, one keyword each
+## مبادئ، لكل منها كلمة
 
 <dl class="dad-principles">
   <div>
-    <dt lang="ar">ثابت</dt>
-    <dd><strong>Immutable by default.</strong> Values never change unless you declare them with <code>متغير</code>.</dd>
+    <dt>ثابت</dt>
+    <dd><strong>الثبات هو الأصل.</strong> لا تتغير قيمة إلا إذا عرّفتها بـ<code>متغير</code>.</dd>
   </div>
   <div>
-    <dt lang="ar">؟</dt>
-    <dd><strong>No surprise nulls.</strong> A value that may be missing says so in its type, as in <code>نص؟</code>.</dd>
+    <dt>؟</dt>
+    <dd><strong>لا مفاجآت مع «عدم».</strong> القيمة التي قد تكون مفقودة يقول نوعها ذلك، مثل <code>نص؟</code>.</dd>
   </div>
   <div>
-    <dt lang="ar">طابق</dt>
-    <dd><strong>Every case handled.</strong> The compiler rejects a match that forgets a case.</dd>
+    <dt>طابق</dt>
+    <dd><strong>لكل حالة حسابها.</strong> يرفض المترجم «طابق» تنسى حالة.</dd>
   </div>
   <div>
-    <dt lang="ar">خادم</dt>
-    <dd><strong>No fetch, no async.</strong> Server calls look local; the compiler adds the waiting.</dd>
+    <dt>خادم</dt>
+    <dd><strong>بلا fetch ولا async.</strong> استدعاء الخادم يبدو كاستدعاء محلي، والمترجم يتولّى الانتظار.</dd>
   </div>
   <div>
-    <dt lang="ar">،؛؟</dt>
-    <dd><strong>Arabic first.</strong> Arabic punctuation works everywhere, diacritics never break a name, and numbers stay plain 0-9.</dd>
+    <dt>،؛؟</dt>
+    <dd><strong>العربية أولاً.</strong> علامات الترقيم العربية تعمل في كل مكان، والتشكيل لا يغيّر الأسماء، والأعداد بأرقام 0-9.</dd>
   </div>
   <div>
     <dt>39</dt>
-    <dd><strong>A small core.</strong> 39 keywords in total. Interface elements are ordinary functions.</dd>
+    <dd><strong>نواة صغيرة.</strong> 39 كلمة محجوزة فقط، وعناصر الواجهة دوال عادية.</dd>
   </div>
 </dl>
 
-## Where it stands
+## أين وصلنا
 
 <ol class="dad-timeline">
-  <li class="is-done"><span>Specification</span><small>Keywords, grammar and the Arabic-aware lexer</small></li>
-  <li class="is-done"><span>Core language</span><small><code>dad run</code>, the checker, <a href="modules/">programs in several files</a>, and compiling to JavaScript</small></li>
-  <li class="is-next"><span>Interface</span><small><a href="ui/">Components, state and elements</a> in <code>dad dev</code> and the playground; <a href="build/"><code>dad build</code></a> makes static sites. Next: more elements, pages</small></li>
-  <li class="is-next"><span>Server and data</span><small>Tables in SQLite, server functions, routes, <a href="server/"><code>dad dev</code></a> and <a href="deploy/"><code>dad serve</code></a>. Next: users and sign-in</small></li>
-  <li class="is-done"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a>, <a href="playground/">web playground</a>, <code>dad fmt</code> and the <a href="editor/#the-language-server">language server</a></small></li>
-  <li class="is-done"><span>Installers</span><small><a href="install/">Homebrew, winget, .deb, .rpm</a> and a <a href="tutorial/">tutorial</a> in English and Arabic</small></li>
+  <li class="is-done"><span>المواصفات</span><small>الكلمات المحجوزة والقواعد النحوية، ومحلل نصوص يفهم العربية</small></li>
+  <li class="is-done"><span>نواة اللغة</span><small><code>dad run</code>، والفاحص، و<a href="modules/">البرامج متعددة الملفات</a>، والترجمة إلى JavaScript</small></li>
+  <li class="is-next"><span>الواجهة</span><small><a href="ui/">المكونات والحالة والعناصر</a> في <code>dad dev</code> والملعب، و<a href="build/"><code>dad build</code></a> يصنع مواقع ثابتة. التالي: عناصر أكثر، وصفحات متعددة</small></li>
+  <li class="is-next"><span>الخادم والبيانات</span><small>جداول في SQLite، ودوال الخادم، والمسارات، و<a href="server/"><code>dad dev</code></a> و<a href="deploy/"><code>dad serve</code></a>. التالي: المستخدمون وتسجيل الدخول</small></li>
+  <li class="is-done"><span>الأدوات</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">إضافة VS Code</a>، و<a href="playground/">الملعب</a>، و<code>dad fmt</code>، و<a href="editor/#the-language-server">خادم اللغة</a></small></li>
+  <li class="is-done"><span>التثبيت</span><small><a href="install/">Homebrew وwinget و.deb و.rpm</a>، و<a href="tutorial/">دليل للمبتدئين</a> بالعربية والإنجليزية</small></li>
 </ol>
 
-[Read the full roadmap](ROADMAP.md){ .md-button } [Read the specification](SPEC.md){ .md-button }
+[خارطة الطريق كاملة](ROADMAP.md){ .md-button } [مواصفات اللغة](SPEC.md){ .md-button }

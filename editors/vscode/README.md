@@ -21,7 +21,7 @@ Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming languag
 ## Requirements
 
 The extension uses the `dad` program to check and run files.
-[Install Ḍād](https://mtwalli.github.io/dad-lang/install/) version 0.1.4 or newer. The extension
+[Install Ḍād](https://mtwalli.github.io/dad-lang/en/install/) version 0.1.4 or newer. The extension
 finds `dad` on your `PATH` or in the default install folder. If yours is somewhere else, set
 **Ḍād: Path** (`dad.path`) in the settings.
 

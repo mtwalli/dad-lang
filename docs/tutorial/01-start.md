@@ -1,19 +1,18 @@
-# 1. Getting started
+# ١. البداية
 
-## Install Ḍād
+## تثبيت ضاد
 
-Ḍād is a single program called `dad`, which you can also type in Arabic as `ضاد`. Install
-it the way that suits your computer:
+ضاد برنامج واحد اسمه `dad`، ولك أن تكتبه بالعربية `ضاد`. ثبّته بالطريقة التي تناسب جهازك:
 
 === "macOS"
 
-    Open Terminal and type:
+    افتح «الطرفية» (Terminal) واكتب:
 
     ```sh
     brew install mtwalli/dad/dad
     ```
 
-    No Homebrew? Use the install script instead:
+    ليس عندك Homebrew؟ استعمل سكربت التثبيت بدلاً منه:
 
     ```sh
     curl -fsSL https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.sh | sh
@@ -21,13 +20,13 @@ it the way that suits your computer:
 
 === "Windows"
 
-    Open PowerShell and type:
+    افتح PowerShell واكتب:
 
     ```powershell
     winget install mtwalli.dad
     ```
 
-    Then open a new window.
+    ثم افتح نافذة جديدة.
 
 === "Linux"
 
@@ -35,35 +34,32 @@ it the way that suits your computer:
     curl -fsSL https://raw.githubusercontent.com/mtwalli/dad-lang/main/install.sh | sh
     ```
 
-    Or download a `.deb` or `.rpm` package from the
-    [releases page](https://github.com/mtwalli/dad-lang/releases/latest).
+    أو نزّل حزمة `.deb` أو `.rpm` من [صفحة الإصدارات](https://github.com/mtwalli/dad-lang/releases/latest).
 
-Then check that it works:
+ثم تأكد أنه يعمل:
 
 ```sh
 dad version
 ```
 
-You'll see something like `ضاد 0.2.0`. The [install page](../install.md) has other ways to
-install.
+ستظهر رسالة مثل `ضاد 0.2.0`. وفي [صفحة التثبيت](../install.md) طرق أخرى.
 
-### An editor to write in
+### محرر للكتابة
 
-You can write Ḍād in any text editor, but **VS Code** with the «Ḍād» extension makes it much
-easier: the extension shows code right to left, colours the words, and tells you about
-mistakes as you type. Search for «Ḍād» in the Extensions view and install it. The
-[editor guide](../editor.md) has the details.
+يمكنك كتابة برامج ضاد في أي محرر نصوص، لكن **VS Code** مع إضافة «Ḍād» يجعل الأمر أسهل
+كثيراً: تعرض الإضافة الكود من اليمين إلى اليسار، وتلوّن الكلمات، وتخبرك بالأخطاء وأنت تكتب.
+ابحث عن «Ḍād» في قائمة الإضافات وثبّتها. وفي [دليل المحرر](../editor.md) التفاصيل.
 
-## Your first program
+## أول برنامج
 
-Make a folder for your lessons, and in it a file called `مرحبا.dad`. Write this in it:
+أنشئ مجلداً لدروسك، وفيه ملفاً اسمه `مرحبا.dad`، واكتب فيه:
 
 ```dad
 // أول برنامج لي بلغة ضاد
 اطبع("مرحبا بالعالم!")
 ```
 
-Save the file and run it from the same folder:
+احفظ الملف، وشغّله من المجلد نفسه:
 
 ```sh
 dad run مرحبا.dad
@@ -73,19 +69,16 @@ dad run مرحبا.dad
 مرحبا بالعالم!
 ```
 
-(Or in Arabic: `ضاد شغل مرحبا.dad`.)
+(أو بالعربية: `ضاد شغل مرحبا.dad`.)
 
-Congratulations, that is your first program! Let's read it line by line:
+مبروك! هذا أول برنامج لك. لنقرأه سطراً سطراً:
 
-- The line that starts with `//` is a **comment** («my first program in Ḍād»). Programmers
-  write comments for themselves and others, and Ḍād ignores them.
-- `اطبع` («print») is a **function**: a piece of work with a name. It writes what you give
-  it on the screen.
-- What goes between the brackets is what you give the function. Here it is **text**
-  («hello, world!»), written between quotation marks `"…"`.
+- السطر الذي يبدأ بـ `//` **تعليق**. يكتبه المبرمج لنفسه أو لغيره، ويتجاهله ضاد.
+- `اطبع` **دالة**، أي عمل له اسم. وظيفتها أن تكتب ما تعطيها على الشاشة.
+- ما بين القوسين هو ما تعطيه للدالة. هنا أعطيناها **نصاً**، والنص يُكتب بين علامتي
+  تنصيص `"…"`.
 
-`اطبع` takes more than one thing. Separate them with commas, and it prints them with a space
-between:
+تقبل `اطبع` أكثر من شيء واحد، تفصل بينها بفاصلة، وتكتبها بمسافة بينها:
 
 ```dad
 اطبع("واحد"، "اثنان"، 3)
@@ -97,30 +90,29 @@ between:
 4
 ```
 
-The Arabic comma `،` works just like `,`. Numbers are written with the digits `0-9`: if you
-type `٣`, Ḍād tells you to write `3`.
+لاحظ أن الفاصلة العربية `،` تعمل كما تعمل `,`. أما الأعداد فتُكتب بالأرقام `0-9`: إن كتبت
+`٣` نبّهك ضاد إلى أن تكتب `3`.
 
-## When you make a mistake
+## حين تخطئ
 
-Try deleting the last quotation mark:
+جرّب أن تحذف علامة التنصيص الأخيرة:
 
 ```text
 اطبع("مرحبا بالعالم!)
 ```
 
-The program won't run, and Ḍād tells you the line, the column and the mistake, in Arabic.
-Mistakes are a normal part of programming. What matters is reading the message: it usually
-points you to the fix.
+لن يعمل البرنامج، وسيخبرك ضاد بالسطر والعمود وبالخطأ بالعربية. الأخطاء جزء عادي من
+البرمجة، والمهم أن تقرأ الرسالة: فهي تدلّك غالباً على الحل.
 
-## Exercise
+## تمرين
 
-Write a program that prints your name on one line, and your age on the next.
+اكتب برنامجاً يطبع اسمك في سطر، وعمرك في السطر التالي.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad
     اطبع("اسمي سارة")
     اطبع("عمري"، 12، "سنة")
     ```
 
-**Next:** [Values and names](02-values.md)
+**التالي:** [القيم والأسماء](02-values.md)

@@ -1,12 +1,12 @@
-# 7. When things go wrong
+# ٧. حين يخطئ شيء
 
-Programs deal with an imperfect world: a user who didn't give an email address, a file that
-isn't there, a number that isn't valid. This lesson is about handling that calmly.
+البرامج تتعامل مع عالم ناقص: مستخدم لم يكتب بريده، وملف غير موجود، ورقم غير صالح. هذا
+الدرس عن التعامل مع ذلك بهدوء.
 
-## `عدم`: when there is no value
+## «عدم»: حين لا توجد قيمة
 
-`عدم` means «nothing». In Ḍād, a name only accepts it if you say so explicitly, with `؟`
-after the type:
+`عدم` تعني «لا شيء». ولا تقبله الأسماء في ضاد إلا إذا قلت ذلك صراحة، بعلامة `؟` بعد
+النوع:
 
 ```dad
 نوع مستخدم(الاسم: نص، البريد: نص؟ = عدم)
@@ -21,10 +21,9 @@ after the type:
 huda@example.com عدم
 ```
 
-`نص؟` means «text, or nothing». So the type alone tells you a value might be missing
-(here, a user's email, `البريد`), and you aren't caught by surprise.
+`نص؟` تعني: نص، أو عدم. وهكذا تعرف من النوع وحده أن القيمة قد تكون مفقودة، ولا تُفاجأ.
 
-### `؟.` and `؟؟`
+### «؟.» و«؟؟»
 
 ```dad
 نوع مستخدم(الاسم: نص، البريد: نص؟ = عدم)
@@ -43,14 +42,14 @@ huda@example.com
 16 0
 ```
 
-- `أ ؟؟ ب`: take `أ`, and if it's nothing, take `ب`.
-- `م؟.البريد`: if `م` is nothing, the result is nothing; otherwise, its email. That way the
-  program doesn't stop when you ask «nothing» for something.
+- `أ ؟؟ ب`: خذ `أ`، فإن كانت عدماً فخذ `ب`.
+- `م؟.البريد`: إن كانت `م` عدماً فالنتيجة عدم، وإلا فبريدها. وبهذا لا يتوقف البرنامج
+  حين تسأل «لا شيء» عن شيء.
 
-## Errors while running
+## الأخطاء أثناء التشغيل
 
-Some mistakes only show up while the program runs, such as asking a list of three for its
-tenth item. The program then stops and tells you where and why:
+بعض الأخطاء لا تظهر إلا والبرنامج يعمل، مثل أن تطلب العنصر العاشر من قائمة فيها ثلاثة.
+حينها يتوقف البرنامج ويخبرك أين ولماذا:
 
 ```dad
 ثابت الألوان = ["أحمر"، "أخضر"، "أزرق"]
@@ -64,13 +63,9 @@ tenth item. The program then stops and tells you where and why:
 خطأ أثناء التشغيل [السطر 3، العمود 13]: مشكلة لم تُعالَج: الفهرس 10 خارج الحدود (الطول 3)
 ```
 
-The message gives the line and column, and says the index 10 is out of bounds (the length
-is 3). The last line («this won't be printed») never runs.
+### «حاول» و«التقط»
 
-### `حاول` and `التقط`
-
-When you expect that something might fail, put it in `حاول` («try»), and say what happens if
-it fails in `التقط` («catch»). Here, reading an age from text:
+حين تتوقع أن شيئاً قد يفشل، ضعه في `حاول`، وقل ما يحدث إن فشل في `التقط`:
 
 ```dad
 دالة اقرأ_العمر(النص: نص): صحيح {
@@ -87,12 +82,9 @@ it fails in `التقط` («catch»). Here, reading an age from text:
 -1
 ```
 
-`خ` is the **problem** that happened, and `خ.رسالة` describes it.
+`خ` هي **المشكلة** التي حدثت، و`خ.رسالة` وصفها.
 
-### `ارفع`: raising a problem yourself
-
-`ارفع` («raise») stops the work with a problem of your own. Here, a withdrawal (`اسحب`) that
-asks for more than the balance (`الرصيد`):
+### «ارفع»: أن تعلن عن مشكلة بنفسك
 
 ```dad
 دالة اسحب(الرصيد: عشري، المبلغ: عشري): عشري {
@@ -115,10 +107,10 @@ asks for more than the balance (`الرصيد`):
 لم تتم العملية: الرصيد لا يكفي: معك 100.0 وتريد 250.0
 ```
 
-## Find mistakes before running
+## اكتشف الأخطاء قبل التشغيل
 
-`dad check` checks a program without running it, and shows everything it finds. It is what
-VS Code does as you type:
+`dad check` يفحص البرنامج دون أن يشغّله، ويعرض كل ما يجده. وهو ما يفعله VS Code وأنت
+تكتب:
 
 ```sh
 dad check برنامج.dad
@@ -138,16 +130,14 @@ dad check برنامج.dad
 خطأ [السطر 6، العمود 6]: «نقطه» غير معرّف؛ هل تقصد «نقطة»؟
 ```
 
-Notice «هل تقصد …؟» («did you mean …?»): Ḍād suggests the name closest to what you wrote, `س`
-for the field and `نقطة` for the type.
+لاحظ «هل تقصد «نقطة»؟»: يقترح ضاد الاسم الأقرب إلى ما كتبت.
 
-## Exercise
+## تمرين
 
-Write a function `قسمة_آمنة(أ: عشري، ب: عشري): عشري؟` («safe division») that returns `عدم` if
-`ب` is zero, and the result of the division otherwise. Then print `قسمة_آمنة(10، 4)` and
-`قسمة_آمنة(1، 0) ؟؟ "غير معرّفة"` («undefined»).
+اكتب دالة `قسمة_آمنة(أ: عشري، ب: عشري): عشري؟` تُرجع `عدم` إذا كانت `ب` صفراً، وإلا
+فناتج القسمة. ثم اطبع `قسمة_آمنة(10، 4)`، و`قسمة_آمنة(1، 0) ؟؟ "غير معرّفة"`.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad
     دالة قسمة_آمنة(أ: عشري، ب: عشري): عشري؟ {
@@ -164,4 +154,4 @@ Write a function `قسمة_آمنة(أ: عشري، ب: عشري): عشري؟` (�
     غير معرّفة
     ```
 
-**Next:** [Your first page](08-page.md)
+**التالي:** [صفحتك الأولى](08-page.md)

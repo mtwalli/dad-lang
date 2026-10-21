@@ -1,115 +1,115 @@
-# Language specification
+---
+icon: lucide/book-open
+---
 
-> Status: **draft 1**, describing Ḍād 0.2. Parts marked *Planned* are designed but not built
-> yet. Source files use the extension `.dad`. The command is `dad`, with the Arabic name `ضاد`.
+# مواصفات اللغة
 
-## 1. Design principles
+> الحال: **المسودة 1**، وتصف ضاد 0.2. والأجزاء الموسومة بـ*مخطط له* مصممة ولم تُبنَ بعد.
+> امتداد ملفات الكود `.dad`. والأمر `dad`، واسمه بالعربية `ضاد`.
 
-1. **Less code, no ceremony.** Type inference everywhere, no semicolons, expression-bodied
-   functions, trailing lambdas, string interpolation, default and named arguments.
-   (Inspired by Kotlin and Swift.)
-2. **Precise and safe by default.** Immutable by default (`ثابت`), no `null` surprises
-   (optional types `نص؟`), exhaustive `طابق` (match), no implicit numeric conversions,
-   no force-unwrap operator.
-3. **Everything is an expression.** `إذا`, `طابق` and blocks produce values.
-4. **One language for the whole app.** UI, server and data live in the same file and the
-   compiler splits them. Calling a `خادم` (server) function from the UI just works — the
-   compiler generates the HTTP endpoint and the client call.
-5. **No async/await noise.** Server and database calls are asynchronous under the hood;
-   the compiler infers this and inserts the waiting for you.
-6. **Small core.** 39 reserved keywords (Go has 25, Kotlin ~80, Swift ~90). UI elements and
-   HTTP verbs are ordinary library functions / contextual words, not keywords.
-7. **Arabic first, not Arabic only.** Arabic keywords and punctuation; Latin punctuation and
-   identifiers are also accepted so mixed code never breaks. Numbers use one set of digits,
-   0-9, in code and in output (see 2.5).
+## 1. مبادئ التصميم { #1-design-principles }
 
-## 2. Lexical structure
+1. **كود أقل، بلا تكلّف.** استنتاج الأنواع في كل مكان، ولا فواصل منقوطة، ودوال جسمها تعبير،
+   ودوال مجهولة بعد الاستدعاء، وقيم داخل النصوص، ومعاملات افتراضية ومسماة. (مستوحاة من
+   Kotlin وSwift.)
+2. **دقيقة وآمنة من الأساس.** الثبات هو الأصل (`ثابت`)، ولا مفاجآت مع `null` (الأنواع
+   الاختيارية `نص؟`)، و`طابق` شاملة، ولا تحويلات عددية خفية، ولا عامل لفك الاختياري بالقوة.
+3. **كل شيء تعبير.** `إذا` و`طابق` والكتل كلها تعطي قيماً.
+4. **لغة واحدة للتطبيق كله.** الواجهة والخادم والبيانات في الملف نفسه، والمترجم يفصل بينها.
+   واستدعاء دالة `خادم` من الواجهة يعمل وحده: يولّد المترجم نقطة HTTP والاستدعاء من العميل.
+5. **بلا ضجيج async/await.** استدعاءات الخادم وقاعدة البيانات غير متزامنة في الداخل، والمترجم
+   يستنتج ذلك ويضيف الانتظار عنك.
+6. **نواة صغيرة.** 39 كلمة محجوزة (في Go 25، وفي Kotlin نحو 80، وفي Swift نحو 90). وعناصر
+   الواجهة وأفعال HTTP دوال عادية أو كلمات سياقية، لا كلمات محجوزة.
+7. **العربية أولاً، لا العربية وحدها.** الكلمات المحجوزة وعلامات الترقيم عربية، وتُقبل علامات
+   الترقيم والأسماء اللاتينية أيضاً كي لا ينكسر الكود المختلط. وللأعداد مجموعة أرقام واحدة،
+   0-9، في الكود وفي الناتج (انظر 2.5).
 
-### 2.1 Source text
-- UTF-8, normalized to **NFC** before lexing.
-- Newlines end statements. `؛` or `;` may separate statements on one line.
+## 2. البنية اللفظية { #2-lexical-structure }
 
-### 2.2 Normalization of identifiers and keywords
-Applied to identifiers and keywords only — **never** inside strings or comments:
+### 2.1 نص الكود { #21-source-text }
+- بترميز UTF-8، ويُوحَّد إلى صيغة **NFC** قبل التحليل.
+- نهاية السطر تُنهي العبارة. ويمكن أن تفصل `؛` أو `;` بين عبارات في سطر واحد.
 
-| Rule | Example |
+### 2.2 توحيد الأسماء والكلمات المحجوزة { #22-normalization-of-identifiers-and-keywords }
+يُطبَّق على الأسماء والكلمات المحجوزة فقط، و**لا** يُطبَّق أبداً داخل النصوص أو التعليقات:
+
+| القاعدة | مثال |
 |---|---|
-| Diacritics (tashkeel U+064B–U+065F, U+0670) are ignored | `حوِّل` ≡ `حول` |
-| Tatweel `ـ` (U+0640) is ignored | `دالـــة` ≡ `دالة` |
-| Hamza/alef forms are **not** folded (`أ` ≠ `ا` ≠ `إ`) — errors suggest the near-miss | `اذا` → "هل تقصد `إذا`؟" |
-| `ة`/`ه` and `ى`/`ي` are **not** folded (same: suggestion only) | |
+| التشكيل (U+064B–U+065F، وU+0670) يُتجاهَل | `حوِّل` ≡ `حول` |
+| التطويل `ـ` (U+0640) يُتجاهَل | `دالـــة` ≡ `دالة` |
+| أشكال الهمزة والألف **لا** تُوحَّد (`أ` ≠ `ا` ≠ `إ`)، وتقترح الأخطاء الصيغة القريبة | `اذا` ← «هل تقصد `إذا`؟» |
+| `ة` و`ه`، و`ى` و`ي`، **لا** تُوحَّد (والاقتراح كذلك فقط) | |
 
-### 2.3 Forbidden characters
-Bidirectional control characters (U+200E, U+200F, U+202A–U+202E, U+2066–U+2069) and
-zero-width characters (U+200B–U+200D, U+FEFF) are a **compile error outside string literals**.
-This prevents "Trojan Source" attacks where code displays differently from how it runs.
+### 2.3 حروف ممنوعة { #23-forbidden-characters }
+حروف التحكم في الاتجاه (U+200E، وU+200F، وU+202A–U+202E، وU+2066–U+2069) والحروف عديمة
+العرض (U+200B–U+200D، وU+FEFF) **خطأ خارج النصوص**. وهذا يمنع هجمات «Trojan Source» التي
+يبدو فيها الكود غير ما يفعله.
 
-### 2.4 Identifiers
-Start with an Arabic or Latin letter or `_`; continue with letters, digits `0-9` or `_`.
-`عدد_المهام`, `userName`, `س2` are all valid.
+### 2.4 الأسماء { #24-identifiers }
+تبدأ بحرف عربي أو لاتيني أو `_`، وتستمر بحروف أو أرقام `0-9` أو `_`. فـ`عدد_المهام`
+و`userName` و`س2` كلها صحيحة.
 
-### 2.5 Numbers
-- Digits are `0123456789` only, in code and in output. `.` separates the fraction and `_` may
-  group digits: `42`, `3.14`, `1_000_000`.
-- Arabic-Indic (`٠-٩`) and Persian (`۰-۹`) digits, the Arabic decimal sign `٫` and the
-  thousands sign `٬` are errors in code. The message shows the number written correctly:
-  `«١٢» تُكتب «12»`.
-- `1,5` is two values. The lexer warns and suggests `1.5`.
-- Output uses `0-9` and `.`: `اطبع(7 / 2.0)` prints `3.5`.
-- Text is free: `"الطابق ٣"` is fine. Converting text to a number (`"٤٢" ك صحيح`) accepts
-  Arabic-Indic and Persian digits too, so input typed on an Arabic keyboard still works.
+### 2.5 الأعداد { #25-numbers }
+- الأرقام `0123456789` فقط، في الكود وفي الناتج. و`.` تفصل الكسر، و`_` تجمّع الأرقام:
+  `42` و`3.14` و`1_000_000`.
+- الأرقام العربية المشرقية (`٠-٩`) والفارسية (`۰-۹`)، والفاصلة العشرية العربية `٫`، وفاصل
+  الآلاف `٬`، أخطاء في الكود. وتعرض الرسالة العدد مكتوباً صحيحاً: `«١٢» تُكتب «12»`.
+- `1,5` قيمتان. وينبّه المحلل ويقترح `1.5`.
+- يستعمل الناتج `0-9` و`.`: فـ`اطبع(7 / 2.0)` يطبع `3.5`.
+- النصوص حرة: `"الطابق ٣"` لا بأس به. وتحويل النص إلى عدد (`"٤٢" ك صحيح`) يقبل الأرقام
+  المشرقية والفارسية أيضاً، فيعمل ما يُكتب بلوحة مفاتيح عربية.
 
-### 2.6 Strings
-- `"..."` or Arabic guillemets `«...»`.
-- Interpolation with braces, no prefix needed: `"مرحبا {اسم}، لديك {مهام.عدد} مهام"`.
-- Escapes: `\n \t \\ \" \{ \}`. Multi-line: `"""..."""`.
+### 2.6 النصوص { #26-strings }
+- `"..."` أو علامتا التنصيص العربيتان `«...»`.
+- القيم داخل النص بالأقواس المعقوفة، بلا بادئة: `"مرحبا {اسم}، لديك {مهام.عدد} مهام"`.
+- المحارف الخاصة: `\n \t \\ \" \{ \}`. ومتعدد السطور: `"""..."""`.
 
-### 2.7 Comments
-`// سطر` and `/* كتلة */`.
+### 2.7 التعليقات { #27-comments }
+`// سطر` و`/* كتلة */`.
 
-### 2.8 Punctuation & operators
-Arabic and Latin forms are interchangeable (digits are the exception: always `0-9`):
+### 2.8 علامات الترقيم والعوامل { #28-punctuation-operators }
+الصيغ العربية واللاتينية متبادلة (والأرقام استثناء: `0-9` دائماً):
 
-| Arabic | Latin | Meaning |
+| بالعربية | باللاتينية | المعنى |
 |---|---|---|
-| `،` | `,` | separator |
-| `؛` | `;` | statement separator (optional) |
-| `؟` | `?` | optional type marker |
-| `؟.` | `?.` | safe member access |
-| `؟؟` | `??` | default when absent |
+| `،` | `,` | فاصلة |
+| `؛` | `;` | فاصل بين العبارات (اختياري) |
+| `؟` | `?` | علامة النوع الاختياري |
+| `؟.` | `?.` | الوصول الآمن إلى عضو |
+| `؟؟` | `??` | قيمة بديلة عند الغياب |
 
-Other operators: `+ - * / % == != < > <= >= = += -= *= /= => . .. :`
-Logical: `و` / `&&`, `أو` / `||`, `ليس` / `!`.
+العوامل الأخرى: `+ - * / % == != < > <= >= = += -= *= /= => . .. :`
+والمنطقية: `و` / `&&`، و`أو` / `||`، و`ليس` / `!`.
 
-`/` always gives a decimal, as in school maths: `7 / 2` is `3.5` and `6 / 2` is `3.0`. For a
-whole number, convert the result: `(7 / 2) ك صحيح` is `3` (the fraction is dropped). `%` is the
-remainder of whole numbers: `7 % 2` is `1`.
+`/` تعطي عدداً عشرياً دائماً، كما في رياضيات المدرسة: `7 / 2` هي `3.5`، و`6 / 2` هي `3.0`.
+ولعدد صحيح حوّل الناتج: `(7 / 2) ك صحيح` هي `3` (يُحذف الكسر). و`%` باقي قسمة الأعداد
+الصحيحة: `7 % 2` هو `1`.
 
-`و` and `ك` are separate words in Ḍād, even though Arabic writing joins them to the next word.
-Write `أ و ب` and `س ك عشري`. A joined form such as `وب` is read as a name; when that is an
-error, the message suggests the fix: `هل تقصد «و ب»؟`.
+`و` و`ك` كلمتان منفصلتان في ضاد، وإن كانت الكتابة العربية تصلهما بما بعدهما. فاكتب `أ و ب`
+و`س ك عشري`. والصيغة الموصولة مثل `وب` تُقرأ اسماً؛ فإن كان ذلك خطأً اقترحت الرسالة الحل:
+`هل تقصد «و ب»؟`.
 
-> RTL note: `<`, `>`, `(`, `)`, `[`, `]`, `{`, `}` are Unicode *mirrored* characters — in an RTL
-> line they display flipped, so `أ < ب` still reads correctly right-to-left. Editor support must
-> be validated early (Phase 4).
+> ملاحظة عن الاتجاه: `<` و`>` و`(` و`)` و`[` و`]` و`{` و`}` حروف Unicode *معكوسة الشكل*،
+> تُعرض مقلوبة في السطر العربي، فتُقرأ `أ < ب` صحيحة من اليمين إلى اليسار.
 
-## 3. Keywords (reserved)
+## 3. الكلمات المحجوزة { #3-keywords-reserved }
 
-| Ḍād | Kotlin / Swift equivalent | |
+| ضاد | ما يقابلها في Kotlin / Swift | |
 |---|---|---|
-| `ثابت` | `val` / `let` | immutable binding |
-| `متغير` | `var` | mutable binding |
-| `دالة` | `fun` / `func` | function |
-| `نوع` | `data class` / `struct` | value type with auto equality & copy |
-| `تعداد` | `sealed class` / `enum` | enum with associated values |
-| `عقد` | `interface` / `protocol` | contract |
-| `امتداد` | extension functions / `extension` | add methods to an existing type |
+| `ثابت` | `val` / `let` | اسم لقيمة لا تتغير |
+| `متغير` | `var` | اسم لقيمة تتغير |
+| `دالة` | `fun` / `func` | دالة |
+| `نوع` | `data class` / `struct` | نوع قيمة بمساواة ونسخ تلقائيين |
+| `تعداد` | `sealed class` / `enum` | تعداد بحالات تحمل قيماً |
+| `عقد` | `interface` / `protocol` | عقد |
+| `امتداد` | extension functions / `extension` | إضافة دوال إلى نوع موجود |
 | `استورد` | `import` | |
-| `خاص` | `private` | (everything else is public) |
-| `إذا` / `وإلا` | `if` / `else` | expression |
-| `طابق` | `when` / `switch` | exhaustive pattern match |
+| `خاص` | `private` | (وما سواه عام) |
+| `إذا` / `وإلا` | `if` / `else` | تعبير |
+| `طابق` | `when` / `switch` | مطابقة شاملة |
 | `لكل` / `في` | `for` / `in` | |
-| `من` / `إلى` / `حتى` / `بخطوة` | `1..10` / `1 until 10` / `step` | ranges: `من 1 إلى 10` |
+| `من` / `إلى` / `حتى` / `بخطوة` | `1..10` / `1 until 10` / `step` | المجالات: `من 1 إلى 10` |
 | `طالما` | `while` | |
 | `أرجع` | `return` | |
 | `توقف` / `تابع` | `break` / `continue` | |
@@ -117,71 +117,71 @@ error, the message suggests the fix: `هل تقصد «و ب»؟`.
 | `صح` / `خطأ` | `true` / `false` | |
 | `عدم` | `null` / `nil` | |
 | `و` / `أو` / `ليس` | `&&` / `||` / `!` | |
-| `هو` | `it` | the implicit lambda parameter: `{ هو * 2 }` |
-| `من نوع` | `is` | type test: `ش من نوع دائرة` (see 4.7) |
-| `ك` | `as` | conversion |
+| `هو` | `it` | معامل الدالة المجهولة الضمني: `{ هو * 2 }` |
+| `من نوع` | `is` | فحص النوع: `ش من نوع دائرة` (انظر 4.7) |
+| `ك` | `as` | التحويل |
 | `هذا` | `this` / `self` | |
-| `خادم` | — | marks a function that runs on the server |
-| `مكون` | `@Composable` / SwiftUI `View` | UI component |
-| `حالة` | `@State` / `mutableStateOf` | reactive state inside a component |
-| `جدول` | — | persisted data type (database table) |
-| `مسار` | — | explicit HTTP route (public APIs) |
+| `خادم` | — | تَسِم دالة تعمل على الخادم |
+| `مكون` | `@Composable` / SwiftUI `View` | مكوّن واجهة |
+| `حالة` | `@State` / `mutableStateOf` | حالة تفاعلية داخل مكون |
+| `جدول` | — | نوع بيانات محفوظ (جدول في قاعدة البيانات) |
+| `مسار` | — | مسار HTTP صريح (للواجهات البرمجية العامة) |
 
-**Contextual words** (only special in one position, usable as names elsewhere): HTTP verbs
-`جلب` (GET), `أرسل` (POST), `عدل` (PUT), `احذف` (DELETE).
+**الكلمات السياقية** (خاصة في موضع واحد فقط، وتصلح أسماءً في غيره): أفعال HTTP
+`جلب` (GET)، و`أرسل` (POST)، و`عدل` (PUT)، و`احذف` (DELETE).
 
-## 4. Language tour
+## 4. جولة في اللغة { #4-language-tour }
 
-### 4.1 Bindings and types
+### 4.1 الأسماء والأنواع { #41-bindings-and-types }
 ```dad
-ثابت اسم = "سارة" // type inferred: نص
+ثابت اسم = "سارة" // النوع المستنتج: نص
 متغير عداد = 0 // صحيح
 ثابت سعر: عشري = 9.99
 عداد += 1
 ```
-Built-in types: `صحيح` (Int, 64-bit), `عشري` (Double), `نص` (String), `منطقي` (Bool),
-lists `[نص]`, maps `[نص: صحيح]`, optionals `نص؟`, functions `(صحيح) => نص`.
+الأنواع المدمجة: `صحيح` (عدد صحيح، 64 بت)، و`عشري` (عدد عشري مزدوج الدقة)، و`نص`،
+و`منطقي`، والقوائم `[نص]`، والقواميس `[نص: صحيح]`، والاختيارية `نص؟`، والدوال `(صحيح) => نص`.
 
-### 4.2 Functions
+### 4.2 الدوال { #42-functions }
 ```dad
-دالة مربع(س: صحيح) = س * س // expression body, return type inferred
+دالة مربع(س: صحيح) = س * س // جسمها تعبير، ونوع ناتجها مستنتج
 
 دالة حي(اسم: نص، تحية: نص = "مرحبا"): نص {
     أرجع "{تحية} يا {اسم}"
 }
 
 حي("سارة")
-حي(اسم: "علي"، تحية: "أهلاً") // named arguments
+حي(اسم: "علي"، تحية: "أهلاً") // معاملات مسماة
 ```
 
-### 4.3 Control flow as expressions
+### 4.3 التحكم بالتعابير { #43-control-flow-as-expressions }
 ```dad
 ثابت وصف = إذا درجة >= 90 { "ممتاز" } وإلا إذا درجة >= 50 { "ناجح" } وإلا { "راسب" }
 
 لكل ع من 1 إلى 10 { اطبع(ع) }
-لكل ع من 0 حتى 10 بخطوة 2 { اطبع(ع) } // 0,2,4,6,8
+لكل ع من 0 حتى 10 بخطوة 2 { اطبع(ع) } // 0، 2، 4، 6، 8
 لكل اسم في أسماء { اطبع(اسم) }
 ```
 
-### 4.4 Lambdas and trailing lambdas
+### 4.4 الدوال المجهولة بعد الاستدعاء { #44-lambdas-and-trailing-lambdas }
 ```dad
-ثابت كبار = أرقام.رشح { هو > 10 } // `هو` = the implicit single parameter ("it")
+ثابت كبار = أرقام.رشح { هو > 10 } // «هو» المعامل الضمني الوحيد
 ثابت مضاعفة = أرقام.حول { س => س * 2 }
 ثابت مجموع = أرقام.اختزل(0) { أ، ب => أ + ب }
 ```
 
-### 4.5 Value types (`نوع`)
+### 4.5 أنواع القيم (`نوع`) { #45-value-types }
 ```dad
 نوع نقطة(س: عشري، ص: عشري) {
     دالة بعد() = جذر(س * س + ص * ص)
 }
 
 ثابت ن = نقطة(س: 3، ص: 4)
-ثابت م = ن.نسخة(ص: 0) // copy with change
-اطبع(ن == نقطة(3، 4)) // صح — structural equality
+ثابت م = ن.نسخة(ص: 0) // نسخة مع تغيير
+اطبع(ن == نقطة(3، 4)) // صح: المساواة بالبنية
 ```
 
-### 4.6 Enums with data and exhaustive matching
+### 4.6 تعدادات تحمل قيماً، ومطابقة شاملة { #46-enums-with-data-and-exhaustive-matching }
 ```dad
 تعداد شكل {
     دائرة(قطر: عشري)
@@ -191,23 +191,23 @@ lists `[نص]`, maps `[نص: صحيح]`, optionals `نص؟`, functions `(صحي�
 دالة مساحة(ش: شكل) = طابق ش {
     دائرة(ق) => 3.14 * ق * ق / 4
     مستطيل(ع، ط) => ع * ط
-} // forgetting a case is a compile error
+} // نسيان حالة خطأ يكشفه المترجم
 ```
 
-### 4.7 Null safety and smart casts
+### 4.7 الأمان من «عدم»، والتحويل الذكي { #47-null-safety-and-smart-casts }
 ```dad
 ثابت بريد: نص؟ = مستخدم؟.بريد
 ثابت عرض = بريد ؟؟ "لا يوجد بريد"
 
 إذا بريد != عدم {
-    اطبع(بريد.طول) // smart cast: بريد is نص here
+    اطبع(بريد.طول) // تحويل ذكي: بريد هنا نص
 }
 
-إذا ش من نوع دائرة { اطبع(ش.قطر) } // type test + smart cast
+إذا ش من نوع دائرة { اطبع(ش.قطر) } // فحص النوع مع تحويل ذكي
 ```
-There is no force-unwrap. Use `؟؟` with a default, or `؟؟ ارفع مشكلة("...")`.
+لا يوجد فكّ للاختياري بالقوة. استعمل `؟؟` مع قيمة بديلة، أو `؟؟ ارفع مشكلة("...")`.
 
-### 4.8 Contracts and extensions
+### 4.8 العقود والامتدادات { #48-contracts-and-extensions }
 ```dad
 عقد قابل_للعرض {
     دالة اعرض(): نص
@@ -218,92 +218,90 @@ There is no force-unwrap. Use `؟؟` with a default, or `؟؟ ارفع مشكل�
 }
 ```
 
-### 4.9 Errors
+### 4.9 الأخطاء { #49-errors }
 ```dad
 دالة اقسم(أ: صحيح، ب: صحيح): عشري {
     إذا ب == 0 { ارفع مشكلة("قسمة على صفر") }
     أرجع أ / ب
 }
 
-ثابت ن = حاول { اقسم(1، 0) } التقط خ { 0 } // try is an expression too
+ثابت ن = حاول { اقسم(1، 0) } التقط خ { 0 } // «حاول» تعبير أيضاً
 ```
 
-### 4.10 Modules
-One file = one module. Everything not marked `خاص` is exported.
+### 4.10 الوحدات { #410-modules }
+كل ملف وحدة. وكل ما لم يوسم بـ`خاص` يُصدَّر.
 ```dad
 استورد نقطة، شكل من "./أشكال"
 ```
-*(Implemented.)* The file is found next to the importing file (`.dad` may be left out).
-Each file runs once, after the files it imports, in a scope of its own. Importing a `تعداد`
-brings its cases. An imported name is a constant holding the value the other file gave it.
-Imports may not form a circle. Types, tables, enums and their cases, and server functions are
-known by name across the program, so they may not be declared in two files. See
-[Programs in several files](modules.md).
+*(مُنفَّذ.)* يُبحث عن الملف بجانب الملف الذي يستورده (ويمكن إغفال `.dad`). ويعمل كل ملف مرة
+واحدة، بعد الملفات التي يستوردها، في نطاق خاص به. واستيراد `تعداد` يأتي بحالاته. والاسم
+المستورد ثابت قيمته ما أعطاه الملف الآخر. ولا يجوز أن يدور الاستيراد في حلقة. والأنواع
+والجداول والتعدادات وحالاتها ودوال الخادم يعرفها البرنامج كله بأسمائها، فلا تُعرَّف في
+ملفين. انظر [برنامج في عدة ملفات](modules.md).
 
-### 4.11 Checking before running
-Programs are checked before they run, and a program with errors doesn't start (`dad run`,
-`dad dev`, `dad serve`, `dad build`, the playground). `dad check` and the editors show the same messages as you type.
-The checker reports only what is certain; where it can't know a value's type, it accepts the
-program and the interpreter checks at run time.
+### 4.11 الفحص قبل التشغيل { #411-checking-before-running }
+تُفحص البرامج قبل تشغيلها، والبرنامج الذي فيه أخطاء لا يبدأ (`dad run` و`dad dev`
+و`dad serve` و`dad build` والملعب). ويعرض `dad check` والمحررات الرسائل نفسها وأنت تكتب.
+ولا يخبر الفاحص إلا بما هو مؤكد؛ وحيث لا يعرف نوع قيمة يقبل البرنامج، ويفحصه المفسّر أثناء
+التشغيل.
 
-It reports:
-- names that aren't defined (with the closest defined name: «هل تقصد …؟»), a name used
-  before a top-level `ثابت` defines it, and names declared twice in one scope;
-- changing a `ثابت`, a parameter or a field (`نسخة` makes a changed copy);
-- calls with too many or too few arguments, an unknown named argument, a named argument
-  before a positional one, or an argument of the wrong type;
-- values of the wrong type for a declared type, a result type or a returned value, and a
-  block-bodied function with a result type and no `أرجع`;
-- fields and methods that a type doesn't have, on records, tables, text, lists, maps and
-  numbers (with the closest name);
-- `طابق` over a `تعداد` that misses cases and has no `_` (exhaustiveness), and patterns that
-  name unknown cases or too many fields;
-- conditions that aren't `منطقي`, operators on the wrong types (`"أ" - 1`), `لكل` over a
-  value that can't be looped over, and indexes that aren't `صحيح`;
-- `أرجع`, `توقف`, `تابع`, `هو` and `هذا` used where they mean nothing; `حالة` and interface
-  elements used at the top level instead of in a component; unknown element options.
+ويكشف:
+- الأسماء غير المعرّفة (مع أقرب اسم معرّف: «هل تقصد …؟»)، واسماً يُستعمل قبل أن يعرّفه
+  `ثابت` في أعلى الملف، والأسماء المعرّفة مرتين في نطاق واحد؛
+- تغيير `ثابت` أو معامل أو حقل (و`نسخة` تصنع نسخة معدّلة)؛
+- الاستدعاءات بمعاملات أكثر أو أقل من اللازم، أو بمعامل مسمى غير معروف، أو بمعامل مسمى قبل
+  معامل عادي، أو بمعامل من نوع خاطئ؛
+- القيم من نوع خاطئ لنوع معلن أو نوع ناتج أو قيمة مُرجَعة، والدالة ذات الكتلة والنوع الناتج
+  بلا `أرجع`؛
+- الحقول والدوال التي لا يملكها النوع، في السجلات والجداول والنصوص والقوائم والقواميس
+  والأعداد (مع أقرب اسم)؛
+- `طابق` على `تعداد` تنسى حالات وليس فيها `_` (الشمول)، والأنماط التي تذكر حالات غير معروفة
+  أو حقولاً زائدة؛
+- الشروط التي ليست `منطقي`، والعوامل على أنواع خاطئة (`"أ" - 1`)، و`لكل` على قيمة لا يُمرّ
+  عليها، والفهارس التي ليست `صحيح`؛
+- `أرجع` و`توقف` و`تابع` و`هو` و`هذا` حيث لا معنى لها؛ و`حالة` وعناصر الواجهة في أعلى
+  الملف بدل داخل مكون؛ وخيارات العناصر غير المعروفة.
 
-Types come from declarations and literals: `ثابت س = 1` is `صحيح`, a function's result is its
-declared type or the type of its `= expression` body, a table field without a type takes its
-default's type. A `صحيح` is accepted where an `عشري` is expected. Optional values (`نص؟`)
-are not yet followed through `إذا س != عدم` checks (smart casts), so they are not reported.
+وتأتي الأنواع من التعريفات والقيم المكتوبة: `ثابت س = 1` من النوع `صحيح`، وناتج الدالة نوعها
+المعلن أو نوع جسمها `= تعبير`، وحقل الجدول بلا نوع يأخذ نوع قيمته الافتراضية. ويُقبل
+`صحيح` حيث يُتوقع `عشري`. أما القيم الاختيارية (`نص؟`) فلا تُتتبَّع بعدُ عبر فحوص
+`إذا س != عدم` (التحويل الذكي)، فلا يُبلَّغ عنها.
 
-## 5. The full-stack layer
+## 5. طبقة التطبيق الكامل { #5-the-full-stack-layer }
 
-### 5.1 Data — `جدول`
+### 5.1 البيانات: `جدول` { #51-data }
 ```dad
 جدول مهمة {
     عنوان: نص
     منجزة = خطأ
 }
 ```
-A table is a value type with a hidden id field `رقم` (`صحيح`, 0 until the record is saved;
-declaring a field with that name is an error). Every field needs a type or a default.
-Its API: `مهمة.أنشئ(...)`, `مهمة.الكل()`, `مهمة.حيث { هو.منجزة }`, `مهمة.بالرقم(ر)`,
-`مهمة.عدد()`, `م.احفظ()`, `م.احذف()`. `م.نسخة(...)` keeps the id, so a changed copy saves
-over the original.
+الجدول نوع قيمة فيه حقل معرّف مخفي اسمه `رقم` (`صحيح`، وقيمته 0 حتى يُحفظ السجل؛ وتعريف
+حقل بهذا الاسم خطأ). ولكل حقل نوع أو قيمة افتراضية. وواجهته: `مهمة.أنشئ(...)`،
+و`مهمة.الكل()`، و`مهمة.حيث { هو.منجزة }`، و`مهمة.بالرقم(ر)`، و`مهمة.عدد()`، و`م.احفظ()`،
+و`م.احذف()`. و`م.نسخة(...)` تحتفظ بالمعرّف، فتُحفظ النسخة المعدّلة مكان الأصل.
 
-A field with a literal default and no type takes the default's type (`منجزة = خطأ` is `منطقي`).
+والحقل الذي له قيمة افتراضية مكتوبة ولا نوع له يأخذ نوعها (`منجزة = خطأ` من النوع `منطقي`).
 
-*Implemented:* `dad run`, `dad dev` and `dad serve` store tables in SQLite (`.dad/<program>.db`), one SQL
-table per `جدول` and one column per field. Migrations follow the declaration: added fields are
-filled with their default, removed fields are hidden but kept, and type changes convert every
-value or are refused. `حيث` lambdas that compare fields with values or variables (joined by
-`و`، `أو`، `ليس`) are compiled to SQL; other lambdas run on every row with the same result.
+*مُنفَّذ:* يحفظ `dad run` و`dad dev` و`dad serve` الجداول في SQLite (`.dad/<البرنامج>.db`)،
+لكل `جدول` جدول SQL، ولكل حقل عمود. وتتبع قاعدة البيانات التعريف: الحقول المضافة تُملأ
+بقيمتها الافتراضية، والمحذوفة تُخفى وتبقى، وتغييرات النوع تحوّل كل القيم أو تُرفض. ودوال
+`حيث` التي تقارن الحقول بقيم أو متغيرات (موصولة بـ`و` و`أو` و`ليس`) تُترجم إلى SQL، وغيرها
+يعمل على كل سجل بالنتيجة نفسها.
 
-### 5.2 Server — `خادم`
+### 5.2 الخادم: `خادم` { #52-server }
 ```dad
 خادم دالة أضف_مهمة(عنوان: نص) = مهمة.أنشئ(عنوان: عنوان)
 ```
-Callable directly from UI code. The compiler generates a typed endpoint plus the client call;
-the server code never ships to the browser. Server functions are implicitly asynchronous.
+تُستدعى مباشرة من كود الواجهة. ويولّد المترجم نقطة اتصال مضبوطة الأنواع والاستدعاء من
+العميل؛ ولا يُرسَل كود الخادم إلى المتصفح أبداً. ودوال الخادم غير متزامنة ضمناً.
 
-*Implemented:* `dad dev` and `dad serve` serve each server function at `POST /_dad/call/<name>`, with the
-arguments as a JSON object keyed by parameter name. Arguments are converted to the
-parameter types; errors return 400 with `{"خطأ": "…"}`.
+*مُنفَّذ:* يقدّم `dad dev` و`dad serve` كل دالة خادم عند `POST /_dad/call/<الاسم>`، والمعاملات
+كائن JSON مفاتيحه أسماء المعاملات. وتُحوَّل المعاملات إلى أنواعها، وتعود الأخطاء بالحالة 400
+مع `{"خطأ": "…"}`.
 
-### 5.3 Explicit routes — `مسار`
-For public APIs that other programs call:
+### 5.3 المسارات الصريحة: `مسار` { #53-explicit-routes }
+للواجهات البرمجية العامة التي تستدعيها البرامج الأخرى:
 ```dad
 مسار جلب "/api/مهام" = مهمة.الكل()
 مسار جلب "/api/مهام/{رقم}" = مهمة.بالرقم(رقم)
@@ -312,15 +310,15 @@ For public APIs that other programs call:
     أرجع مهمة.أنشئ(عنوان: البيانات["عنوان"])
 }
 ```
-Methods: `جلب` GET, `أرسل` POST, `عدل` PUT, `احذف` DELETE. The path starts with `/`.
-`{name}` segments are bound as variables (digits become `صحيح`); the JSON request body is
-`البيانات`. The body is an expression or a block; the result is sent as JSON, and a `جلب`
-route that returns `عدم` answers 404. See the [server guide](server.md).
+الطرق: `جلب` GET، و`أرسل` POST، و`عدل` PUT، و`احذف` DELETE. ويبدأ المسار بـ`/`. والأجزاء
+`{اسم}` تصير متغيرات (والأرقام تصير `صحيح`)، وجسم الطلب بصيغة JSON اسمه `البيانات`. والجسم
+تعبير أو كتلة، والنتيجة تُرسَل بصيغة JSON، والمسار `جلب` الذي يُرجع `عدم` يجيب بـ404. انظر
+[دليل الخادم](server.md).
 
-### 5.4 UI — `مكون` and `حالة`
-Compose/SwiftUI style: components are functions; UI elements (`عمود`, `صف`, `عنوان`,
-`فقرة`, `زر`, `حقل`, `صورة`, `رابط`) are library functions with trailing lambdas.
-Pages are right-to-left by default.
+### 5.4 الواجهة: `مكون` و`حالة` { #54-ui }
+على طريقة Compose وSwiftUI: المكونات دوال، وعناصر الواجهة (`عمود` و`صف` و`عنوان` و`فقرة`
+و`زر` و`حقل` و`صورة` و`رابط`) دوال من المكتبة تأخذ دوال مجهولة بعدها. والصفحات من اليمين
+إلى اليسار من الأساس.
 ```dad
 مكون عداد() {
     حالة ع = 0
@@ -330,27 +328,27 @@ Pages are right-to-left by default.
     }
 }
 ```
-A component is called like a function from another component; it adds its elements where it
-is called. Elements with a block (`عمود`, `صف`, `بطاقة`) put the elements laid out in the block
-inside them. `حالة` is only allowed in a component: its initial value is evaluated on the
-first render, and each instance of a component (by its place in the page) has its own state.
-An element given a state variable as its first argument (`حقل(اسم)`, `مربع_اختيار(مفعل)`)
-receives the variable itself and changes it. The page shows the component named `الرئيسية`
-or `التطبيق`, otherwise the last one that needs no arguments.
+يُستدعى المكون كدالة من مكون آخر، فيضيف عناصره حيث استُدعي. والعناصر ذات الكتلة (`عمود` و`صف`
+و`بطاقة`) تضع داخلها العناصر المرتبة في الكتلة. ولا تُستعمل `حالة` إلا في مكون: تُحسب قيمتها
+الأولى عند أول رسم، ولكل نسخة من المكون (بحسب موضعها في الصفحة) حالتها. والعنصر الذي يأخذ
+متغير حالة معاملاً أول (`حقل(اسم)` و`مربع_اختيار(مفعل)`) يأخذ المتغير نفسه ويغيّره. وتعرض
+الصفحة المكون الذي اسمه `الرئيسية` أو `التطبيق`، وإلا فآخر مكون لا يحتاج معاملات.
 
-*Implemented:* in `dad dev` and `dad serve`, components run in the interpreter on the server;
-the page sends events and updates in place, LiveView style. After `dad build`, the same
-components are compiled to JavaScript and run in the browser. Elements: `عمود`، `صف`، `بطاقة`،
-`عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل` (see the
-[interface guide](ui.md)). *Planned:* a reactive runtime that updates only what changed.
+*مُنفَّذ:* في `dad dev` و`dad serve` تعمل المكونات في المفسّر على الخادم، وترسل الصفحة الأحداث
+وتتحدّث في مكانها على طريقة LiveView. وبعد `dad build` تُترجم المكونات نفسها إلى JavaScript
+وتعمل في المتصفح. والعناصر: `عمود`، `صف`، `بطاقة`، `عنوان`، `فقرة`، `زر`، `حقل`،
+`مربع_اختيار`، `صورة`، `رابط`، `فاصل` (انظر [دليل الواجهة](ui.md)). *مخطط له:* نظام تفاعلي
+لا يحدّث إلا ما تغيّر.
 
-## 6. Open questions (please decide)
-1. ~~`هو` doing double duty~~ Decided: `هو` only means "it" in lambdas; the type test is
-   `من نوع` (`ش من نوع دائرة`). Writing `ش هو دائرة` is an error that shows the new form.
-2. Keyword spellings: `نوع` vs `بنية` for value types; `عقد` vs `واجهة` for contracts.
-3. Library method names (`حول`/map, `رشح`/filter, `اختزل`/reduce) — want a naming guide?
-4. Should Latin-letter identifiers produce a style warning in Arabic-first projects?
-5. ~~Integer division~~ Decided: `/` always gives a decimal (`7 / 2` is `3.5`), as in school maths. `(7 / 2) ك صحيح` gives `3`.
-6. ~~Digits~~ Decided: `0-9` only, in code and in output (see 2.5).
-7. ~~`و` and `ك` joined to the next word~~ Decided: they stay separate words; a joined form
-   such as `وب` is an error that suggests `و ب` (see 2.8).
+## 6. أسئلة مفتوحة { #6-open-questions-please-decide }
+1. ~~«هو» بمعنيين~~ حُسم: `هو` تعني «هو» في الدوال المجهولة فقط، وفحص النوع `من نوع`
+   (`ش من نوع دائرة`). وكتابة `ش هو دائرة` خطأ يعرض الصيغة الجديدة.
+2. تهجئة الكلمات: `نوع` أم `بنية` لأنواع القيم؛ و`عقد` أم `واجهة` للعقود.
+3. أسماء دوال المكتبة (`حول` للتحويل، و`رشح` للترشيح، و`اختزل` للاختزال): هل نحتاج دليلاً
+   للتسمية؟
+4. هل تُنبّه الأسماء بالحروف اللاتينية في المشاريع العربية أولاً؟
+5. ~~قسمة الأعداد الصحيحة~~ حُسم: `/` تعطي عدداً عشرياً دائماً (`7 / 2` هي `3.5`)، كما في
+   رياضيات المدرسة. و`(7 / 2) ك صحيح` تعطي `3`.
+6. ~~الأرقام~~ حُسم: `0-9` فقط، في الكود وفي الناتج (انظر 2.5).
+7. ~~`و` و`ك` موصولتين بما بعدهما~~ حُسم: تبقيان كلمتين منفصلتين؛ والصيغة الموصولة مثل `وب`
+   خطأ يقترح `و ب` (انظر 2.8).

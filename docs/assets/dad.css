@@ -1,4 +1,157 @@
-@import url("https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap");
+/* ---------- Self-hosted type (SIL OFL: see fonts/LICENSE-*.txt) ---------- */
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-arabic-300-normal.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-300-normal.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-ext-300-normal.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-ext-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-ext-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-ext-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("fonts/ibm-plex-sans-arabic-latin-ext-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Aref Ruqaa";
+  src: url("fonts/aref-ruqaa-arabic-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "Aref Ruqaa";
+  src: url("fonts/aref-ruqaa-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
 
 /* ---------- Ḍād Mono: the coding font (tools/font/build.py) ---------- */
 
@@ -20,31 +173,46 @@
   font-display: swap;
 }
 
-/* Every code block, inline code and the playground use Ḍād Mono. */
-html body {
-  --md-code-font-family: "Dad Mono", "JetBrains Mono", SFMono-Regular, Consolas, Menlo, monospace;
-}
-
 /* ==========================================================================
-   Ḍād docs theme
-   Palette from Islamic manuscripts and Iznik tiles: lapis, gold leaf,
-   turquoise glaze and madder red. Display type: Aref Ruqaa (calligraphic).
-   ========================================================================== */
+   Ḍād docs theme: an illuminated manuscript
 
+   Lapis grounds, gold-leaf rules and the shamsa medallion of a manuscript
+   frontispiece; turquoise glaze and madder from Iznik tiles for accents.
+   The calligrapher's rhombic dot (nuqta) is the one recurring mark: active
+   navigation, list bullets, status. Aref Ruqaa appears only in the hero
+   and logo; everything else is IBM Plex Sans Arabic and Ḍād Mono.
+   ========================================================================== */
 
 :root {
   --dad-lapis: #1B2B6B;
-  --dad-lapis-deep: #121E4D;
+  --dad-lapis-deep: #101B4A;
+  --dad-lapis-night: #0A1033;
   --dad-lapis-bright: #2A47B8;
   --dad-gold: #C9A04A;
   --dad-gold-soft: #E3C77F;
+  --dad-gold-light: #FFF1C2;
   --dad-gold-ink: #8A6420;
   --dad-turquoise: #0E8F9A;
   --dad-madder: #8E3B5E;
   --dad-ink: #141A33;
   --dad-display: "Aref Ruqaa", "Noto Naskh Arabic", "Geeza Pro", "Traditional Arabic", serif;
+  --dad-leaf: linear-gradient(115deg, #8A6420 0%, #C9A04A 22%, #F4DB98 40%, #FFF6D6 50%, #E3C77F 60%, #B88A35 80%, #8A6420 100%);
+  --dad-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --dad-radius: 0.7rem;
   /* Eight-pointed star lattice, one 96px tile */
   --dad-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23E3C77F' stroke-width='1'%3E%3Crect x='28' y='28' width='40' height='40'/%3E%3Cpath d='M48 19.7 76.3 48 48 76.3 19.7 48Z'/%3E%3Cpath d='M48 19.7V0M76.3 48H96M48 76.3V96M19.7 48H0M28 28 0 0M68 28 96 0M68 68l28 28M28 68 0 96'/%3E%3C/g%3E%3C/svg%3E");
+  /* Illumination band: gold rhombi between two rules */
+  --dad-band: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cpath d='M0 1.5H28M0 12.5H28' stroke='%23C9A04A' stroke-width='1'/%3E%3Cpath d='M14 3.5 17.5 7 14 10.5 10.5 7Z' fill='%23E3C77F'/%3E%3Ccircle cx='0' cy='7' r='1.3' fill='%23C9A04A'/%3E%3Ccircle cx='28' cy='7' r='1.3' fill='%23C9A04A'/%3E%3C/svg%3E");
+}
+
+html body {
+  --md-text-font-family: "IBM Plex Sans Arabic", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --md-code-font-family: "Dad Mono", "JetBrains Mono", SFMono-Regular, Consolas, Menlo, monospace;
+}
+
+body, input {
+  font-family: var(--md-text-font-family);
+  font-feature-settings: "kern", "liga";
 }
 
 /* ---------- Material colour hooks ---------- */
@@ -64,10 +232,12 @@ html body {
 }
 
 [data-md-color-scheme="default"] {
-  --md-default-fg-color: rgba(20, 26, 51, 0.88);
-  --md-default-fg-color--light: rgba(20, 26, 51, 0.62);
-  --md-default-fg-color--lighter: rgba(20, 26, 51, 0.32);
-  --md-default-fg-color--lightest: rgba(20, 26, 51, 0.1);
+  --md-default-bg-color: #FCFCFE;
+  --md-default-fg-color: rgba(20, 26, 51, 0.9);
+  --md-default-fg-color--light: rgba(20, 26, 51, 0.64);
+  --md-default-fg-color--lighter: rgba(20, 26, 51, 0.34);
+  --md-default-fg-color--lightest: rgba(20, 26, 51, 0.09);
+  --md-typeset-color: rgba(20, 26, 51, 0.86);
   --md-typeset-a-color: var(--dad-lapis-bright);
   --md-footer-bg-color: var(--dad-lapis-deep);
   --md-footer-bg-color--dark: #0C1538;
@@ -85,35 +255,46 @@ html body {
   --md-code-hl-name-color: var(--dad-ink);
   --md-code-hl-variable-color: var(--dad-ink);
 
+  --dad-surface: #FFFFFF;
+  --dad-line: rgba(27, 43, 107, 0.1);
+  --dad-gold-text: var(--dad-gold-ink);
+  --dad-shadow: 0 1px 2px rgba(16, 27, 74, 0.04), 0 8px 24px -12px rgba(16, 27, 74, 0.18);
+  --dad-shadow-lift: 0 2px 4px rgba(16, 27, 74, 0.05), 0 20px 40px -18px rgba(16, 27, 74, 0.32);
   --dad-principle-glyph: var(--dad-gold-ink);
 }
 
 [data-md-color-scheme="slate"] {
   --md-hue: 230;
-  --md-default-bg-color: #0E1430;
-  --md-default-bg-color--light: rgba(14, 20, 48, 0.54);
-  --md-default-fg-color: rgba(226, 231, 248, 0.86);
-  --md-default-fg-color--light: rgba(226, 231, 248, 0.6);
-  --md-default-fg-color--lighter: rgba(226, 231, 248, 0.3);
-  --md-default-fg-color--lightest: rgba(226, 231, 248, 0.1);
-  --md-typeset-a-color: #8FA6F2;
+  --md-default-bg-color: #0B1029;
+  --md-default-bg-color--light: rgba(11, 16, 41, 0.54);
+  --md-default-fg-color: rgba(228, 233, 250, 0.9);
+  --md-default-fg-color--light: rgba(228, 233, 250, 0.62);
+  --md-default-fg-color--lighter: rgba(228, 233, 250, 0.3);
+  --md-default-fg-color--lightest: rgba(228, 233, 250, 0.09);
+  --md-typeset-color: rgba(228, 233, 250, 0.84);
+  --md-typeset-a-color: #9DB2F6;
   --md-accent-fg-color: #4FC7CF;
-  --md-footer-bg-color: #0A0F26;
-  --md-footer-bg-color--dark: #070B1C;
+  --md-footer-bg-color: #080C22;
+  --md-footer-bg-color--dark: #060918;
 
-  --md-code-bg-color: #151D42;
+  --md-code-bg-color: #111939;
   --md-code-fg-color: #DDE3F7;
-  --md-code-hl-keyword-color: #8FA6F2;
+  --md-code-hl-keyword-color: #9DB2F6;
   --md-code-hl-constant-color: #4FC7CF;
   --md-code-hl-number-color: #4FC7CF;
   --md-code-hl-string-color: var(--dad-gold-soft);
-  --md-code-hl-function-color: #E39BB8;
+  --md-code-hl-function-color: #E8A3C0;
   --md-code-hl-comment-color: #7C86AD;
   --md-code-hl-operator-color: #A6AECB;
   --md-code-hl-punctuation-color: #A6AECB;
   --md-code-hl-name-color: #DDE3F7;
   --md-code-hl-variable-color: #DDE3F7;
 
+  --dad-surface: #10173A;
+  --dad-line: rgba(157, 178, 246, 0.12);
+  --dad-gold-text: var(--dad-gold-soft);
+  --dad-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -14px rgba(0, 0, 0, 0.6);
+  --dad-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 48px -18px rgba(0, 0, 0, 0.75);
   --dad-principle-glyph: var(--dad-gold-soft);
 }
 
@@ -121,19 +302,459 @@ html body {
   background-color: rgba(201, 160, 74, 0.35);
 }
 
+:focus-visible {
+  outline-color: var(--dad-gold);
+}
+
+html {
+  scrollbar-color: var(--md-default-fg-color--lighter) transparent;
+}
+
+/* ---------- The nuqta: the calligrapher's rhombic dot ---------- */
+
+.dad-nuqta {
+  display: inline-block;
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--dad-leaf);
+  background-size: 200% 200%;
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+/* ---------- Icons: Lucide (stroked), see overrides/.icons/lucide ---------- */
+
+svg.lucide {
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 1.75;
+}
+
+.md-nav__link svg.lucide,
+.md-header__button svg.lucide {
+  stroke-width: 1.6;
+}
+
+/* Page icons in the navigation take the gold of the current page. */
+.md-nav__link .md-icon {
+  color: var(--md-default-fg-color--light);
+  transition: color 0.2s;
+}
+
+.md-nav__link--active .md-icon,
+.md-nav__link:hover .md-icon {
+  color: var(--dad-gold);
+}
+
+.md-typeset .md-button svg.lucide {
+  width: 1.15em;
+  height: 1.15em;
+  margin-inline-end: 0.5em;
+  vertical-align: -0.2em;
+  transition: transform 0.4s var(--dad-ease);
+}
+
+.md-typeset .md-button:hover svg.lucide {
+  transform: translateY(-1px) scale(1.08);
+}
+
+/* Theme toggle: the icon turns a little under the pointer. */
+.md-header__option [for^="__palette"] svg {
+  transition: transform 0.6s var(--dad-ease);
+}
+
+.md-header__option [for^="__palette"]:hover svg {
+  transform: rotate(-25deg);
+}
+
+/* Icons drawn from a file (docs/assets/icons) in the page's text colour */
+.dad-ico {
+  display: inline-block;
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  background-color: currentColor;
+  -webkit-mask: var(--ico) center / contain no-repeat;
+  mask: var(--ico) center / contain no-repeat;
+}
+
+.dad-ico--database { --ico: url("icons/database.svg"); }
+.dad-ico--server { --ico: url("icons/server.svg"); }
+.dad-ico--layout-panel-top { --ico: url("icons/layout-panel-top.svg"); }
+
+/* ---------- Page transitions (cross-document view transitions) ---------- */
+
+@view-transition {
+  navigation: auto;
+}
+
+.md-header {
+  view-transition-name: dad-header;
+}
+
+.md-main {
+  view-transition-name: dad-main;
+}
+
+::view-transition-old(dad-main) {
+  animation: dad-page-out 0.18s ease-in both;
+}
+
+::view-transition-new(dad-main) {
+  animation: dad-page-in 0.42s var(--dad-ease) both;
+}
+
+@keyframes dad-page-out {
+  to { opacity: 0; }
+}
+
+@keyframes dad-page-in {
+  from { opacity: 0; transform: translateY(0.6rem); }
+}
+
+/* ---------- Header: lapis glass with a gold rule ---------- */
+
+.md-header {
+  background-color: rgba(16, 27, 74, 0.94);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+  box-shadow: none;
+}
+
+.md-header::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(227, 199, 127, 0.55) 20%, rgba(227, 199, 127, 0.55) 80%, transparent);
+}
+
+.md-header--shadow {
+  box-shadow: 0 8px 28px -12px rgba(6, 10, 30, 0.55);
+}
+
+/* Reading progress: a gold thread that grows in the reading direction. */
+@supports (animation-timeline: scroll()) {
+  .md-header::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -1px 0;
+    height: 2px;
+    background: var(--dad-leaf);
+    transform-origin: left center;
+    transform: scaleX(0);
+    animation: dad-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  [dir="rtl"] .md-header::after {
+    transform-origin: right center;
+  }
+
+  @keyframes dad-progress {
+    to { transform: scaleX(1); }
+  }
+}
+
+.md-header__title {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.md-search__form {
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.25s, box-shadow 0.25s;
+}
+
+.md-search__form:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+  border-radius: 0.6rem 0.6rem 0 0;
+}
+
 /* ---------- Header logo: the letter itself ---------- */
 
 .dad-logo {
   display: inline-block;
   font-family: var(--dad-display);
+  font-weight: 700;
   font-size: 1.85rem;
   line-height: 1;
-  color: var(--dad-gold-soft);
+  background: var(--dad-leaf);
+  background-size: 220% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   transform: translateY(-0.12rem);
+  transition: background-position 0.9s var(--dad-ease);
 }
 
-/* ---------- Ḍād code: right-to-left ---------- */
+.md-logo:hover .dad-logo {
+  background-position: 0 0;
+}
 
+/* ---------- Navigation ---------- */
+
+.md-nav__title {
+  font-weight: 700;
+}
+
+.md-nav__item--section > .md-nav__link {
+  font-weight: 700;
+  color: var(--md-default-fg-color--light);
+  letter-spacing: 0.01em;
+}
+
+.md-nav__link {
+  position: relative;
+  transition: color 0.2s, transform 0.25s var(--dad-ease);
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary .md-nav__link:not(.md-nav__container):hover {
+    transform: translateX(0.18rem);
+  }
+
+  [dir="rtl"] .md-sidebar--primary .md-nav__link:not(.md-nav__container):hover {
+    transform: translateX(-0.18rem);
+  }
+
+  /* The current page is marked with a gold nuqta. */
+  .md-sidebar--primary .md-nav__link--active:not(:has(.md-icon)) > .md-ellipsis::before {
+    content: "";
+    display: inline-block;
+    vertical-align: 0.12em;
+    width: 0.34rem;
+    height: 0.34rem;
+    margin-inline-end: 0.55rem;
+    background: var(--dad-gold);
+    transform: rotate(45deg);
+    border-radius: 1px;
+    animation: dad-nuqta-in 0.5s var(--dad-ease) both;
+  }
+}
+
+@keyframes dad-nuqta-in {
+  from { transform: rotate(45deg) scale(0); }
+}
+
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active {
+  color: var(--md-typeset-a-color);
+  font-weight: 600;
+}
+
+/* Table of contents: a turquoise thread beside the current section */
+.md-sidebar--secondary .md-nav__link {
+  padding-inline-start: 0.6rem;
+  margin-inline-start: -0.6rem;
+  border-inline-start: 2px solid transparent;
+}
+
+.md-sidebar--secondary .md-nav__link--active {
+  border-inline-start-color: var(--md-accent-fg-color);
+  color: var(--md-default-fg-color);
+}
+
+/* ---------- Typography ---------- */
+
+.md-typeset {
+  font-size: 0.82rem;
+  line-height: 1.75;
+}
+
+.md-typeset h1 {
+  position: relative;
+  margin-bottom: 1.4em;
+  font-size: 2.1em;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--md-default-fg-color);
+}
+
+[dir="rtl"] .md-typeset h1 {
+  letter-spacing: 0;
+}
+
+/* A short gold-leaf rule under every page title, drawn in the reading direction */
+.md-typeset h1::after {
+  content: "";
+  display: block;
+  width: 3.5rem;
+  height: 3px;
+  margin-top: 0.75rem;
+  border-radius: 3px;
+  background: var(--dad-leaf);
+  background-size: 200% 100%;
+  transform-origin: left center;
+  animation: dad-rule 0.9s var(--dad-ease) 0.15s both;
+}
+
+[dir="rtl"] .md-typeset h1::after {
+  transform-origin: right center;
+}
+
+@keyframes dad-rule {
+  from { transform: scaleX(0); }
+}
+
+.md-typeset h2 {
+  margin-top: 2.2em;
+  font-size: 1.45em;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset h3 {
+  font-size: 1.12em;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset .headerlink {
+  color: var(--dad-gold);
+}
+
+/* Links: an underline that grows from where the line starts */
+.md-typeset a:not(.md-button):not(.headerlink):not(.md-content__button):not(.dad-hero__status) {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s var(--dad-ease), color 0.2s;
+}
+
+[dir="rtl"] .md-typeset a:not(.md-button):not(.headerlink):not(.md-content__button):not(.dad-hero__status) {
+  background-position: 100% 100%;
+}
+
+.md-typeset a:not(.md-button):not(.headerlink):not(.md-content__button):not(.dad-hero__status):hover {
+  background-size: 100% 1px;
+}
+
+/* Lists in prose get the nuqta as their bullet. */
+.md-typeset ul:not([class]) > li::marker {
+  content: "";
+}
+
+.md-typeset ul:not([class]) > li {
+  position: relative;
+  list-style: none;
+}
+
+.md-typeset ul:not([class]) > li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -1.1em;
+  top: 0.78em;
+  width: 0.32em;
+  height: 0.32em;
+  background-color: var(--dad-gold);
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+.md-typeset blockquote {
+  border-inline-start: 3px solid var(--dad-gold);
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset hr {
+  border-bottom-color: var(--dad-line);
+}
+
+/* ---------- Buttons ---------- */
+
+.md-typeset .md-button {
+  position: relative;
+  overflow: hidden;
+  padding: 0.6em 1.5em;
+  border-width: 1px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: color 0.25s, background-color 0.25s, border-color 0.25s, box-shadow 0.35s var(--dad-ease), transform 0.35s var(--dad-ease);
+}
+
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--dad-shadow);
+}
+
+.md-typeset .md-button:not(.md-button--primary) {
+  color: var(--md-typeset-a-color);
+  border-color: color-mix(in srgb, var(--md-typeset-a-color) 40%, transparent);
+}
+
+.md-typeset .md-button:not(.md-button--primary):hover,
+.md-typeset .md-button:not(.md-button--primary):focus-visible {
+  color: var(--md-typeset-a-color);
+  border-color: var(--md-typeset-a-color);
+  background-color: color-mix(in srgb, var(--md-typeset-a-color) 8%, transparent);
+}
+
+.md-typeset .md-button--primary {
+  background: var(--dad-leaf);
+  background-size: 220% 100%;
+  background-position: 100% 0;
+  border-color: transparent;
+  color: var(--dad-ink);
+  transition: background-position 0.8s var(--dad-ease), box-shadow 0.35s var(--dad-ease), transform 0.35s var(--dad-ease);
+}
+
+.md-typeset .md-button--primary:hover,
+.md-typeset .md-button--primary:focus-visible {
+  background-position: 0 0;
+  border-color: transparent;
+  color: var(--dad-ink);
+  box-shadow: 0 10px 28px -10px rgba(201, 160, 74, 0.75);
+}
+
+/* ---------- Code ---------- */
+
+.md-typeset pre > code {
+  border-radius: var(--dad-radius);
+}
+
+.md-typeset .highlight,
+.md-typeset pre {
+  border-radius: var(--dad-radius);
+}
+
+.md-typeset pre > code {
+  box-shadow: inset 0 0 0 1px var(--dad-line);
+}
+
+.md-typeset .highlight pre > code {
+  padding: 1em 1.3em;
+}
+
+.md-typeset :not(pre) > code {
+  padding: 0.1em 0.42em;
+  border-radius: 0.35em;
+  box-shadow: inset 0 0 0 1px var(--dad-line);
+  /* Mixed Arabic/Latin inline code reads correctly in either direction. */
+  unicode-bidi: plaintext;
+}
+
+.md-typeset kbd {
+  border-radius: 0.35em;
+}
+
+.md-clipboard {
+  border-radius: 0.4em;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+/* Ḍād code is right-to-left. */
 .language-dad,
 .language-dad pre,
 .language-dad code {
@@ -159,106 +780,286 @@ html body {
   white-space: pre-wrap;
 }
 
+/* Program output sits under its program, marked by a turquoise thread. */
+.md-typeset .dad-out pre > code {
+  box-shadow: inset -3px 0 0 var(--dad-turquoise), inset 0 0 0 1px var(--dad-line);
+}
+
 .dad-out .md-code__nav,
 .language-dad .md-code__nav {
   right: auto;
   left: 0.5em;
 }
 
-/* Mixed Arabic/Latin inline code reads correctly in either direction. */
-.md-typeset :not(pre) > code {
-  unicode-bidi: plaintext;
+/* ---------- Admonitions, tabs, tables ---------- */
+
+.md-typeset .admonition,
+.md-typeset details {
+  border: 0;
+  border-inline-start: 3px solid var(--dad-tone, var(--dad-lapis-bright));
+  border-radius: var(--dad-radius);
+  background-color: color-mix(in srgb, var(--dad-tone, var(--dad-lapis-bright)) 6%, var(--md-default-bg-color));
+  box-shadow: none;
+  font-size: 0.78rem;
 }
 
-.md-typeset h1 {
+.md-typeset .admonition-title,
+.md-typeset summary {
+  background-color: transparent !important;
+  border: 0;
+  font-weight: 700;
+}
+
+.md-typeset .note { --dad-tone: var(--dad-lapis-bright); }
+.md-typeset .tip { --dad-tone: var(--dad-turquoise); }
+.md-typeset .warning { --dad-tone: var(--dad-gold); }
+.md-typeset .danger { --dad-tone: var(--dad-madder); }
+
+.md-typeset .tabbed-labels > label {
   font-weight: 600;
+  transition: color 0.2s;
+}
+
+.md-typeset .tabbed-labels::before {
+  height: 2px;
+  background: var(--dad-leaf);
+}
+
+.md-typeset .tabbed-set {
+  border-radius: var(--dad-radius);
+}
+
+.md-typeset table:not([class]) {
+  border: 0;
+  border-radius: var(--dad-radius);
+  box-shadow: inset 0 0 0 1px var(--dad-line);
+  font-size: 0.74rem;
+  overflow: hidden;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: color-mix(in srgb, var(--dad-lapis-bright) 7%, transparent);
   color: var(--md-default-fg-color);
+  font-weight: 700;
+}
+
+.md-typeset table:not([class]) td {
+  border-top-color: var(--dad-line);
+}
+
+.md-typeset table:not([class]) tbody tr {
+  transition: background-color 0.2s;
+}
+
+.md-typeset table:not([class]) tbody tr:hover {
+  background-color: color-mix(in srgb, var(--dad-gold) 7%, transparent);
+  box-shadow: none;
+}
+
+/* ---------- Footer: lapis with a faint lattice under a gold band ---------- */
+
+.md-footer {
+  position: relative;
+  background-color: var(--dad-lapis-night);
+}
+
+.md-footer::before {
+  content: "";
+  display: block;
+  height: 14px;
+  background: var(--dad-band) repeat-x center;
+  opacity: 0.8;
+}
+
+.md-footer-meta {
+  background-color: transparent;
+  background-image: linear-gradient(rgba(10, 16, 51, 0.9), rgba(10, 16, 51, 0.9)), var(--dad-tile);
+  background-size: auto, 96px 96px;
+}
+
+.md-footer__link {
+  transition: opacity 0.25s, transform 0.35s var(--dad-ease);
+}
+
+.md-footer__link:hover {
+  transform: translateY(-2px);
+}
+
+.md-footer__title {
+  font-weight: 600;
+}
+
+.md-top {
+  border-radius: 999px;
+  background-color: var(--dad-lapis);
+  color: #FFFFFF;
+  box-shadow: var(--dad-shadow-lift);
+}
+
+.md-top:hover {
+  background-color: var(--dad-lapis-bright);
+  color: #FFFFFF;
 }
 
 /* ==========================================================================
    Home page
    ========================================================================== */
 
+/* No page-title rule on the home page: the hero is the title. */
+.md-typeset h1.dad-hero__title::after {
+  display: none;
+}
+
 .dad-hero {
   position: relative;
   overflow: hidden;
-  background-color: var(--dad-lapis);
-  background-image: var(--dad-tile);
-  background-size: 96px 96px;
+  isolation: isolate;
+  --mx: 72%;
+  --my: 45%;
+  background:
+    radial-gradient(60rem 36rem at 80% 20%, rgba(42, 71, 184, 0.55), transparent 60%),
+    radial-gradient(40rem 30rem at 10% 110%, rgba(14, 143, 154, 0.28), transparent 60%),
+    linear-gradient(160deg, var(--dad-lapis) 0%, var(--dad-lapis-deep) 55%, var(--dad-lapis-night) 100%);
   color: #FFFFFF;
 }
 
-/* Fade the lattice out behind the text so it stays legible. */
-.dad-hero::before {
+[dir="rtl"] .dad-hero {
+  --mx: 28%;
+}
+
+/* The lattice: faint everywhere, lit like gold leaf around the pointer. */
+.dad-hero__lattice {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.dad-hero__lattice::before,
+.dad-hero__lattice::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg,
-      var(--dad-lapis) 0%,
-      rgba(27, 43, 107, 0.92) 42%,
-      rgba(27, 43, 107, 0.55) 100%);
+  background-image: var(--dad-tile);
+  background-size: 96px 96px;
+}
+
+.dad-hero__lattice::before {
+  opacity: 0.1;
+}
+
+.dad-hero__lattice::after {
+  opacity: 0;
+  -webkit-mask: radial-gradient(22rem 22rem at var(--mx) var(--my), #000, transparent 70%);
+  mask: radial-gradient(22rem 22rem at var(--mx) var(--my), #000, transparent 70%);
+  animation: dad-fade-to-7 1.6s ease 1s forwards;
+}
+
+@keyframes dad-fade-to-7 {
+  to { opacity: 0.7; }
 }
 
 .dad-hero__inner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   align-items: center;
   gap: 2rem;
   padding: 4.5rem 0.8rem 4rem;
 }
 
 .dad-hero__text.md-typeset {
-  color: rgba(255, 255, 255, 0.86);
+  color: rgba(255, 255, 255, 0.84);
   font-size: 0.95rem;
 }
 
 .md-typeset h1.dad-hero__title {
-  margin: 0 0 1.4rem;
+  margin: 0 0 1.3rem;
   font-family: var(--dad-display);
   font-weight: 700;
-  font-size: clamp(2.3rem, 4.6vw, 3.5rem);
-  line-height: 1.45;
+  font-size: clamp(2.5rem, 5.2vw, 4rem);
+  line-height: 1.4;
   letter-spacing: 0;
   color: #FFFFFF;
   text-align: left;
+  text-shadow: 0 0.06em 0.4em rgba(6, 10, 30, 0.35);
+}
+
+[dir="rtl"] .dad-hero h1.dad-hero__title {
+  text-align: right;
+}
+
+/* The title arrives word by word, in reading order. */
+.dad-hero__title span {
+  display: inline-block;
+  animation: dad-word 0.9s var(--dad-ease) both;
+  animation-delay: calc(0.55s + var(--i) * 0.12s);
+}
+
+@keyframes dad-word {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    filter: blur(8px);
+  }
 }
 
 .dad-hero__lede {
   max-width: 34em;
-  margin: 0 0 1.8rem;
-  line-height: 1.65;
+  margin: 0 0 2rem;
+  font-size: 1.05em;
+  line-height: 1.75;
+  animation: dad-rise 0.9s var(--dad-ease) 1s both;
 }
 
 .dad-hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.7rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  margin-bottom: 2.2rem;
+  animation: dad-rise 0.9s var(--dad-ease) 1.15s both;
+}
+
+@keyframes dad-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
 }
 
 .md-typeset .dad-hero__actions .md-button {
   margin: 0;
   color: #FFFFFF;
-  border-color: rgba(255, 255, 255, 0.5);
-  border-radius: 0.3rem;
+  border-color: rgba(255, 255, 255, 0.32);
+  background-color: rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
-.md-typeset .dad-hero__actions .md-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: #FFFFFF;
+.md-typeset .dad-hero__actions .md-button:hover,
+.md-typeset .dad-hero__actions .md-button:focus-visible {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #FFFFFF;
+  box-shadow: 0 10px 28px -12px rgba(0, 0, 0, 0.6);
+}
+
+.md-typeset .dad-hero__actions .md-button--primary,
+.md-typeset .dad-hero__actions .md-button--primary:hover,
+.md-typeset .dad-hero__actions .md-button--primary:focus-visible {
+  background: var(--dad-leaf);
+  background-size: 220% 100%;
+  border-color: transparent;
+  color: var(--dad-ink);
 }
 
 .md-typeset .dad-hero__actions .md-button--primary {
-  background-color: var(--dad-gold);
-  border-color: var(--dad-gold);
-  color: var(--dad-ink);
+  background-position: 100% 0;
 }
 
-.md-typeset .dad-hero__actions .md-button--primary:hover {
-  background-color: var(--dad-gold-soft);
-  border-color: var(--dad-gold-soft);
-  color: var(--dad-ink);
+.md-typeset .dad-hero__actions .md-button--primary:hover,
+.md-typeset .dad-hero__actions .md-button--primary:focus-visible {
+  background-position: 0 0;
+  box-shadow: 0 12px 32px -10px rgba(201, 160, 74, 0.8);
 }
 
 .dad-hero a:focus-visible {
@@ -269,84 +1070,260 @@ html body {
 .md-typeset a.dad-hero__status {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.72);
+  gap: 0.7rem;
+  padding: 0.4rem 0.95rem 0.4rem 0.8rem;
+  border: 1px solid rgba(227, 199, 127, 0.28);
+  border-radius: 999px;
+  background-color: rgba(10, 16, 51, 0.35);
+  background-image: none;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.78);
+  animation: dad-rise 0.9s var(--dad-ease) 1.3s both;
+  transition: border-color 0.25s, color 0.25s;
+}
+
+[dir="rtl"] .md-typeset a.dad-hero__status {
+  padding: 0.4rem 0.8rem 0.4rem 0.95rem;
 }
 
 .md-typeset a.dad-hero__status:hover {
+  border-color: rgba(227, 199, 127, 0.7);
   color: #FFFFFF;
 }
 
-.dad-hero__dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background-color: var(--dad-gold);
-  box-shadow: 0 0 0 0.25rem rgba(201, 160, 74, 0.25);
+.dad-hero__status .dad-nuqta {
+  animation: dad-glint 3.2s ease-in-out 2.4s infinite;
 }
+
+@keyframes dad-glint {
+  0%, 70%, 100% { box-shadow: 0 0 0 0 rgba(227, 199, 127, 0); }
+  80% { box-shadow: 0 0 0 0.3rem rgba(227, 199, 127, 0.28); }
+}
+
+/* ----- The medallion and the letter: the one orchestrated moment ----- */
 
 .dad-hero__glyph {
-  font-family: var(--dad-display);
-  font-size: clamp(10rem, 24vw, 20rem);
-  line-height: 1;
-  color: var(--dad-gold);
-  text-align: center;
-  direction: rtl;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 25rem);
+  aspect-ratio: 1;
+  justify-self: center;
   user-select: none;
-  text-shadow: 0 0.035em 0 rgba(8, 14, 40, 0.35);
 }
 
-/* The one orchestrated moment: the letter is inked right-to-left on load. */
-.dad-hero__glyph span {
-  display: inline-block;
-  padding: 0 0.08em;
-  animation: dad-ink 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+/* A dark disc inside the medallion keeps the lattice from crowding the letter. */
+.dad-hero__glyph::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(10, 16, 51, 0.92) 55%, rgba(10, 16, 51, 0.6) 80%, rgba(10, 16, 51, 0));
+}
+
+.dad-shamsa {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 18px rgba(227, 199, 127, 0.18));
+}
+
+.dad-shamsa path {
+  fill: none;
+  stroke: var(--dad-gold-soft);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  vector-effect: non-scaling-stroke;
+  animation: dad-draw 1.8s var(--dad-ease) both;
+  animation-delay: var(--d);
+}
+
+.dad-shamsa .s-tick {
+  stroke-width: 0.5;
+  opacity: 0.55;
+}
+
+.dad-shamsa .s-star {
+  stroke: var(--dad-gold);
+  stroke-width: 1.1;
+}
+
+.dad-shamsa .s-star--2 {
+  stroke-width: 0.8;
+  opacity: 0.75;
+}
+
+.dad-shamsa .s-petal {
+  fill: rgba(227, 199, 127, 0);
+  stroke: var(--dad-gold);
+  stroke-width: 0.7;
+  animation-name: dad-draw, dad-petal-fill;
+  animation-duration: 1.8s, 1.2s;
+  animation-delay: var(--d), calc(var(--d) + 1.2s);
+}
+
+.dad-shamsa .s-star--inner,
+.dad-shamsa .s-ring--inner {
+  opacity: 0.5;
+}
+
+@keyframes dad-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes dad-petal-fill {
+  to { fill: rgba(227, 199, 127, 0.3); }
+}
+
+/* The outer ring keeps turning, slowly, like a clock face. */
+.dad-shamsa__spin {
+  transform-origin: 0 0;
+  animation: dad-spin 120s linear infinite;
+}
+
+@keyframes dad-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* The letter is inked right-to-left, then the gold leaf catches the light once. */
+.dad-hero__letter {
+  position: relative;
+  display: block;
+  padding: 0 0.1em;
+  font-family: var(--dad-display);
+  font-weight: 700;
+  font-size: clamp(8rem, 15vw, 13rem);
+  line-height: 1;
+  direction: rtl;
+  background: var(--dad-leaf);
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0.04em 0.05em rgba(6, 10, 30, 0.45)) drop-shadow(0 0 0.25em rgba(227, 199, 127, 0.25));
+  transform: translate(0.06em, -0.06em);
+  animation:
+    dad-ink 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.6s both,
+    dad-sheen 1.8s var(--dad-ease) 2.2s both;
+}
+
+.dad-hero__glyph:hover .dad-hero__letter {
+  animation: dad-sheen 1.8s var(--dad-ease) both;
 }
 
 /* The clip leaves room above and below: the letter's dot and its tail reach outside its box. */
 @keyframes dad-ink {
   from {
     clip-path: inset(-0.5em 0 -0.5em 100%);
-    opacity: 0.35;
+    opacity: 0.3;
   }
   to {
-    clip-path: inset(-0.5em -0.2em -0.5em -0.2em);
+    clip-path: inset(-0.5em -0.3em -0.5em -0.3em);
     opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .dad-hero__glyph span {
-    animation: none;
-  }
+@keyframes dad-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+
+/* The hero ends on an illumination band. */
+.dad-hero__band {
+  height: 14px;
+  background: var(--dad-band) repeat-x center;
+  opacity: 0.85;
 }
 
 /* ---------- Showcase: code + legend ---------- */
 
+.dad-hero + .md-container .md-content__inner,
+.md-content__inner:has(.dad-showcase) {
+  padding-top: 1.2rem;
+}
+
+.md-typeset h2:has(+ .dad-showcase),
+.md-typeset h2:has(+ .dad-principles),
+.md-typeset h2:has(+ .dad-timeline) {
+  font-size: 1.7em;
+}
+
 .dad-showcase {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 2.2rem;
-  align-items: start;
+  gap: 2.4rem;
+  align-items: center;
+}
+
+/* The code sits on a lit panel, framed in a thin gold rule. */
+.dad-showcase__code {
+  position: relative;
+  padding: 1px;
+  border-radius: calc(var(--dad-radius) + 1px);
+  background: linear-gradient(135deg, rgba(201, 160, 74, 0.7), rgba(42, 71, 184, 0.25) 40%, rgba(14, 143, 154, 0.45));
+  box-shadow: var(--dad-shadow-lift);
 }
 
 .dad-showcase__code .highlight {
   margin: 0;
 }
 
+.md-typeset .dad-showcase__code .highlight pre {
+  margin: 0;
+}
+
+.md-typeset .dad-showcase__code .highlight pre > code {
+  padding: 1.3em 1.5em;
+  box-shadow: none;
+  background-color: var(--dad-surface);
+}
+
 .md-typeset .dad-legend {
-  margin: 0.4rem 0 0;
+  margin: 0;
 }
 
 .md-typeset .dad-legend dt {
-  font-weight: 600;
-  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.1rem;
   color: var(--md-code-hl-keyword-color);
 }
 
+/* Each keyword gets its icon on a small gold tile. */
+.md-typeset .dad-legend dt .dad-ico {
+  position: relative;
+  box-sizing: content-box;
+  width: 1rem;
+  height: 1rem;
+  padding: 0.4rem;
+  border-radius: 0.55rem;
+  background: var(--dad-leaf);
+  background-size: 200% 200%;
+  -webkit-mask: none;
+  mask: none;
+  box-shadow: 0 6px 16px -8px rgba(201, 160, 74, 0.9);
+}
+
+.md-typeset .dad-legend dt .dad-ico::after {
+  content: "";
+  position: absolute;
+  inset: 0.4rem;
+  background-color: var(--dad-ink);
+  -webkit-mask: var(--ico) center / contain no-repeat;
+  mask: var(--ico) center / contain no-repeat;
+}
+
 .md-typeset .dad-legend dd {
-  margin: 0.2rem 0 1.3rem;
+  margin: 0.3rem 0 1.4rem;
+  margin-inline-start: 2.4rem;
   color: var(--md-default-fg-color--light);
 }
 
@@ -354,37 +1331,80 @@ html body {
 
 .md-typeset .dad-principles {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 2.5rem;
-  margin: 1rem 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.2rem 0 0;
 }
 
 .md-typeset .dad-principles > div {
-  display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr);
-  gap: 1rem;
-  align-items: baseline;
-  padding: 1.1rem 0;
-  border-top: 1px solid var(--md-default-fg-color--lightest);
+  position: relative;
+  overflow: hidden;
+  padding: 1.3rem 1.3rem 1.2rem;
+  border-radius: var(--dad-radius);
+  background-color: var(--dad-surface);
+  box-shadow: inset 0 0 0 1px var(--dad-line), var(--dad-shadow);
+  transition: transform 0.45s var(--dad-ease), box-shadow 0.45s var(--dad-ease);
+}
+
+/* On hover the lattice shows through, like a watermark held to the light. */
+.md-typeset .dad-principles > div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--dad-tile);
+  background-size: 64px 64px;
+  opacity: 0;
+  -webkit-mask: radial-gradient(14rem 10rem at 100% 0, #000, transparent 70%);
+  mask: radial-gradient(14rem 10rem at 100% 0, #000, transparent 70%);
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+[dir="rtl"] .md-typeset .dad-principles > div::before {
+  -webkit-mask: radial-gradient(14rem 10rem at 0 0, #000, transparent 70%);
+  mask: radial-gradient(14rem 10rem at 0 0, #000, transparent 70%);
+}
+
+.md-typeset .dad-principles > div:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 0 0 1px rgba(201, 160, 74, 0.45), var(--dad-shadow-lift);
+}
+
+.md-typeset .dad-principles > div:hover::before {
+  opacity: 0.35;
 }
 
 .md-typeset .dad-principles dt {
-  margin: 0;
+  margin: 0 0 0.7rem;
   font-family: var(--dad-display);
-  font-size: 2rem;
+  font-size: 2.3rem;
   font-weight: 700;
-  line-height: 1;
-  text-align: center;
+  line-height: 1.2;
   color: var(--dad-principle-glyph);
+  transition: transform 0.45s var(--dad-ease);
+  transform-origin: left center;
+}
+
+[dir="rtl"] .md-typeset .dad-principles dt {
+  transform-origin: right center;
+}
+
+.md-typeset .dad-principles > div:hover dt {
+  transform: scale(1.08);
 }
 
 .md-typeset .dad-principles dd {
+  position: relative;
   margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--md-default-fg-color--light);
 }
 
 .md-typeset .dad-principles dd strong {
   display: block;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.86rem;
   color: var(--md-default-fg-color);
 }
 
@@ -395,7 +1415,7 @@ html body {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  margin: 1.4rem 0 1.6rem;
+  margin: 1.4rem 0 1.8rem;
   padding: 0;
 }
 
@@ -403,35 +1423,47 @@ html body {
   counter-increment: phase;
   position: relative;
   margin: 0;
-  padding: 2.4rem 0.8rem 0 0;
+  padding: 2.6rem 0.8rem 0 0;
+}
+
+[dir="rtl"] .md-typeset ol.dad-timeline li {
+  padding: 2.6rem 0 0 0.8rem;
 }
 
 .md-typeset ol.dad-timeline li::before {
   content: counter(phase);
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.8rem;
+  height: 1.8rem;
   border-radius: 50%;
   border: 2px solid var(--md-default-fg-color--lighter);
   background-color: var(--md-default-bg-color);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--md-default-fg-color--light);
+  transition: transform 0.5s var(--dad-ease);
 }
 
 .md-typeset ol.dad-timeline li::after {
   content: "";
   position: absolute;
-  top: 0.85rem;
-  left: 1.7rem;
-  right: 0;
+  top: 0.9rem;
+  inset-inline-start: 1.8rem;
+  inset-inline-end: 0;
   height: 2px;
   background-color: var(--md-default-fg-color--lightest);
+  background-image: linear-gradient(90deg, var(--dad-turquoise), var(--dad-turquoise));
+  background-repeat: no-repeat;
+  background-size: 0 100%;
+}
+
+[dir="rtl"] .md-typeset ol.dad-timeline li::after {
+  background-position: 100% 0;
 }
 
 .md-typeset ol.dad-timeline li:last-child::after {
@@ -442,32 +1474,44 @@ html body {
   border-color: var(--dad-turquoise);
   background-color: var(--dad-turquoise);
   color: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(14, 143, 154, 0.14);
 }
 
+/* Completed phases are joined by a line that runs in once, in reading order. */
 .md-typeset ol.dad-timeline li.is-done::after {
-  background-color: var(--dad-turquoise);
+  background-size: 100% 100%;
+}
+
+.js .md-typeset ol.dad-timeline li.is-done::after {
+  background-size: 0 100%;
+  transition: background-size 0.7s var(--dad-ease);
+  transition-delay: calc(var(--n, 0) * 0.18s);
+}
+
+.js .md-typeset ol.dad-timeline.is-seen li.is-done::after {
+  background-size: 100% 100%;
 }
 
 .md-typeset ol.dad-timeline li.is-next::before {
   border-color: var(--dad-gold);
-  color: var(--dad-gold-ink);
+  color: var(--dad-gold-text);
 }
 
-[data-md-color-scheme="slate"] .md-typeset ol.dad-timeline li.is-next::before {
-  color: var(--dad-gold-soft);
+.md-typeset ol.dad-timeline li:hover::before {
+  transform: scale(1.12);
 }
 
 .md-typeset ol.dad-timeline span {
   display: block;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--md-default-fg-color);
 }
 
 .md-typeset ol.dad-timeline small {
   display: block;
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
   font-size: 0.68rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--md-default-fg-color--light);
 }
 
@@ -477,20 +1521,17 @@ html body {
   .dad-hero__inner {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
-    padding: 2rem 0.8rem 2.6rem;
-  }
-
-  .dad-hero::before {
-    background: linear-gradient(180deg,
-        rgba(27, 43, 107, 0.55) 0%,
-        var(--dad-lapis) 45%);
+    padding: 1.5rem 0.8rem 2.8rem;
   }
 
   .dad-hero__glyph {
     order: -1;
-    font-size: 6.5rem;
-    line-height: 1.25;
-    margin-bottom: 0.6rem;
+    width: min(70vw, 15rem);
+    margin-bottom: 0.4rem;
+  }
+
+  .dad-hero__letter {
+    font-size: 7.5rem;
   }
 
   .dad-showcase,
@@ -502,19 +1543,225 @@ html body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .md-typeset ol.dad-timeline li {
-    padding: 0.15rem 0 1.2rem 2.6rem;
+  .md-typeset ol.dad-timeline li,
+  [dir="rtl"] .md-typeset ol.dad-timeline li {
+    padding: 0.15rem 0 1.3rem;
+    padding-inline-start: 2.7rem;
   }
 
-  .md-typeset ol.dad-timeline li::after {
-    top: 1.7rem;
+  .md-typeset ol.dad-timeline li::after,
+  [dir="rtl"] .md-typeset ol.dad-timeline li::after {
+    top: 1.8rem;
     bottom: 0;
-    left: 0.85rem;
-    right: auto;
+    inset-inline-start: 0.85rem;
+    inset-inline-end: auto;
     width: 2px;
     height: auto;
+    background-image: linear-gradient(var(--dad-turquoise), var(--dad-turquoise));
+    background-position: 0 0;
+    background-size: 100% 0;
+  }
+
+  .md-typeset ol.dad-timeline li.is-done::after,
+  .js .md-typeset ol.dad-timeline.is-seen li.is-done::after {
+    background-size: 100% 100%;
+  }
+
+  .js .md-typeset ol.dad-timeline li.is-done::after {
+    background-size: 100% 0;
   }
 }
+
+/* ---------- Phones ---------- */
+
+@media screen and (max-width: 44.984em) {
+  /* Hero: a smaller medallion, a title that fits, buttons you can hit with a thumb */
+  .dad-hero__inner {
+    padding: 1.2rem 1rem 2.4rem;
+  }
+
+  .dad-hero__glyph {
+    width: min(62vw, 13rem);
+  }
+
+  .dad-hero__letter {
+    font-size: clamp(5.5rem, 26vw, 7rem);
+  }
+
+  .md-typeset h1.dad-hero__title {
+    margin-bottom: 0.9rem;
+    font-size: clamp(1.9rem, 9.4vw, 2.6rem);
+    line-height: 1.5;
+  }
+
+  .dad-hero__text.md-typeset {
+    font-size: 0.85rem;
+  }
+
+  .dad-hero__lede {
+    margin-bottom: 1.5rem;
+  }
+
+  .dad-hero__actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .md-typeset .dad-hero__actions .md-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.55em 0.9em;
+  }
+
+  .md-typeset a.dad-hero__status {
+    font-size: 0.68rem;
+    line-height: 1.5;
+  }
+
+  /* Code blocks: inset with rounded corners everywhere, not edge to edge */
+  .md-content__inner > .highlight,
+  .md-content__inner > pre,
+  .md-typeset > .highlight,
+  .md-typeset > pre,
+  .md-content__inner > .dad-out {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .md-content__inner > .highlight pre > code,
+  .md-content__inner > pre > code,
+  .md-typeset .highlight pre > code {
+    border-radius: var(--dad-radius);
+  }
+
+  .md-typeset .highlight pre > code {
+    padding: 0.85em 1em;
+    font-size: 0.78rem;
+  }
+
+  .md-typeset .dad-showcase__code .highlight pre > code {
+    padding: 1em;
+    font-size: 0.72rem;
+  }
+
+  /* Tables scroll sideways instead of squeezing every column. */
+  .md-typeset table:not([class]) {
+    font-size: 0.7rem;
+  }
+
+  .md-typeset table:not([class]) th,
+  .md-typeset table:not([class]) td {
+    min-width: 7.5rem;
+    padding: 0.7em 0.9em;
+  }
+
+  /* Bigger targets for tabs and the copy button */
+  .md-typeset .tabbed-labels > label {
+    padding: 0.9em 1em 0.7em;
+    font-size: 0.72rem;
+  }
+
+  .md-clipboard,
+  .md-code__button {
+    width: 2.2em;
+    height: 2.2em;
+  }
+
+  .md-typeset .tabbed-control {
+    width: 2.2rem;
+  }
+
+  .md-typeset .tabbed-control .tabbed-button {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  .md-typeset h1 {
+    font-size: 1.75em;
+  }
+
+  .md-typeset h2 {
+    font-size: 1.3em;
+  }
+
+  .md-typeset h2:has(+ .dad-showcase),
+  .md-typeset h2:has(+ .dad-principles),
+  .md-typeset h2:has(+ .dad-timeline) {
+    font-size: 1.4em;
+  }
+
+  .md-typeset .dad-principles > div {
+    padding: 1.1rem;
+  }
+
+  .md-typeset .dad-principles dt {
+    font-size: 2rem;
+  }
+
+  /* Footer: previous/next take the full width, one above the other */
+  .md-footer__link {
+    padding-top: 1rem;
+    padding-bottom: 0.6rem;
+  }
+
+  /* The playground stacks; keep the editor comfortable to type in. */
+  .dad-play__bar {
+    gap: 0.5rem;
+  }
+
+  .dad-play__bar select {
+    flex: 1;
+    min-height: 2.4rem;
+  }
+
+  .md-typeset .dad-play__run {
+    min-height: 2.4rem;
+  }
+
+  .dad-play__code > .dad-play__editor,
+  .md-typeset .dad-play__code > pre.dad-play__hl > code {
+    font-size: 0.85rem;
+  }
+
+  .dad-play__tabs button {
+    padding: 0.6rem 1rem;
+  }
+}
+
+@media screen and (min-width: 60em) and (max-width: 76.234em) {
+  .md-typeset .dad-principles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Motion off ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::view-transition-old(dad-main),
+  ::view-transition-new(dad-main) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  .dad-shamsa__spin {
+    animation: none !important;
+  }
+
+  .md-header::after {
+    animation-duration: auto !important;
+  }
+}
+
 
 /* ==========================================================================
    Playground
@@ -532,7 +1779,7 @@ html body {
 .dad-play__bar select {
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--md-default-fg-color--lighter);
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   background-color: var(--md-default-bg-color);
   color: var(--md-default-fg-color);
   font: inherit;
@@ -572,7 +1819,7 @@ html body {
   position: relative;
   display: grid;
   border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   background-color: var(--md-code-bg-color);
 }
 
@@ -586,7 +1833,7 @@ html body {
   margin: 0;
   padding: 0.9rem 1rem;
   border: 0;
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", monospace;
   font-size: 0.8rem;
   font-weight: 400;
@@ -670,7 +1917,7 @@ html body {
 .md-typeset ul.dad-play__diags li {
   margin: 0 0 0.4rem;
   padding: 0.45rem 0.7rem;
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   font-size: 0.75rem;
   line-height: 1.6;
   border-inline-start: 3px solid transparent;
@@ -699,7 +1946,7 @@ html body {
   overflow: auto;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
 }
 
 .dad-play__line {
@@ -788,7 +2035,7 @@ html body {
   width: 100%;
   height: 26rem;
   border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   background: #fcfcfd;
   resize: vertical;
 }
@@ -801,7 +2048,7 @@ html body {
   margin: 0;
   padding: 0.8rem 1rem;
   border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   background-color: var(--md-code-bg-color);
   color: var(--md-code-fg-color);
   font-family: var(--md-code-font-family), "IBM Plex Sans Arabic", monospace;
@@ -851,7 +2098,7 @@ html body {
 .md-typeset .dad-font-sample {
   margin: 1.2em 0;
   padding: 0.6em 0.9em;
-  border-radius: 0.3rem;
+  border-radius: var(--dad-radius);
   background-color: var(--md-code-bg-color);
   color: var(--md-code-fg-color);
   font-family: var(--md-code-font-family);

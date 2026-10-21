@@ -1,75 +1,77 @@
-# Examples
+---
+icon: lucide/shapes
+---
 
-These sample programs live in the [`examples/`](https://github.com/mtwalli/dad-lang/tree/main/examples) folder of the repository.
-Run any of them with `dad run`, or try them in the [playground](playground.md). Programs that
-print something are followed by their output. Examples 5 and 6 have an interface: run them
-with `dad dev` and open <http://localhost:8080>.
+# الأمثلة
 
-## 1. Hello — functions, default and named arguments
+هذه البرامج في مجلد [`examples/`](https://github.com/mtwalli/dad-lang/tree/main/examples) في
+المستودع. شغّل أياً منها بـ`dad run`، أو جرّبه في [الملعب](playground.md). وتحت البرامج التي
+تطبع شيئاً ناتجُها. وللمثالين 5 و6 واجهة: شغّلهما بـ`dad dev` وافتح <http://localhost:8080>.
+
+## 1. مرحبا: الدوال، والقيم الافتراضية، والمعاملات المسماة { #1-hello }
 
 ```dad
 --8<-- "examples/01-hello.dad"
 ```
 
-Output:
+الناتج:
 
 ``` { .text .dad-out }
 --8<-- "examples/output/01-hello.txt"
 ```
 
-## 2. Basics — expressions, ranges, lambdas
+## 2. الأساسيات: التعابير، والمجالات، والدوال المجهولة { #2-basics }
 
 ```dad
 --8<-- "examples/02-basics.dad"
 ```
 
-Output:
+الناتج:
 
 ``` { .text .dad-out }
 --8<-- "examples/output/02-basics.txt"
 ```
 
-## 3. Shapes — value types, enums, exhaustive matching
+## 3. الأشكال: الأنواع، والتعدادات، والمطابقة الشاملة { #3-shapes }
 
 ```dad
 --8<-- "examples/03-shapes.dad"
 ```
 
-Output:
+الناتج:
 
 ``` { .text .dad-out }
 --8<-- "examples/output/03-shapes.txt"
 ```
 
-## 4. Safety — optionals, errors, contracts, extensions
+## 4. الأمان: القيم الاختيارية، والأخطاء، والعقود، والامتدادات { #4-safety }
 
 ```dad
 --8<-- "examples/04-safety.dad"
 ```
 
-Output:
+الناتج:
 
 ``` { .text .dad-out }
 --8<-- "examples/output/04-safety.txt"
 ```
 
-## 5. To-do app — data, server and interface in one file
+## 5. تطبيق مهام: البيانات والخادم والواجهة في ملف واحد { #5-to-do-app }
 
 ```dad
 --8<-- "examples/05-todo.dad"
 ```
 
-## 6. Counters — an interface with no server
+## 6. عدّادات: واجهة بلا خادم { #6-counters }
 
 ```dad
 --8<-- "examples/06-counter.dad"
 ```
 
-## 7. A program in three files
+## 7. برنامج في ثلاثة ملفات { #7-a-program-in-three-files }
 
-`نماذج.dad` declares the products, `أسعار.dad` the discounts, and `الرئيسي.dad` imports
-both. Run it with `dad run examples/07-modules/الرئيسي.dad`. See
-[Programs in several files](modules.md).
+يعرّف `نماذج.dad` المنتجات، و`أسعار.dad` الخصومات، ويستورد `الرئيسي.dad` كليهما. شغّله
+بـ`dad run examples/07-modules/الرئيسي.dad`. وانظر [برنامج في عدة ملفات](modules.md).
 
 ```dad title="نماذج.dad"
 --8<-- "examples/07-modules/نماذج.dad"
@@ -83,7 +85,7 @@ both. Run it with `dad run examples/07-modules/الرئيسي.dad`. See
 --8<-- "examples/07-modules/الرئيسي.dad"
 ```
 
-Output:
+الناتج:
 
 ``` { .text .dad-out }
 --8<-- "examples/output/07-modules.txt"

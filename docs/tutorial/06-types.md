@@ -1,9 +1,9 @@
-# 6. Types and enums
+# ٦. الأنواع والتعدادات
 
-You know some ready-made types: `صحيح`, `نص` and `منطقي`. But a library program deals with
-**books**, and a school program with **students**. In this lesson you make your own types.
+عرفت أنواعاً جاهزة: `صحيح` و`نص` و`منطقي`. لكن برنامج مكتبة يتعامل مع **كتب**، وبرنامج
+مدرسة يتعامل مع **طلاب**. في هذا الدرس تصنع أنواعك.
 
-## `نوع`: a thing with properties
+## «نوع»: شيء له صفات
 
 ```dad
 نوع كتاب(العنوان: نص، المؤلف: نص، الصفحات: صحيح)
@@ -20,15 +20,12 @@ You know some ready-made types: `صحيح`, `نص` and `منطقي`. But a libra
 كتاب(العنوان: «رجال في الشمس»، المؤلف: «غسان كنفاني»، الصفحات: 112)
 ```
 
-`نوع كتاب(…)` («type book») describes a book: it has a title, an author and a number of
-pages, its **fields**. Then you make books the way you call a function, and read each field
-with a dot: `الأول.العنوان` («the first one's title»).
+`نوع كتاب(…)` يصف الكتاب: له عنوان ومؤلف وعدد صفحات، وهي **حقوله**. ثم تصنع كتباً كما
+تستدعي دالة، وتقرأ كل حقل بالنقطة: `الأول.العنوان`.
 
-### Functions inside the type
+### دوال داخل النوع
 
-Put the functions that belong to the type between `{ }` after it. Inside them, the fields
-are read by name. Here is a rectangle with its area, its perimeter, and whether it is a
-square:
+ضع الدوال التي تخص النوع بين `{ }` بعده. وداخلها تقرأ الحقول بأسمائها مباشرة:
 
 ```dad
 نوع مستطيل(الطول: عشري، العرض: عشري) {
@@ -45,10 +42,10 @@ square:
 المساحة 10.0 والمحيط 13.0 مربع؟ خطأ
 ```
 
-### Fields don't change; copies do
+### الحقول لا تتغير، والنسخة تتغير
 
-The fields of a type are constant, so a thing can't change behind your back. When you want
-something slightly different, make a **copy** of it with `نسخة`:
+حقول الأنواع ثابتة، فلا يتغير الشيء من تحتك وأنت لا تدري. وحين تريد شيئاً مختلفاً قليلاً،
+اصنع **نسخة** منه:
 
 ```dad
 نوع طالب(الاسم: نص، الصف: صحيح)
@@ -64,10 +61,9 @@ something slightly different, make a **copy** of it with `نسخة`:
 طالب(الاسم: «أحمد»، الصف: 6)
 ```
 
-## `تعداد`: one of a few choices
+## «تعداد»: قيمة من اختيارات معدودة
 
-Some values can only be one of a few options: a traffic light is red (`أحمر`), yellow
-(`أصفر`) or green (`أخضر`).
+بعض القيم لا تكون إلا واحدة من خيارات قليلة: إشارة المرور أحمر أو أصفر أو أخضر.
 
 ```dad
 تعداد إشارة { أحمر، أصفر، أخضر }
@@ -87,8 +83,8 @@ Some values can only be one of a few options: a traffic light is red (`أحمر`
 انطلق
 ```
 
-`تعداد` means «enum». `طابق` («match») compares the value with each case, and picks what
-follows `=>`. Ḍād makes sure you haven't forgotten a case. Delete the `أصفر` line and see:
+`طابق` تقارن القيمة بكل حالة، وتختار ما بعد `=>`. ويتأكد ضاد أنك لم تنسَ حالة. احذف سطر
+`أصفر` وانظر:
 
 ```dad
 // خطأ مقصود
@@ -104,13 +100,9 @@ follows `=>`. Ḍād makes sure you haven't forgotten a case. Delete the `أصف
 خطأ [السطر 4، العمود 32]: «طابق» لا تغطي كل حالات «إشارة»: تنقص «أصفر». أضفها، أو أضف «_ => …» لما تبقى
 ```
 
-The message says `طابق` doesn't cover every case of «إشارة»: «أصفر» is missing. Add it, or
-add `_ => …` for the rest.
+### حالات تحمل قيماً
 
-### Cases that carry values
-
-Each case of an enum can carry fields of its own. Here, shapes: a circle, a rectangle and a
-triangle:
+ولكل حالة من التعداد أن تحمل حقولاً خاصة بها:
 
 ```dad
 تعداد شكل {
@@ -137,17 +129,16 @@ triangle:
 مثلث(القاعدة: 6.0، الارتفاع: 2.0) مساحته 6.0
 ```
 
-In `دائرة(نق) => …`, the name `نق` takes the radius, and you use it after `=>`.
+في `دائرة(نق) => …` يأخذ الاسم `نق` قيمة نصف القطر، فتستعمله بعد `=>`.
 
-## Exercise
+## تمرين
 
-1. Make a type `منتج(الاسم: نص، السعر: عشري، الكمية: صحيح)` (a product with a name, a price
-   and a quantity) with a function `القيمة()` that returns price × quantity. Make a list of
-   three products and print their total value.
-2. Make an enum `يوم` with the days of the week, and a function `عطلة(ي: يوم): منطقي` that
-   returns `صح` for Friday and Saturday (`الجمعة` and `السبت`).
+1. اصنع نوع `منتج(الاسم: نص، السعر: عشري، الكمية: صحيح)` فيه دالة `القيمة()` تُرجع
+   السعر × الكمية. اصنع قائمة من ثلاثة منتجات واطبع مجموع قيمتها.
+2. اصنع تعداد `يوم` بأيام الأسبوع، ودالة `عطلة(ي: يوم): منطقي` تُرجع `صح` للجمعة
+   والسبت.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad
     نوع منتج(الاسم: نص، السعر: عشري، الكمية: صحيح) {
@@ -173,6 +164,6 @@ In `دائرة(نق) => …`, the name `نق` takes the radius, and you use it a
     صح خطأ
     ```
 
-    In `طابق`, `_` means «any other case».
+    `_` في `طابق` تعني «أي حالة أخرى».
 
-**Next:** [When things go wrong](07-errors.md)
+**التالي:** [حين يخطئ شيء](07-errors.md)

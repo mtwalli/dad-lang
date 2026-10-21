@@ -1,105 +1,108 @@
-# Editor
+---
+icon: lucide/code-xml
+---
 
-Ḍād files are plain UTF-8 text, so any editor can open them. For the best experience use
-[Visual Studio Code](https://code.visualstudio.com/) with the Ḍād extension. It runs on
-macOS, Windows and Linux.
+# المحرر
 
-## The VS Code extension
+ملفات ضاد نصوص عادية بترميز UTF-8، فيفتحها أي محرر. وأفضل تجربة هي
+[Visual Studio Code](https://code.visualstudio.com/) مع إضافة ضاد، وهو يعمل على macOS
+وWindows وLinux.
 
-- **Right to left.** `.dad` files open in an editor whose lines start at the right ([details](#right-to-left)).
-- **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, comments, and Ḍād code blocks in Markdown.
-- **Errors as you type.** The same Arabic messages as `dad check`, with the exact word underlined: mistyped names (with «هل تقصد …؟»), wrong arguments and types, missing fields and `طابق` cases
-  and listed in the Problems panel.
-- **Run** the current file with the ▶ button in the editor title. The output appears right to
-  left in the **Ḍād** panel, next to the terminal, and stays there until the next run. The
-  panel has **Run again** and **Stop** buttons.
-- **Keyword help.** Hover a keyword to see what it means in English.
-- **Go to definition** (<kbd>F12</kbd>, or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+click), **find all
-  references** (<kbd>Shift</kbd>+<kbd>F12</kbd>) and **rename** (<kbd>F2</kbd>) for variables,
-  functions, types, fields, parameters and cases. Renaming a field also changes `نقطة(س: …)`
-  and `نسخة(س: …)` wherever the field is named.
-- **Hover a name** to see how it is declared, such as `دالة مربع(عدد: صحيح): صحيح`.
-- **The outline** (<kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd>, and the Outline
-  view) lists the file's types, functions, tables and components with their fields and methods.
-- **Completion and snippets** for keywords, built-ins and the names in scope. After a `.`,
-  completion lists what the value really has: the fields and methods of `نقطة`, the methods of
-  text or lists, the queries of a table. Snippets cover functions, types, enums, loops and
-  matching. Snippets answer to Arabic and English prefixes, so `دالة` and `func` both work.
+## إضافة VS Code
 
-### Install it
+- **من اليمين إلى اليسار.** تُفتح ملفات `.dad` في محرر تبدأ سطوره من اليمين ([التفاصيل](#right-to-left)).
+- **تلوين** للكلمات المحجوزة، والنصوص مع `{…}` داخلها، ونصوص `«…»`، والأعداد، والتعليقات،
+  وكتل كود ضاد داخل ملفات Markdown.
+- **الأخطاء وأنت تكتب.** الرسائل العربية نفسها التي يعطيها `dad check`، مع خط تحت الكلمة
+  بالضبط: الأسماء الخاطئة (مع «هل تقصد …؟»)، والمعاملات والأنواع الخاطئة، والحقول المفقودة،
+  وحالات `طابق` المنسية. وتظهر كلها في لوحة المشكلات أيضاً.
+- **التشغيل** بزر ▶ في عنوان المحرر. تظهر النتيجة من اليمين إلى اليسار في لوحة **Ḍād** بجانب
+  الطرفية، وتبقى حتى التشغيل التالي. وفي اللوحة زرّا **أعد التشغيل** و**أوقف**.
+- **شرح الكلمات.** مرّر المؤشر فوق كلمة محجوزة لترى معناها بالإنجليزية.
+- **الذهاب إلى التعريف** (<kbd>F12</kbd>، أو <span dir="ltr"><kbd>⌘</kbd>/<kbd>Ctrl</kbd></span> مع النقر)، و**إيجاد
+  كل المراجع** (<span dir="ltr"><kbd>Shift</kbd>+<kbd>F12</kbd></span>)، و**إعادة التسمية** (<kbd>F2</kbd>) للمتغيرات
+  والدوال والأنواع والحقول والمعاملات والحالات. وإعادة تسمية حقل تغيّر أيضاً `نقطة(س: …)`
+  و`نسخة(س: …)` حيثما ذُكر الحقل باسمه.
+- **مرّر المؤشر فوق اسم** لترى كيف عُرّف، مثل `دالة مربع(عدد: صحيح): صحيح`.
+- **المخطط** (<span dir="ltr"><kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd></span>، وعرض Outline)
+  يسرد أنواع الملف ودواله وجداوله ومكوناته مع حقولها ودوالها.
+- **الإكمال والقوالب** للكلمات المحجوزة والدوال الجاهزة والأسماء المتاحة. وبعد `.` يسرد
+  الإكمال ما تملكه القيمة فعلاً: حقول `نقطة` ودوالها، ودوال النصوص والقوائم، واستعلامات
+  الجدول. والقوالب للدوال والأنواع والتعدادات والحلقات و`طابق`، وتعمل بالعربية والإنجليزية:
+  `دالة` و`func` كلاهما.
 
-The extension needs the `dad` program, version 0.1.4 or newer. [Install Ḍād](install.md) first.
+### التثبيت
 
-1. In VS Code, open the Extensions view (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>, or
-   <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> on a Mac).
-2. Search for **Ḍād** (or `mtwalli.dad-lang`) and click **Install**.
+تحتاج الإضافة برنامج `dad` بالإصدار 0.1.4 أو أحدث، فـ[ثبّت ضاد](install.md) أولاً.
 
-[Open it on the Marketplace](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang){ .md-button }
+1. في VS Code افتح قائمة الإضافات (<span dir="ltr"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></span>، أو
+   <span dir="ltr"><kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></span> على Mac).
+2. ابحث عن **Ḍād** (أو `mtwalli.dad-lang`) واضغط **Install**.
 
-Or from a terminal:
+[افتحها في المتجر](https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang){ .md-button }
+
+أو من الطرفية:
 
 ```sh
 code --install-extension mtwalli.dad-lang
 ```
 
-VS Code updates the extension automatically.
+ويحدّث VS Code الإضافة وحده.
 
-??? note "Installing without the Marketplace"
-    Each [release](https://github.com/mtwalli/dad-lang/releases/latest) also has the extension
-    as [`dad-lang.vsix`](https://github.com/mtwalli/dad-lang/releases/latest/download/dad-lang.vsix).
-    Download it, then in the Extensions view open the **…** menu, choose
-    **Install from VSIX…** and pick the file.
+??? note "التثبيت دون المتجر"
+    في كل [إصدار](https://github.com/mtwalli/dad-lang/releases/latest) نسخة من الإضافة
+    باسم [`dad-lang.vsix`](https://github.com/mtwalli/dad-lang/releases/latest/download/dad-lang.vsix).
+    نزّلها، ثم افتح قائمة **…** في عرض الإضافات، واختر **Install from VSIX…** والملف.
 
-### Use it
+### الاستعمال
 
-Open any `.dad` file, or a folder that contains some.
+افتح أي ملف `.dad`، أو مجلداً فيه ملفات منها.
 
-| To | Do this |
+| لكي | افعل |
 |---|---|
-| Run the file | Click ▶ in the editor title, or press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac) |
-| Run a file from the sidebar | Right-click it and choose **Run Ḍād File** |
-| See all problems | Open the Problems panel (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd>) |
-| Format the file | Save it (on by default), or press <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> on Linux). See [Formatting](#formatting) |
-| Insert a snippet | Type `دالة`, `لكل`, `طابق`, `func`, `for`, `match`… and press <kbd>Tab</kbd> |
-| Check which `dad` is used | Run **Ḍād: Show Installed Version** from the Command Palette |
+| تشغّل الملف | اضغط ▶ في عنوان المحرر، أو <span dir="ltr"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></span> (<span dir="ltr"><kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></span> على Mac) |
+| تشغّل ملفاً من الشريط الجانبي | انقر عليه بالزر الأيمن واختر **Run Ḍād File** |
+| ترى كل المشكلات | افتح لوحة المشكلات (<span dir="ltr"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd></span>) |
+| تنسّق الملف | احفظه (مفعّل افتراضياً)، أو اضغط <span dir="ltr"><kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd></span> (<span dir="ltr"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd></span> على Linux). انظر [التنسيق](#formatting) |
+| تُدرج قالباً | اكتب `دالة` أو `لكل` أو `طابق` أو `func` أو `for` أو `match`… واضغط <kbd>Tab</kbd> |
+| تعرف أي `dad` يُستعمل | شغّل **Ḍād: Show Installed Version** من لوحة الأوامر |
 
-### Settings
+### الإعدادات
 
-| Setting | Default | What it does |
+| الإعداد | القيمة الافتراضية | ما يفعله |
 |---|---|---|
-| `dad.path` | empty | Path to `dad`. Empty means find it on your `PATH` or in `~/.dad/bin`. |
-| `dad.checkOnType` | `true` | Check for errors as you type. Off means on open and save only. |
-| `dad.saveBeforeRun` | `true` | Save the file before running it. |
-| `dad.formatOnSave` | `true` | Format the file with `dad fmt` when you save it, in both editors. |
+| `dad.path` | فارغ | مسار `dad`. الفارغ يعني: ابحث عنه في `PATH` أو في `~/.dad/bin` |
+| `dad.checkOnType` | `true` | يفحص الأخطاء وأنت تكتب. وإن أوقفته فعند الفتح والحفظ فقط |
+| `dad.saveBeforeRun` | `true` | يحفظ الملف قبل تشغيله |
+| `dad.formatOnSave` | `true` | ينسّق الملف بـ`dad fmt` عند الحفظ، في المحررين كليهما |
 
-If VS Code says it can't find `dad`, run `which dad` (macOS and Linux) or `where dad`
-(Windows) in a terminal and put the result in `dad.path`.
+إن قال VS Code إنه لا يجد `dad`، فشغّل `which dad` (macOS وLinux) أو `where dad` (Windows)
+في الطرفية، وضع الناتج في `dad.path`.
 
-## Ḍād Mono, the coding font
+## خط Ḍād Mono للكود { #dad-mono-the-coding-font }
 
-Ḍād has its own coding font, **Ḍād Mono** (installed as "Dad Mono"). Its Arabic is
-geometric Kufi, sized and weighted to sit on the same line as the Latin letters, digits
-and symbols. Every code block on this site uses it.
+لضاد خط خاص بالكود اسمه **Ḍād Mono** (يُثبَّت باسم «Dad Mono»). حروفه العربية كوفية
+هندسية، بحجم ووزن يجعلانها على السطر نفسه مع الحروف اللاتينية والأرقام والرموز. وكل كتل
+الكود في هذا الموقع مكتوبة به.
 
 <p class="dad-font-sample" dir="rtl" lang="ar">إذا عدد > 10 { اطبع("كبير") }</p>
 
-**In VS Code** the extension sets Ḍād Mono for `.dad` files. The first time you open one, it
-offers to install the font for you: choose **Install font**, then reload VS Code. You can
-also run **Ḍād: Install the Ḍād Mono Font** from the Command Palette at any time.
-Other files keep your usual font.
+**في VS Code** تجعل الإضافة Ḍād Mono خطاً لملفات `.dad`. وحين تفتح أول ملف منها تعرض أن
+تثبّت الخط لك: اختر **Install font**، ثم أعد تحميل VS Code. ويمكنك أيضاً أن تشغّل
+**Ḍād: Install the Ḍād Mono Font** من لوحة الأوامر متى شئت. وتبقى بقية الملفات بخطك المعتاد.
 
-**Elsewhere** (terminal, other editors), download and install it yourself:
+**وفي غيره** (الطرفية والمحررات الأخرى)، نزّله وثبّته بنفسك:
 
-[Ḍād Mono Regular](assets/fonts/DadMono-Regular.ttf){ .md-button }
-[Ḍād Mono Bold](assets/fonts/DadMono-Bold.ttf){ .md-button }
+[Ḍād Mono عادي](assets/fonts/DadMono-Regular.ttf){ .md-button }
+[Ḍād Mono عريض](assets/fonts/DadMono-Bold.ttf){ .md-button }
 
 === "macOS"
 
-    Double-click each file and choose **Install Font**.
+    انقر كل ملف نقراً مزدوجاً واختر **Install Font**.
 
 === "Windows"
 
-    Right-click each file and choose **Install** (or **Install for all users**).
+    انقر كل ملف بالزر الأيمن واختر **Install** (أو **Install for all users**).
 
 === "Linux"
 
@@ -109,39 +112,39 @@ Other files keep your usual font.
     fc-cache -f
     ```
 
-Then pick **Dad Mono** as the font in the app. To use it for all files in VS Code, set
-`editor.fontFamily` to `'Dad Mono', monospace`.
+ثم اختر **Dad Mono** خطاً في البرنامج. ولتستعمله لكل الملفات في VS Code، اجعل
+`editor.fontFamily` يساوي `'Dad Mono', monospace`.
 
-The Arabic comes from Noto Kufi Arabic and the Latin from DejaVu Sans Mono. Ḍād Mono is free
-under the SIL Open Font License ([license](assets/fonts/LICENSE.txt)). To rebuild it, run
+الحروف العربية من Noto Kufi Arabic، واللاتينية من DejaVu Sans Mono. وخط Ḍād Mono مجاني
+برخصة SIL Open Font License ([الرخصة](assets/fonts/LICENSE.txt)). ولإعادة بنائه شغّل
 `python3 tools/font/build.py`.
 
-## Formatting
+## التنسيق { #formatting }
 
-`dad fmt` lays out Ḍād code one standard way, following the
-[Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html), so every
-file reads the same and nobody argues about spaces:
+يرتّب `dad fmt` كود ضاد بطريقة واحدة معيارية، على
+[أعراف Kotlin في كتابة الكود](https://kotlinlang.org/docs/coding-conventions.html)، فتُقرأ
+الملفات كلها بالشكل نفسه ولا يختلف أحد على المسافات:
 
-- Four spaces of indentation for each level, worked out from the code.
-- A block that spans lines opens with `{` at the end of its first line and closes with `}`
-  on a line of its own. `} وإلا {` and `} التقط خ {` stay on one line. A short block can stay
-  on one line: `إذا ب == 0 { ارفع مشكلة("…") }`.
-- One statement per line: `؛` between statements becomes a new line.
-- One space around operators and after commas, none inside `( )` and `[ ]`, one inside
-  `{ }` on a single line. Lambda parameters stay on the first line: `{ أ، ب =>`.
-- Lines longer than 100 columns are split at their outermost `(` or `[`, one argument per line.
-- A blank line before and after a declaration that spans lines (a function, type, table…),
-  at most one blank line in a row, no spaces at line ends, one newline at the end of the file.
-- Comments stay with their code. Multi-line strings are not touched.
+- أربع مسافات لكل مستوى من الإزاحة، تُحسب من الكود نفسه.
+- الكتلة الممتدة على عدة سطور تُفتح بـ`{` في آخر سطرها الأول، وتُغلق بـ`}` في سطر وحدها.
+  وتبقى `} وإلا {` و`} التقط خ {` في سطر واحد. والكتلة القصيرة تبقى في سطر واحد:
+  `إذا ب == 0 { ارفع مشكلة("…") }`.
+- عبارة واحدة في كل سطر: `؛` بين العبارات تصير سطراً جديداً.
+- مسافة واحدة حول العوامل وبعد الفواصل، ولا مسافة داخل `( )` و`[ ]`، ومسافة واحدة داخل
+  `{ }` في السطر الواحد. ومعاملات الدالة المجهولة تبقى في السطر الأول: `{ أ، ب =>`.
+- السطر الأطول من 100 عمود يُقسَم عند أول `(` أو `[` خارجية، معاملاً في كل سطر.
+- سطر فارغ قبل التعريف الممتد على عدة سطور (دالة أو نوع أو جدول…) وبعده، ولا أكثر من سطر
+  فارغ واحد متتالٍ، ولا مسافات في أواخر السطور، وسطر جديد واحد في آخر الملف.
+- التعليقات تبقى مع كودها، والنصوص متعددة السطور لا تُمَسّ.
 
 ```dad
-// Before
+// قبل
 دالة مربع(س:صحيح){
 أرجع س*س
       }
 اطبع( [1،2].حول {هو*2} )؛ اطبع(مربع(3))
 
-// After
+// بعد
 دالة مربع(س: صحيح) {
     أرجع س * س
 }
@@ -150,65 +153,63 @@ file reads the same and nobody argues about spaces:
 اطبع(مربع(3))
 ```
 
-Only the layout changes, never the code: `dad fmt` checks that the result has exactly the
-same words and symbols (a `؛` and a new line count as the same) and that it still reads
-without errors. A file with errors is left as it is until you fix them.
+يتغير الترتيب فقط، لا الكود أبداً: يتأكد `dad fmt` أن الناتج فيه الكلمات والرموز نفسها
+بالضبط (و`؛` والسطر الجديد سيّان)، وأنه يُقرأ بلا أخطاء. والملف الذي فيه أخطاء يُترك كما
+هو حتى تصلحها.
 
-In VS Code, files are formatted when you save them (turn this off with `dad.formatOnSave`) and
-with **Format Document**. From a terminal:
+في VS Code تُنسَّق الملفات عند حفظها (أوقف ذلك بـ`dad.formatOnSave`)، وبأمر
+**Format Document**. ومن الطرفية (وبالعربية: `ضاد نسق`):
 
 ```sh
-dad fmt app.dad          # or: ضاد نسق app.dad
+dad fmt app.dad
 dad fmt .                # every .dad file in this folder and below
 dad fmt --check .        # list files that aren't formatted, without changing them (for CI)
 ```
 
-## Right to left
+## من اليمين إلى اليسار { #right-to-left }
 
-VS Code's text editor always starts lines at the left, and no setting changes that. So the
-extension opens `.dad` files in its own **right-to-left editor**: lines start at the right,
-line numbers sit on the right, and the cursor, selection and Arabic keyboard input work the
-way they do in any Arabic text. It shows the same colors, problems (with wavy underlines and
-the message for the current line at the bottom) and Ḍād Mono.
+محرر النصوص في VS Code يبدأ السطور من اليسار دائماً، ولا إعداد يغيّر ذلك. لذلك تفتح الإضافة
+ملفات `.dad` في **محرر من اليمين إلى اليسار** خاص بها: تبدأ السطور من اليمين، وأرقامها على
+اليمين، ويعمل المؤشر والتحديد والكتابة بلوحة المفاتيح العربية كما تعمل في أي نص عربي. ويعرض
+الألوان نفسها، والمشكلات (بخط متموج، ورسالة السطر الحالي في الأسفل)، وخط Ḍād Mono.
 
-It edits VS Code's own copy of the file, so saving, undo, the unsaved-changes dot, Git and the
-Problems panel all work as usual. <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
-(<kbd>⌘</kbd>+<kbd>Enter</kbd>) or **▶ شغّل** runs the file.
+وهو يحرّر نسخة VS Code نفسها من الملف، فيعمل الحفظ والتراجع ونقطة التغييرات غير المحفوظة
+وGit ولوحة المشكلات كالمعتاد. ويشغّل <span dir="ltr"><kbd>Ctrl</kbd>+<kbd>Enter</kbd></span>
+(<span dir="ltr"><kbd>⌘</kbd>+<kbd>Enter</kbd></span>) أو زر **▶ شغّل** الملف.
 
-Indentation follows the code as you type:
+وتتبع الإزاحة الكود وأنت تكتب:
 
-| Key | What it does |
+| المفتاح | ما يفعله |
 |---|---|
-| <kbd>Enter</kbd> | Keeps the line's indentation, one level (four spaces) more after `{`, `(` or `[`. Between `{` and `}` it puts the `}` on its own line |
-| `}` `)` `]` | At the start of a line, lines up with the line that opened the bracket |
-| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | Indent or outdent the line, or every selected line |
-| <kbd>Ctrl</kbd>+<kbd>]</kbd> / <kbd>Ctrl</kbd>+<kbd>[</kbd> | The same, with <kbd>⌘</kbd> on a Mac |
-| <kbd>Backspace</kbd> | In the indentation, goes back one level |
-| <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> | Format the file |
+| <kbd>Enter</kbd> | يحفظ إزاحة السطر، ويزيدها مستوى (أربع مسافات) بعد `{` أو `(` أو `[`. وبين `{` و`}` يضع `}` في سطر وحدها |
+| `}` `)` `]` | في أول السطر، تصطف مع السطر الذي فتح القوس |
+| <kbd>Tab</kbd> / <span dir="ltr"><kbd>Shift</kbd>+<kbd>Tab</kbd></span> | يزيد إزاحة السطر أو ينقصها، أو كل السطور المحددة |
+| <span dir="ltr"><kbd>Ctrl</kbd>+<kbd>]</kbd></span> / <span dir="ltr"><kbd>Ctrl</kbd>+<kbd>[</kbd></span> | مثلها، مع <kbd>⌘</kbd> على Mac |
+| <kbd>Backspace</kbd> | داخل الإزاحة، يرجع مستوى واحداً |
+| <span dir="ltr"><kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd></span> | ينسّق الملف |
 
-VS Code's own features that need its text editor are only in the text view: completion,
-hovers, go to definition, references and rename, find and replace, multiple cursors and AI
-suggestions. To switch, use the
-button in the editor's title bar or at the bottom of the editor:
+ميزات VS Code التي تحتاج محرر النصوص الخاص به موجودة في عرض النص فقط: الإكمال، وشرح
+الأسماء، والذهاب إلى التعريف، والمراجع، وإعادة التسمية، والبحث والاستبدال، والمؤشرات
+المتعددة، واقتراحات الذكاء الاصطناعي. وللتبديل استعمل الزر في شريط عنوان المحرر أو في
+أسفله:
 
-| To | Do this |
+| لكي | افعل |
 |---|---|
-| Open the file in VS Code's text editor | **Open as text**, or **Ḍād: Reopen as Text (Left to Right)** |
-| Go back to right to left | **Ḍād: Reopen Right to Left** |
-| Always open `.dad` files as text | Right-click a `.dad` file, **Open With…**, choose **Text Editor**, then **Configure default editor for '*.dad'…** |
+| تفتح الملف في محرر النصوص | **Open as text**، أو **Ḍād: Reopen as Text (Left to Right)** |
+| تعود إلى اليمين إلى اليسار | **Ḍād: Reopen Right to Left** |
+| تفتح ملفات `.dad` نصاً دائماً | انقر ملف `.dad` بالزر الأيمن، ثم **Open With…** واختر **Text Editor**، ثم **Configure default editor for '*.dad'…** |
 
-In the text editor each line is laid out with the Unicode bidirectional algorithm: Arabic
-words read correctly, but lines start at the left. Ḍād is designed to read well there too:
+في محرر النصوص يُرتَّب كل سطر بخوارزمية Unicode ثنائية الاتجاه: تُقرأ الكلمات العربية
+صحيحة، لكن السطور تبدأ من اليسار. وضاد مصممة لتُقرأ جيداً هناك أيضاً:
 
-- Brackets and comparison signs are mirrored characters, so `أ < ب` reads correctly from the
-  right.
-- Hidden direction characters, which could make code look different from what it does, are
-  highlighted by the editor and rejected by Ḍād outside strings.
-- Arabic punctuation (`،` `؛` `؟`) works everywhere its Latin form does.
+- الأقواس وعلامات المقارنة حروف معكوسة الشكل، فتُقرأ `أ < ب` صحيحة من اليمين.
+- حروف الاتجاه المخفية، التي قد تجعل الكود يبدو غير ما يفعله، يميّزها المحرر ويرفضها ضاد
+  خارج النصوص.
+- علامات الترقيم العربية (`،` `؛` `؟`) تعمل حيث تعمل نظيراتها اللاتينية.
 
-## Other editors
+## محررات أخرى
 
-Any editor works with the `dad` command in a terminal:
+كل محرر يعمل مع أمر `dad` في الطرفية:
 
 ```sh
 dad check file.dad    # errors and warnings
@@ -216,13 +217,12 @@ dad run file.dad      # run it
 dad dev file.dad      # serve its routes and server functions
 ```
 
-### The language server
+### خادم اللغة { #the-language-server }
 
-`dad lsp` is a language server: any editor that speaks the
-[Language Server Protocol](https://microsoft.github.io/language-server-protocol/) gets
-errors as you type, go to definition, find references, rename, hover, completion (with
-members after `.`), the outline and formatting. Point the editor at the command `dad lsp`
-for `.dad` files:
+`dad lsp` خادم لغة: كل محرر يتكلم
+[بروتوكول خوادم اللغات](https://microsoft.github.io/language-server-protocol/) يحصل على
+الأخطاء وأنت تكتب، والذهاب إلى التعريف، وإيجاد المراجع، وإعادة التسمية، وشرح الأسماء،
+والإكمال (مع ما بعد `.`)، والمخطط، والتنسيق. وجّه المحرر إلى الأمر `dad lsp` لملفات `.dad`:
 
 === "Neovim"
 
@@ -252,13 +252,12 @@ for `.dad` files:
     indent = { tab-width = 4, unit = "    " }
     ```
 
-=== "Zed and others"
+=== "Zed وغيره"
 
-    Add a language server whose command is `dad` with the argument `lsp`, for files ending
-    in `.dad`.
+    أضف خادم لغة أمره `dad` ومعامله `lsp`، للملفات التي تنتهي بـ`.dad`.
 
-Editors that read TextMate grammars, such as the JetBrains IDEs through their TextMate Bundles
-support, can use
+والمحررات التي تقرأ قواعد TextMate، مثل بيئات JetBrains عبر دعمها لـTextMate Bundles،
+تستطيع أن تستعمل
 [`dad.tmLanguage.json`](https://github.com/mtwalli/dad-lang/blob/main/editors/vscode/syntaxes/dad.tmLanguage.json)
-for highlighting. Tools can also run `dad check --json <file>` (or `-` to read standard
-input) to get problems in a machine-readable form.
+للتلوين. وتستطيع الأدوات أن تشغّل `dad check --json <ملف>` (أو `-` للقراءة من الدخل
+القياسي) لتحصل على المشكلات بصيغة تقرؤها البرامج.

@@ -1,11 +1,14 @@
-# Server and data
+---
+icon: lucide/database
+---
 
-A Ḍād file can hold its data, its server code and its web routes next to each other.
-`dad dev` serves them on your computer and reloads when you save. The [interface](ui.md)
-(`مكون`) calls server functions and tables directly; other programs reach them through the
-dev page, `curl`, or any web page.
+# الخادم والبيانات
 
-## Tables — `جدول`
+يحمل ملف ضاد بياناته، وكود خادمه، ومسارات الويب، كلها جنباً إلى جنب. ويشغّلها `dad dev` على
+جهازك ويعيد التحميل عند الحفظ. وتستدعي [الواجهة](ui.md) (`مكون`) دوال الخادم والجداول
+مباشرة؛ أما البرامج الأخرى فتصل إليها عبر صفحة المطوّر، أو `curl`، أو أي صفحة ويب.
+
+## الجداول: `جدول` { #tables }
 
 ```dad
 جدول مهمة {
@@ -15,20 +18,20 @@ dev page, `curl`, or any web page.
 }
 ```
 
-Each field has a type, a default, or both. Every table also gets a hidden field `رقم`
-(its id), set when the record is first saved. You can't declare a field called `رقم` yourself.
+لكل حقل نوع، أو قيمة افتراضية، أو كلاهما. ويحصل كل جدول أيضاً على حقل مخفي اسمه `رقم`
+(معرّفه)، يُضبط حين يُحفظ السجل أول مرة. ولا يمكنك أن تعرّف حقلاً باسم `رقم` بنفسك.
 
-| Code | What it does |
+| الكود | ما يفعله |
 |---|---|
-| `مهمة.أنشئ(عنوان: "…")` | Create a record, save it and return it (with its `رقم`) |
-| `مهمة.الكل()` | Every record, oldest first |
-| `مهمة.حيث { هو.منجزة }` | The records that match |
-| `مهمة.بالرقم(3)` | One record, or `عدم` |
-| `مهمة.عدد()` | How many records there are |
-| `م.احفظ()` | Save a new or changed record and return it |
-| `م.احذف()` | Delete a saved record |
+| `مهمة.أنشئ(عنوان: "…")` | ينشئ سجلاً ويحفظه ويُرجعه (ومعه `رقم`) |
+| `مهمة.الكل()` | كل السجلات، الأقدم أولاً |
+| `مهمة.حيث { هو.منجزة }` | السجلات التي تطابق الشرط |
+| `مهمة.بالرقم(3)` | سجلاً واحداً، أو `عدم` |
+| `مهمة.عدد()` | عدد السجلات |
+| `م.احفظ()` | يحفظ سجلاً جديداً أو معدّلاً ويُرجعه |
+| `م.احذف()` | يحذف سجلاً محفوظاً |
 
-Records are values, like any other type: change one with `نسخة` and save the copy.
+السجلات قيم كأي نوع آخر: غيّر سجلاً بـ`نسخة` واحفظ النسخة.
 
 ```dad
 ثابت م = مهمة.أنشئ(عنوان: "اشترِ خبزاً")
@@ -36,65 +39,67 @@ Records are values, like any other type: change one with `نسخة` and save the
 اطبع(مهمة.حيث { هو.منجزة }.حول { هو.عنوان }) // [«اشترِ خبزاً»]
 ```
 
-### Where the data goes
+### أين تُحفظ البيانات { #where-the-data-goes }
 
-`dad run` and `dad dev` keep a program's tables in a SQLite database, `.dad/<name>.db` next to
-the program, so `todo.dad` saves to `.dad/todo.db`. The data is still there the next time you
-run the program. Delete the `.dad` folder to start fresh, and add `.dad/` to your `.gitignore`
-if you don't want to commit it. Any SQLite tool can open the file; each `جدول` is a table with
-a column per field. The playground keeps tables in memory only.
+يحفظ `dad run` و`dad dev` جداول البرنامج في قاعدة بيانات SQLite اسمها `.dad/<الاسم>.db`
+بجانب البرنامج، فيحفظ `todo.dad` في `.dad/todo.db`. وتبقى البيانات في المرة التالية التي
+تشغّل فيها البرنامج. احذف مجلد `.dad` لتبدأ من جديد، وأضف `.dad/` إلى `.gitignore` إن لم
+ترد أن تحفظه في Git. ويفتح الملفَ أيُّ برنامج لـSQLite؛ وكل `جدول` فيه جدول، لكل حقل عمود.
+أما الملعب فيحفظ الجداول في الذاكرة فقط.
 
-If you used an earlier version, its `.dad/<name>.json` file is copied into the database the
-first time you run the program, keeping the ids, and then renamed to `.json.imported`.
+وإن كنت استعملت إصداراً سابقاً، فإن ملفه `.dad/<الاسم>.json` يُنسخ إلى قاعدة البيانات أول
+مرة تشغّل فيها البرنامج، مع الأرقام نفسها، ثم يُعاد تسميته إلى `.json.imported`.
 
-### Changing a table
+### تغيير جدول { #changing-a-table }
 
-When you change a `جدول` and run the program again, the database follows:
+حين تغيّر `جدول` وتشغّل البرنامج مرة أخرى، تتبعه قاعدة البيانات:
 
-| Change | What happens |
+| التغيير | ما يحدث |
 |---|---|
-| Add a field | Saved records get its default. A field with no default can only be added while the table is empty, unless its type is optional (`نص؟`) |
-| Remove a field | Its column is kept but hidden. Add the field back and its data comes back |
-| Change a field's type | Every value is converted, as `ك` would. If some can't be (say `"أحمد"` to `صحيح`), nothing changes and the error lists those records |
+| إضافة حقل | تأخذ السجلات المحفوظة قيمته الافتراضية. والحقل الذي لا قيمة افتراضية له لا يُضاف إلا والجدول فارغ، ما لم يكن نوعه اختيارياً (`نص؟`) |
+| حذف حقل | يبقى عموده مخفياً. أعِد الحقل فتعود بياناته |
+| تغيير نوع حقل | تُحوَّل كل القيم كما تحوّلها `ك`. فإن تعذّر تحويل بعضها (`"أحمد"` إلى `صحيح` مثلاً) لم يتغير شيء، وسردت رسالة الخطأ تلك السجلات |
 
-Renaming a field looks like removing one and adding another, so the old values stay in the
-hidden column.
+وإعادة تسمية حقل تبدو كحذف حقل وإضافة آخر، فتبقى القيم القديمة في العمود المخفي.
 
-### Fast queries
+### استعلامات سريعة { #fast-queries }
 
-Simple `حيث` conditions run inside the database instead of reading every record. A condition
-counts as simple when it compares fields with values or variables, joined by `و`, `أو` and `ليس`:
+شروط `حيث` البسيطة تعمل داخل قاعدة البيانات بدل قراءة كل السجلات. والشرط بسيط حين يقارن
+حقولاً بقيم أو متغيرات، موصولة بـ`و` و`أو` و`ليس`:
 
 ```dad
 مهمة.حيث { هو.منجزة }
 مهمة.حيث { ليس هو.منجزة و هو.أولوية >= حد }
 ```
 
-Anything else, such as `{ هو.عنوان.يحتوي("خبز") }` or `{ هو.أولوية * 2 > 3 }`, still works the
-same; it just reads every record. `بالرقم` and `عدد` always ask the database directly.
+وما سوى ذلك، مثل `{ هو.عنوان.يحتوي("خبز") }` أو `{ هو.أولوية * 2 > 3 }`، يعمل بالطريقة
+نفسها، لكنه يقرأ كل السجلات. أما `بالرقم` و`عدد` فتسألان قاعدة البيانات مباشرة دائماً.
 
-## Server functions — `خادم`
+## دوال الخادم: `خادم` { #server-functions }
 
 ```dad
 خادم دالة أضف(عنوان: نص) = مهمة.أنشئ(عنوان: عنوان)
 خادم دالة بدل(م: مهمة) = م.نسخة(منجزة: ليس م.منجزة).احفظ()
 ```
 
-A function marked `خادم` can be called from the browser. A [component](ui.md) calls it like
-any other function. Other pages and programs reach it at `/_dad/call/<name>`: send a POST
-with the arguments as a JSON object, by parameter name.
+الدالة الموسومة بـ`خادم` يمكن استدعاؤها من المتصفح. ويستدعيها [المكون](ui.md) كأي دالة
+أخرى. أما الصفحات والبرامج الأخرى فتصل إليها عند `/_dad/call/<الاسم>`: أرسل طلب POST فيه
+المعاملات كائنَ JSON، بأسماء المعاملات.
 
 ```sh
 curl -X POST localhost:8080/_dad/call/أضف -d '{"عنوان": "اشترِ خبزاً"}'
-# {"result": {"أولوية": 1, "رقم": 1, "عنوان": "اشترِ خبزاً", "منجزة": false}}
 ```
 
-Arguments are checked against the parameter types, and a record type such as `مهمة` accepts a
-JSON object. Errors come back with status 400 and an Arabic message under `"خطأ"`.
+``` { .text .dad-out }
+{"result": {"أولوية": 1, "رقم": 1, "عنوان": "اشترِ خبزاً", "منجزة": false}}
+```
 
-## Routes — `مسار`
+وتُفحص المعاملات على أنواعها، ويقبل نوع سجل مثل `مهمة` كائنَ JSON. والأخطاء تعود بالحالة
+400 ورسالة عربية تحت `"خطأ"`.
 
-Routes are public web addresses for other programs.
+## المسارات: `مسار` { #routes }
+
+المسارات عناوين ويب عامة للبرامج الأخرى.
 
 ```dad
 مسار جلب "/api/مهام" = مهمة.الكل()
@@ -105,33 +110,32 @@ Routes are public web addresses for other programs.
 }
 ```
 
-| Method | HTTP |
+| الطريقة | في HTTP |
 |---|---|
 | `جلب` | GET |
 | `أرسل` | POST |
 | `عدل` | PUT |
 | `احذف` | DELETE |
 
-- A `{name}` part of the path becomes a variable in the body. A value made of digits
-  becomes a `صحيح`, otherwise it is `نص`.
-- The JSON body of the request is `البيانات`.
-- The result is sent back as JSON. A `جلب` route that returns `عدم` answers 404.
+- الجزء `{اسم}` من المسار يصير متغيراً في جسمه. والقيمة المكونة من أرقام تصير `صحيح`،
+  وإلا فهي `نص`.
+- جسم الطلب بصيغة JSON اسمه `البيانات`.
+- تُرسل النتيجة بصيغة JSON. والمسار `جلب` الذي يُرجع `عدم` يجيب بـ404.
 
-## `dad dev`
+## `dad dev` { #dad-dev }
 
 ```sh
-dad dev todo.dad              # or: ضاد تطوير todo.dad
+dad dev todo.dad
 dad dev todo.dad --port 3000
 ```
 
-Open <http://localhost:8080>. If the program has an [interface](ui.md), that's what you
-see; the developer page is at <http://localhost:8080/_dad>. The developer page lists your server functions, with a form to call
-each one, your tables and their rows, and your routes. It updates by itself.
+(وبالعربية: `ضاد تطوير todo.dad`.) افتح <http://localhost:8080>. فإن كانت للبرنامج
+[واجهة](ui.md) رأيتها؛ وصفحة المطوّر عند <http://localhost:8080/_dad>. تسرد صفحة المطوّر
+دوال الخادم مع نموذج لاستدعاء كل منها، والجداول وسجلاتها، والمسارات. وتتحدّث وحدها.
 
-- Save the file and the program reloads. The data is kept.
-- If the file has an error, the last working version keeps running and the page shows
-  the error until you fix it.
-- Top-level code (such as `اطبع`) runs on every reload, and its output appears in the terminal.
-- The server only listens on your own computer (`127.0.0.1`).
+- احفظ الملف فيُعاد تحميل البرنامج، وتبقى البيانات.
+- إن كان في الملف خطأ، بقيت آخر نسخة سليمة تعمل، وعرضت الصفحة الخطأ حتى تصلحه.
+- الكود في أعلى الملف (مثل `اطبع`) يعمل مع كل إعادة تحميل، ويظهر ناتجه في الطرفية.
+- لا يستقبل الخادم الاتصال إلا من جهازك (`127.0.0.1`).
 
-When the program is ready for other people, run it with [`dad serve`](deploy.md).
+وحين يصير البرنامج جاهزاً للآخرين، شغّله بـ[`dad serve`](deploy.md).

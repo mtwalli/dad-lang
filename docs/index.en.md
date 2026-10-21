@@ -1,0 +1,86 @@
+---
+icon: lucide/house
+template: home.html
+title: Home
+hide:
+  - navigation
+  - toc
+---
+
+## A whole app in one file
+
+<div class="dad-showcase" markdown>
+
+<div class="dad-showcase__code" markdown>
+
+```dad
+جدول مهمة {
+    العنوان: نص
+    منجزة = خطأ
+}
+
+خادم دالة أضف(العنوان: نص) = مهمة.أنشئ(العنوان: العنوان)
+
+مكون الرئيسية {
+    حالة الجديدة = ""
+    عمود {
+        حقل(الجديدة، تلميح: "مهمة جديدة…")
+        زر("أضف") { أضف(الجديدة) }
+    }
+}
+```
+
+</div>
+
+<dl class="dad-legend">
+  <dt lang="ar"><span class="dad-ico dad-ico--database" aria-hidden="true"></span>جدول</dt>
+  <dd>A database table. Ḍād creates the SQLite schema and a typed API for it.</dd>
+  <dt lang="ar"><span class="dad-ico dad-ico--server" aria-hidden="true"></span>خادم دالة</dt>
+  <dd>A function that runs on the server. The interface calls it like any local function.</dd>
+  <dt lang="ar"><span class="dad-ico dad-ico--layout-panel-top" aria-hidden="true"></span>مكون</dt>
+  <dd>A reactive interface component, right-to-left by default.</dd>
+</dl>
+
+</div>
+
+## Principles, one keyword each
+
+<dl class="dad-principles">
+  <div>
+    <dt lang="ar">ثابت</dt>
+    <dd><strong>Immutable by default.</strong> Values never change unless you declare them with <code>متغير</code>.</dd>
+  </div>
+  <div>
+    <dt lang="ar">؟</dt>
+    <dd><strong>No surprise nulls.</strong> A value that may be missing says so in its type, as in <code>نص؟</code>.</dd>
+  </div>
+  <div>
+    <dt lang="ar">طابق</dt>
+    <dd><strong>Every case handled.</strong> The compiler rejects a match that forgets a case.</dd>
+  </div>
+  <div>
+    <dt lang="ar">خادم</dt>
+    <dd><strong>No fetch, no async.</strong> Server calls look local; the compiler adds the waiting.</dd>
+  </div>
+  <div>
+    <dt lang="ar">،؛؟</dt>
+    <dd><strong>Arabic first.</strong> Arabic punctuation works everywhere, diacritics never break a name, and numbers stay plain 0-9.</dd>
+  </div>
+  <div>
+    <dt>39</dt>
+    <dd><strong>A small core.</strong> 39 keywords in total. Interface elements are ordinary functions.</dd>
+  </div>
+</dl>
+
+## Where it stands
+
+<ol class="dad-timeline">
+  <li class="is-done"><span>Specification</span><small>Keywords, grammar and the Arabic-aware lexer</small></li>
+  <li class="is-done"><span>Core language</span><small><code>dad run</code>, the checker, <a href="modules/">programs in several files</a>, and compiling to JavaScript</small></li>
+  <li class="is-next"><span>Interface</span><small><a href="ui/">Components, state and elements</a> in <code>dad dev</code> and the playground; <a href="build/"><code>dad build</code></a> makes static sites. Next: more elements, pages</small></li>
+  <li class="is-next"><span>Server and data</span><small>Tables in SQLite, server functions, routes, <a href="server/"><code>dad dev</code></a> and <a href="deploy/"><code>dad serve</code></a>. Next: users and sign-in</small></li>
+  <li class="is-done"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a>, <a href="playground/">web playground</a>, <code>dad fmt</code> and the <a href="editor/#the-language-server">language server</a></small></li>
+  <li class="is-done"><span>Installers</span><small><a href="install/">Homebrew, winget, .deb, .rpm</a> and a <a href="tutorial/">tutorial</a> in English and Arabic</small></li>
+</ol>
+
+[Read the full roadmap](ROADMAP.md){ .md-button } [Read the specification](SPEC.md){ .md-button }

@@ -1,9 +1,9 @@
-# 3. Decisions and loops
+# ٣. القرارات والتكرار
 
-So far the program runs every line once, from top to bottom. In this lesson it chooses what
-to do, and repeats work.
+حتى الآن ينفّذ البرنامج كل سطر مرة واحدة، من الأعلى إلى الأسفل. في هذا الدرس يختار
+البرنامج ما يفعل، ويكرر العمل.
 
-## `إذا`: choosing
+## «إذا»: أن تختار
 
 ```dad
 ثابت الحرارة = 34
@@ -17,10 +17,8 @@ to do, and repeats work.
 الجو حار، اشرب ماءً كثيراً
 ```
 
-`إذا` means «if». What's between `{` and `}` is a **block**, and it only runs when the
-condition is true: here, when the temperature is above 30, the program says «it's hot, drink
-plenty of water». Add what happens otherwise with `وإلا` («else»), and ask more than one
-question:
+ما بين `{` و`}` **كتلة**، ولا تُنفَّذ إلا إذا كان الشرط صحيحاً. ويمكنك أن تضيف ما يحدث في
+غير ذلك بـ`وإلا`، وأن تسأل أكثر من سؤال:
 
 ```dad
 ثابت الدرجة = 72
@@ -38,9 +36,9 @@ question:
 ناجح
 ```
 
-### `إذا` gives a value
+### «إذا» تعطي قيمة
 
-In Ḍād, `إذا` returns a value: the last thing in the block it chose. So you can write:
+في ضاد تُرجع `إذا` قيمة: آخر ما في الكتلة التي اختيرت. لذلك تستطيع أن تكتب:
 
 ```dad
 ثابت العمر = 15
@@ -52,7 +50,7 @@ In Ḍād, `إذا` returns a value: the last thing in the block it chose. So yo
 مراهق
 ```
 
-Combine conditions with `و` («and») and `أو` («or»), and negate them with `ليس` («not»):
+وتجمع الشروط بـ`و` و`أو`، وتنفي بـ`ليس`:
 
 ```dad
 ثابت عطلة = صح
@@ -67,7 +65,7 @@ Combine conditions with `و` («and») and `أو` («or»), and negate them with
 يوم مناسب للقراءة في البيت
 ```
 
-## `لكل`: repeating a known number of times
+## «لكل»: أن تكرر عدداً معروفاً من المرات
 
 ```dad
 لكل ع من 1 إلى 5 {
@@ -83,17 +81,16 @@ Combine conditions with `و` («and») and `أو` («or»), and negate them with
 المرة رقم 5
 ```
 
-`لكل … من … إلى` means «for each … from … to». The name `ع` takes the values 1, then 2… up
-to 5. There are other ways to count:
+يأخذ `ع` القيم 1 ثم 2… حتى 5. وهناك صيغ أخرى للعدّ:
 
-| You write | You get |
+| تكتب | تحصل على |
 |---|---|
-| `من 1 إلى 5` | 1, 2, 3, 4, 5 |
-| `من 0 حتى 5` | 0, 1, 2, 3, 4 (without 5) |
-| `من 0 إلى 10 بخطوة 5` | 0, 5, 10 |
-| `من 3 إلى 1 بخطوة -1` | 3, 2, 1 |
+| `من 1 إلى 5` | 1، 2، 3، 4، 5 |
+| `من 0 حتى 5` | 0، 1، 2، 3، 4 (بلا 5) |
+| `من 0 إلى 10 بخطوة 5` | 0، 5، 10 |
+| `من 3 إلى 1 بخطوة -1` | 3، 2، 1 |
 
-An example: the times table for 7.
+مثال: جدول الضرب للعدد 7.
 
 ```dad
 لكل ع من 1 إلى 10 {
@@ -114,7 +111,7 @@ An example: the times table for 7.
 7 × 10 = 70
 ```
 
-`لكل … في` («for each … in») goes through the letters of a text too:
+وتمرّ `لكل … في` على حروف نص أيضاً:
 
 ```dad
 لكل حرف في "ضاد" {
@@ -128,10 +125,9 @@ An example: the times table for 7.
 د
 ```
 
-## `طالما`: repeating until something happens
+## «طالما»: أن تكرر حتى يتحقق شيء
 
-When you don't know the number of times in advance, use `طالما` («while»). The block
-repeats while the condition is true:
+حين لا تعرف عدد المرات مسبقاً، استعمل `طالما`. يتكرر ما في الكتلة طالما الشرط صحيح:
 
 ```dad
 // كم سنة حتى يتضاعف المال بفائدة 10٪؟
@@ -149,15 +145,12 @@ repeats while the condition is true:
 بعد 8 سنوات يصير المال 2143.59
 ```
 
-This asks how many years it takes money to double at 10% interest. `تقريب(2)` rounds to two
-decimal places.
+انتبه: إن بقي الشرط صحيحاً دائماً تكرر العمل بلا نهاية. أوقف البرنامج حينها بـ`Ctrl+C`،
+أما في الملعب فيوقفه ضاد بنفسه ويخبرك بالسبب.
 
-Careful: if the condition stays true forever, the work repeats with no end. Stop the
-program with `Ctrl+C`; in the playground, Ḍād stops it for you and says why.
+### «توقف» و«تابع»
 
-### `توقف` and `تابع`
-
-`توقف` («stop») leaves the loop at once, and `تابع` («continue») skips to the next round:
+`توقف` تخرج من الحلقة فوراً، و`تابع` تقفز إلى المرة التالية:
 
 ```dad
 لكل ع من 1 إلى 10 {
@@ -174,13 +167,13 @@ program with `Ctrl+C`; in the playground, Ḍād stops it for you and says why.
 7
 ```
 
-## Exercise
+## تمرين
 
-1. Print the numbers from 1 to 20, but write «فز» instead of each number divisible by 3,
-   «بز» instead of each number divisible by 5, and «فز بز» if it is divisible by both.
-2. Add up the numbers from 1 to 100 and print the total.
+1. اطبع الأعداد من 1 إلى 20، لكن اكتب «فز» بدل كل عدد يقبل القسمة على 3، و«بز» بدل
+   كل عدد يقبل القسمة على 5، و«فز بز» إذا قبل القسمة على كليهما.
+2. اجمع الأعداد من 1 إلى 100 واطبع المجموع.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad
     لكل ع من 1 إلى 20 {
@@ -202,4 +195,4 @@ program with `Ctrl+C`; in the playground, Ḍād stops it for you and says why.
     اطبع("المجموع:"، المجموع)
     ```
 
-**Next:** [Functions](04-functions.md)
+**التالي:** [الدوال](04-functions.md)

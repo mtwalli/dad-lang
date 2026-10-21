@@ -1,24 +1,27 @@
-# Building for the web
+---
+icon: lucide/package
+---
 
-`dad build` compiles a Ḍād program to JavaScript. What you get depends on the program.
+# البناء للويب
 
-| The program has… | `dad build` makes | Run it with |
+يترجم `dad build` برنامج ضاد إلى JavaScript. وما تحصل عليه يتوقف على البرنامج:
+
+| للبرنامج… | يصنع `dad build` | وتشغّله بـ |
 |---|---|---|
-| an interface (`مكون`) | a folder with `index.html`: a static site | open `index.html`, or put the folder on any static host |
-| no interface | `app.js` | `node app.js` |
+| واجهة (`مكون`) | مجلداً فيه `index.html`: موقعاً ثابتاً | فتح `index.html`، أو رفع المجلد إلى أي استضافة ثابتة |
+| لا واجهة | `app.js` | `node app.js` |
 
 ```sh
 dad build todo.dad                 # → dist/todo/
 dad build todo.dad --out site      # → site/
-ضاد ابن todo.dad                   # the same, in Arabic
 ```
 
-A program with mistakes is not built: `dad build` shows the same errors as `dad check`.
+وبالعربية: `ضاد ابن todo.dad`. والبرنامج الذي فيه أخطاء لا يُبنى: يعرض `dad build` الأخطاء
+نفسها التي يعرضها `dad check`.
 
-## A site with no server
+## موقع بلا خادم { #a-site-with-no-server }
 
-The site is plain files, so it works from GitHub Pages, Netlify, any web server, or straight
-from your disk:
+الموقع ملفات عادية، فيعمل من GitHub Pages أو Netlify أو أي خادم ويب، أو من جهازك مباشرة:
 
 ```text
 dist/todo/
@@ -28,40 +31,43 @@ dist/todo/
 └── assets/           the page script, the stylesheet and the Kufi font
 ```
 
-The program runs in the visitor's browser. Clicking and typing update the page at once,
-without asking a server.
+- `index.html`: الصفحة.
+- `app.js`: برنامجك بعد ترجمته.
+- `dad-runtime.js`: قيم ضاد ودوالها وعناصرها.
+- `assets/`: سكربت الصفحة وملف التنسيق والخط الكوفي.
 
-- **Tables** (`جدول`) are saved in the browser's storage (`localStorage`). Each visitor has
-  their own records. They are kept after closing the page, but other visitors don't see
-  them.
-- **Server functions** (`خادم دالة`) run in the page, like any function.
-- **Routes** (`مسار`) need a server, so they are left out. `dad build` says so. Serve them
-  with `dad dev` or `dad serve`.
+يعمل البرنامج في متصفح الزائر. والضغط والكتابة يحدّثان الصفحة فوراً دون سؤال أي خادم.
 
-To share records between visitors, run the program on a server with
-[`dad serve`](deploy.md): everyone then sees the same tables, kept in SQLite.
+- **الجداول** (`جدول`) تُحفظ في ذاكرة المتصفح (`localStorage`). لكل زائر سجلاته، وتبقى بعد
+  إغلاق الصفحة، لكن الزوار الآخرين لا يرونها.
+- **دوال الخادم** (`خادم دالة`) تعمل في الصفحة نفسها، كأي دالة.
+- **المسارات** (`مسار`) تحتاج خادماً، فلا تُضمَّن، ويقول `dad build` ذلك. شغّلها بـ`dad dev`
+  أو `dad serve`.
 
-## Programs without an interface
+ولتتشارك السجلات بين الزوار، شغّل البرنامج على خادم بـ[`dad serve`](deploy.md): فيرى
+الجميع الجداول نفسها، محفوظة في SQLite.
+
+## برامج بلا واجهة { #programs-without-an-interface }
 
 ```sh
 dad build hello.dad
 node dist/hello/app.js
 ```
 
-`app.js` needs `dad-runtime.js` next to it, and Node 18 or later. Tables are kept in memory
-while the program runs.
+يحتاج `app.js` إلى `dad-runtime.js` بجانبه، وإلى Node 18 أو أحدث. وتُحفظ الجداول في الذاكرة
+ما دام البرنامج يعمل.
 
-## The same program, the same results
+## البرنامج نفسه، والنتائج نفسها { #the-same-program-the-same-results }
 
-The interpreter (`dad run`, `dad dev`, the playground) and the compiled JavaScript follow
-the same rules. Whole numbers stay whole (`7 % 3` is `1`, and `7 / 2` is `3.5`), decimals
-print as `5.0`, and errors keep their Arabic messages and line numbers:
+المفسّر (`dad run` و`dad dev` والملعب) وJavaScript المترجَمة يتبعان القواعد نفسها.
+فالأعداد الصحيحة تبقى صحيحة (`7 % 3` هو `1`، و`7 / 2` هو `3.5`)، والعشرية تُطبع مثل `5.0`،
+والأخطاء تحتفظ برسائلها العربية وأرقام سطورها:
 
 ```text
 خطأ أثناء التشغيل [السطر 3، العمود 21]: القيمة من النوع «قائمة» لا تحتوي «غير_موجود»
 ```
 
-The tests run every example both ways and compare the output, the error messages, and the
-pages after the same clicks and typing.
+وتشغّل الاختبارات كل مثال بالطريقتين وتقارن الناتج، ورسائل الأخطاء، والصفحات بعد الضغطات
+والكتابة نفسها.
 
-In the browser, `اطبع` writes to the developer console.
+وفي المتصفح تكتب `اطبع` في لوحة المطوّر (Console).

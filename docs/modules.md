@@ -1,7 +1,11 @@
-# Programs in several files
+---
+icon: lucide/files
+---
 
-A program can be split into files. Each file is a **module**: it declares its own names,
-and gives other files the ones they import.
+# برنامج في عدة ملفات
+
+يمكن تقسيم البرنامج إلى ملفات. وكل ملف **وحدة**: يعرّف أسماءه، ويعطي الملفات الأخرى ما
+تستورده منها.
 
 ```dad title="أشكال.dad"
 نوع نقطة(س: عشري، ص: عشري)
@@ -26,70 +30,68 @@ and gives other files the ones they import.
 dad run الرئيسي.dad
 ```
 
-Run, check, build or serve the **main** file. `dad` finds the files it imports, and the
-files those import, by itself.
+شغّل الملف **الرئيسي**، أو افحصه أو ابنِه أو انشره. ويجد `dad` بنفسه الملفات التي يستوردها،
+والملفات التي تستوردها تلك.
 
-## Importing — `استورد`
+## الاستيراد: `استورد` { #importing }
 
 ```dad
 استورد اسم، اسم_آخر من "./ملف"
 ```
 
-- The file is found **next to the importing file**. `"./أشكال"`, `"أشكال"` and
-  `"./أشكال.dad"` all mean `أشكال.dad` in the same folder. `"./نماذج/منتج"` looks in a
-  sub-folder, and `"../مشترك"` in the folder above.
-- Write imports at the top of the file.
-- Importing a `تعداد` brings its cases too. After `استورد شكل`, you can write
-  `دائرة(1)` and match on `مربع(ض)`.
-- An imported name is a constant in the importing file, and it holds the value the
-  other file gave it. To share a changing value, import a function that returns it. For
-  example, export `دالة العدد() = عدد` instead of `متغير عدد`.
+- يُبحث عن الملف **بجانب الملف الذي يستورده**. فـ`"./أشكال"` و`"أشكال"` و`"./أشكال.dad"`
+  كلها تعني `أشكال.dad` في المجلد نفسه. و`"./نماذج/منتج"` تبحث في مجلد فرعي، و`"../مشترك"`
+  في المجلد الأعلى.
+- اكتب الاستيراد في أعلى الملف.
+- استيراد `تعداد` يأتي بحالاته أيضاً. فبعد `استورد شكل` تستطيع أن تكتب `دائرة(1)` وأن
+  تطابق على `مربع(ض)`.
+- الاسم المستورد ثابت في الملف الذي استورده، وقيمته هي ما أعطاه الملف الآخر. ولتشارك قيمة
+  تتغير، استورد دالة تُرجعها: صدّر `دالة العدد() = عدد` بدل `متغير عدد`.
 
-## Keeping names private — `خاص`
+## الأسماء الخاصة: `خاص` { #keeping-names-private }
 
-Everything a file declares at its top is exported: functions, types, enums, tables,
-components and constants. Mark the ones that are only for the file itself with `خاص`:
+كل ما يعرّفه الملف في أعلاه يُصدَّر: الدوال والأنواع والتعدادات والجداول والمكونات
+والثوابت. وما كان للملف وحده فاسبقه بـ`خاص`:
 
 ```dad
 خاص دالة مساعد() = …
 خاص ثابت الدقة = 2
 ```
 
-Two files can each have a private `مساعد` without a clash.
+ويمكن أن يكون لملفين `مساعد` خاص بكل منهما دون تعارض.
 
-## Names the whole program shares
+## أسماء يشترك فيها البرنامج كله { #names-the-whole-program-shares }
 
-Some names are known by the whole program, so they can't be repeated in two files:
+بعض الأسماء يعرفها البرنامج كله، فلا تتكرر في ملفين:
 
-- types (`نوع`), tables (`جدول`), enums (`تعداد`) and their cases;
-- server functions (`خادم دالة`), which the page calls by name.
+- الأنواع (`نوع`)، والجداول (`جدول`)، والتعدادات (`تعداد`) وحالاتها؛
+- دوال الخادم (`خادم دالة`)، لأن الصفحة تستدعيها بأسمائها.
 
-A file must still import a type before it uses it. To write `ن: نقطة` in a file,
-first write `استورد نقطة من "./أشكال"`.
+ومع ذلك يجب أن يستورد الملف النوع قبل أن يستعمله. فلكي تكتب `ن: نقطة` في ملف، اكتب أولاً
+`استورد نقطة من "./أشكال"`.
 
-## Problems the checker reports
+## ما يكشفه الفاحص { #problems-the-checker-reports }
 
-| You wrote | The checker says |
+| كتبت | يقول الفاحص |
 |---|---|
-| a name the file doesn't export | `«منتجج» غير موجود في «نماذج»؛ هل تقصد «منتج»؟` |
-| a `خاص` name | `«الضريبة» خاص بالملف «نماذج»، فلا يمكن استيراده` |
-| a missing file | `لا يوجد ملف «./مفقود» (بحثت عن «مفقود.dad»)` |
-| files that import each other | `استيراد دائري: «أ» يستورد «ب»، و«ب» يستورد «أ»…` |
-| a type from another file, not imported | `النوع «منتج» معرّف في «نماذج»؛ استورده أولاً…` |
+| اسماً لا يصدّره الملف | `«منتجج» غير موجود في «نماذج»؛ هل تقصد «منتج»؟` |
+| اسماً `خاص` | `«الضريبة» خاص بالملف «نماذج»، فلا يمكن استيراده` |
+| ملفاً غير موجود | `لا يوجد ملف «./مفقود» (بحثت عن «مفقود.dad»)` |
+| ملفين يستورد كل منهما الآخر | `استيراد دائري: «أ» يستورد «ب»، و«ب» يستورد «أ»…` |
+| نوعاً من ملف آخر دون استيراده | `النوع «منتج» معرّف في «نماذج»؛ استورده أولاً…` |
 
-Errors say which file they are in, whether `dad check` finds them or they happen while
-the program runs in `dad run` or `dad dev`:
+وتذكر الأخطاء الملف الذي حدثت فيه، سواء وجدها `dad check` أو حدثت أثناء تشغيل البرنامج في
+`dad run` أو `dad dev`:
 
 ```text
 أسعار.dad: خطأ أثناء التشغيل [السطر 9، العمود 40]: …
 ```
 
-## In the editor and the tools
+## في المحرر والأدوات { #in-the-editor-and-the-tools }
 
-- **VS Code** checks a saved file together with the files it imports. Saving one file
-  checks the files that import it again.
-- **Go to definition** on an imported name opens the file that declares it, and hover
-  shows its declaration.
-- **`dad dev`** reloads when any file of the program changes.
-- **`dad build`** compiles every file into one `app.js`.
-- The **playground** has a single file, so `استورد` doesn't work there.
+- يفحص **VS Code** الملف المحفوظ مع الملفات التي يستوردها. وحفظ ملف يعيد فحص الملفات التي
+  تستورده.
+- **الذهاب إلى التعريف** على اسم مستورد يفتح الملف الذي يعرّفه، ويعرض تمرير المؤشر تعريفه.
+- يعيد **`dad dev`** التحميل حين يتغير أي ملف من البرنامج.
+- يترجم **`dad build`** كل الملفات إلى `app.js` واحد.
+- في **الملعب** ملف واحد، فلا يعمل `استورد` هناك.

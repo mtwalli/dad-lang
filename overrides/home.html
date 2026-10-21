@@ -23,22 +23,31 @@
 {% block tabs %}
   {{ super() }}
   <section class="dad-hero">
+    <div class="dad-hero__lattice" aria-hidden="true"></div>
     <div class="dad-hero__inner md-grid">
       <div class="dad-hero__text md-typeset">
-        <h1 class="dad-hero__title" lang="ar" dir="rtl">لغة الضاد… للويب كلّه</h1>
+        <h1 class="dad-hero__title" lang="ar" dir="rtl">
+          {%- for w in "لغة الضاد… للويب كلّه".split(" ") -%}
+            <span style="--i: {{ loop.index0 }}">{{ w }}</span>{{ " " if not loop.last }}
+          {%- endfor -%}
+        </h1>
         <p class="dad-hero__lede">{{ t.lede }}</p>
         <div class="dad-hero__actions">
-          <a href="install/" class="md-button md-button--primary">{{ t.install }}</a>
-          <a href="tutorial/" class="md-button">{{ t.learn }}</a>
-          <a href="playground/" class="md-button">{{ t.try }}</a>
+          <a href="install/" class="md-button md-button--primary">{% include ".icons/lucide/download.svg" %}{{ t.install }}</a>
+          <a href="tutorial/" class="md-button">{% include ".icons/lucide/graduation-cap.svg" %}{{ t.learn }}</a>
+          <a href="playground/" class="md-button">{% include ".icons/lucide/play.svg" %}{{ t.try }}</a>
         </div>
         <a class="dad-hero__status" href="ROADMAP/">
-          <span class="dad-hero__dot" aria-hidden="true"></span>
+          <span class="dad-nuqta" aria-hidden="true"></span>
           {{ t.status }}
         </a>
       </div>
-      <div class="dad-hero__glyph" aria-hidden="true"><span>ض</span></div>
+      <div class="dad-hero__glyph" aria-hidden="true">
+        <svg class="dad-shamsa" viewBox="-100 -100 200 200" aria-hidden="true" focusable="false"><g class="dad-shamsa__spin"><path class="s-ring" pathLength="1" style="--d:0.0s" d="M0 -97 A97 97 0 1 1 0 97 A97 97 0 1 1 0 -97"/><path class="s-ring" pathLength="1" style="--d:0.15s" d="M0 -89 A89 89 0 1 1 0 89 A89 89 0 1 1 0 -89"/><path class="s-tick" pathLength="1" style="--d:0.3s" d="M0.00 -89.00 L0.00 -97.00 M8.72 -88.57 L9.12 -92.55 M17.36 -87.29 L18.92 -95.14 M25.84 -85.17 L27.00 -89.00 M34.06 -82.23 L37.12 -89.62 M41.95 -78.49 L43.84 -82.02 M49.45 -74.00 L53.89 -80.65 M56.46 -68.80 L59.00 -71.89 M62.93 -62.93 L68.59 -68.59 M68.80 -56.46 L71.89 -59.00 M74.00 -49.45 L80.65 -53.89 M78.49 -41.95 L82.02 -43.84 M82.23 -34.06 L89.62 -37.12 M85.17 -25.84 L89.00 -27.00 M87.29 -17.36 L95.14 -18.92 M88.57 -8.72 L92.55 -9.12 M89.00 0.00 L97.00 0.00 M88.57 8.72 L92.55 9.12 M87.29 17.36 L95.14 18.92 M85.17 25.84 L89.00 27.00 M82.23 34.06 L89.62 37.12 M78.49 41.95 L82.02 43.84 M74.00 49.45 L80.65 53.89 M68.80 56.46 L71.89 59.00 M62.93 62.93 L68.59 68.59 M56.46 68.80 L59.00 71.89 M49.45 74.00 L53.89 80.65 M41.95 78.49 L43.84 82.02 M34.06 82.23 L37.12 89.62 M25.84 85.17 L27.00 89.00 M17.36 87.29 L18.92 95.14 M8.72 88.57 L9.12 92.55 M0.00 89.00 L0.00 97.00 M-8.72 88.57 L-9.12 92.55 M-17.36 87.29 L-18.92 95.14 M-25.84 85.17 L-27.00 89.00 M-34.06 82.23 L-37.12 89.62 M-41.95 78.49 L-43.84 82.02 M-49.45 74.00 L-53.89 80.65 M-56.46 68.80 L-59.00 71.89 M-62.93 62.93 L-68.59 68.59 M-68.80 56.46 L-71.89 59.00 M-74.00 49.45 L-80.65 53.89 M-78.49 41.95 L-82.02 43.84 M-82.23 34.06 L-89.62 37.12 M-85.17 25.84 L-89.00 27.00 M-87.29 17.36 L-95.14 18.92 M-88.57 8.72 L-92.55 9.12 M-89.00 0.00 L-97.00 0.00 M-88.57 -8.72 L-92.55 -9.12 M-87.29 -17.36 L-95.14 -18.92 M-85.17 -25.84 L-89.00 -27.00 M-82.23 -34.06 L-89.62 -37.12 M-78.49 -41.95 L-82.02 -43.84 M-74.00 -49.45 L-80.65 -53.89 M-68.80 -56.46 L-71.89 -59.00 M-62.93 -62.93 L-68.59 -68.59 M-56.46 -68.80 L-59.00 -71.89 M-49.45 -74.00 L-53.89 -80.65 M-41.95 -78.49 L-43.84 -82.02 M-34.06 -82.23 L-37.12 -89.62 M-25.84 -85.17 L-27.00 -89.00 M-17.36 -87.29 L-18.92 -95.14 M-8.72 -88.57 L-9.12 -92.55"/></g><path class="s-star" pathLength="1" style="--d:0.35s" d="M0.00 -84.00 L24.60 -59.40 L59.40 -59.40 L59.40 -24.60 L84.00 0.00 L59.40 24.60 L59.40 59.40 L24.60 59.40 L0.00 84.00 L-24.60 59.40 L-59.40 59.40 L-59.40 24.60 L-84.00 0.00 L-59.40 -24.60 L-59.40 -59.40 L-24.60 -59.40Z"/><path class="s-star s-star--2" pathLength="1" style="--d:0.5s" d="M32.15 -77.61 L45.46 -45.46 L77.61 -32.15 L64.29 0.00 L77.61 32.15 L45.46 45.46 L32.15 77.61 L0.00 64.29 L-32.15 77.61 L-45.46 45.46 L-77.61 32.15 L-64.29 0.00 L-77.61 -32.15 L-45.46 -45.46 L-32.15 -77.61 L-0.00 -64.29Z"/><path class="s-ring" pathLength="1" style="--d:0.65s" d="M0 -58 A58 58 0 1 1 0 58 A58 58 0 1 1 0 -58"/><path class="s-petal" pathLength="1" style="--d:0.8s" d="M11.32 -56.89 L5.95 -64.73 L14.05 -70.62 L19.28 -62.08Z M32.22 -48.23 L30.26 -57.52 L40.00 -59.87 L41.56 -49.97Z M48.23 -32.22 L49.97 -41.56 L59.87 -40.00 L57.52 -30.26Z M56.89 -11.32 L62.08 -19.28 L70.62 -14.05 L64.73 -5.95Z M56.89 11.32 L64.73 5.95 L70.62 14.05 L62.08 19.28Z M48.23 32.22 L57.52 30.26 L59.87 40.00 L49.97 41.56Z M32.22 48.23 L41.56 49.97 L40.00 59.87 L30.26 57.52Z M11.32 56.89 L19.28 62.08 L14.05 70.62 L5.95 64.73Z M-11.32 56.89 L-5.95 64.73 L-14.05 70.62 L-19.28 62.08Z M-32.22 48.23 L-30.26 57.52 L-40.00 59.87 L-41.56 49.97Z M-48.23 32.22 L-49.97 41.56 L-59.87 40.00 L-57.52 30.26Z M-56.89 11.32 L-62.08 19.28 L-70.62 14.05 L-64.73 5.95Z M-56.89 -11.32 L-64.73 -5.95 L-70.62 -14.05 L-62.08 -19.28Z M-48.23 -32.22 L-57.52 -30.26 L-59.87 -40.00 L-49.97 -41.56Z M-32.22 -48.23 L-41.56 -49.97 L-40.00 -59.87 L-30.26 -57.52Z M-11.32 -56.89 L-19.28 -62.08 L-14.05 -70.62 L-5.95 -64.73Z"/><path class="s-star s-star--inner" pathLength="1" style="--d:0.9s" d="M9.75 -49.04 L21.26 -31.82 L41.57 -27.78 L37.53 -7.47 L49.04 9.75 L31.82 21.26 L27.78 41.57 L7.47 37.53 L-9.75 49.04 L-21.26 31.82 L-41.57 27.78 L-37.53 7.47 L-49.04 -9.75 L-31.82 -21.26 L-27.78 -41.57 L-7.47 -37.53Z"/><path class="s-ring s-ring--inner" pathLength="1" style="--d:1.0s" d="M0 -36 A36 36 0 1 1 0 36 A36 36 0 1 1 0 -36"/></svg>
+        <span class="dad-hero__letter">ض</span>
+      </div>
     </div>
+    <div class="dad-hero__band" aria-hidden="true"></div>
   </section>
 {% endblock %}
 

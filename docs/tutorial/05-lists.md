@@ -1,8 +1,8 @@
-# 5. Lists and maps
+# ٥. القوائم والقواميس
 
-## The list
+## القائمة
 
-A list is an ordered collection of values, written between square brackets:
+القائمة مجموعة قيم مرتبة، تُكتب بين قوسين مربعين:
 
 ```dad
 ثابت الفواكه = ["تفاح"، "موز"، "برتقال"]
@@ -18,11 +18,10 @@ A list is an ordered collection of values, written between square brackets:
 الأولى: تفاح والأخيرة: برتقال
 ```
 
-- Each item has a **number**, starting at 0: `الفواكه[0]` is «تفاح» (apple), and
-  `الفواكه[1]` is «موز» (banana).
-- `عدد` is the number of items, and `أول` and `آخر` are the first and the last.
+- كل عنصر له **رقم** يبدأ من 0: `الفواكه[0]` هي «تفاح»، و`الفواكه[1]` هي «موز».
+- `عدد` عدد العناصر، و`أول` و`آخر` أول عنصر وآخره.
 
-### Going through a list
+### المرور على القائمة
 
 ```dad
 ثابت الدرجات = [95، 72، 40، 88]
@@ -39,9 +38,9 @@ A list is an ordered collection of values, written between square brackets:
 درجة: 88
 ```
 
-### Adding an item
+### إضافة عنصر
 
-A list held in a `ثابت` keeps its name, but you can still add to it with `أضف` («add»):
+القائمة في `ثابت` لا يتغير اسمها، لكن تستطيع أن تضيف إليها بـ`أضف`:
 
 ```dad
 ثابت المشتريات = ["خبز"]
@@ -54,12 +53,9 @@ A list held in a `ثابت` keeps its name, but you can still add to it with `أ
 [«خبز»، «حليب»، «تمر»] صح
 ```
 
-`يحتوي` («contains») asks whether an item is in the list.
+## أن تسأل القائمة
 
-## Asking the list
-
-This is where the anonymous functions from the last lesson shine. A list knows how to filter
-and transform itself:
+هنا تظهر قوة الدوال المجهولة من الدرس الماضي. القائمة نفسها تعرف كيف تُرشَّح وتُحوَّل:
 
 ```dad
 ثابت الدرجات = [95، 72، 40، 88، 55]
@@ -85,16 +81,16 @@ and transform itself:
 هل رسب أحد؟ صح
 ```
 
-| You write | You get |
+| تكتب | تحصل على |
 |---|---|
-| `ق.رشح { … }` (filter) | a list of the items the condition is true for |
-| `ق.حول { … }` (map) | a list with each item transformed |
-| `ق.عدد { … }` (count) | how many items the condition is true for |
-| `ق.أي { … }` and `ق.كل { … }` (any, all) | is the condition true for at least one item? For every item? |
-| `ق.مجموع()`, `ق.رتب()` and `ق.عكس()` (sum, sort, reverse) | the total, a sorted list and a reversed list |
-| `ق.ضم("، ")` (join) | a text with the items and the separator between them |
+| `ق.رشح { … }` | قائمة بالعناصر التي يصحّ عليها الشرط |
+| `ق.حول { … }` | قائمة كل عنصر فيها بعد تحويله |
+| `ق.عدد { … }` | كم عنصراً يصحّ عليه الشرط |
+| `ق.أي { … }` و `ق.كل { … }` | هل يصحّ الشرط على عنصر واحد على الأقل؟ وعلى كل العناصر؟ |
+| `ق.مجموع()` و `ق.رتب()` و `ق.عكس()` | المجموع، وقائمة مرتبة، وقائمة معكوسة |
+| `ق.ضم("، ")` | نص فيه العناصر وبينها الفاصل |
 
-`أقصى` and `أدنى` give the largest and the smallest. You can chain these questions:
+وتستطيع أن تصل هذه الأسئلة بعضها ببعض:
 
 ```dad
 ثابت الكلمات = ["ضاد"، "لغة"، "عربية"، "للبرمجة"]
@@ -105,10 +101,9 @@ and transform itself:
 «عربية» و«للبرمجة»
 ```
 
-## The map
+## القاموس
 
-A map links a **key** to a **value**, the way a phone book links a name to a number. Here,
-countries to their capitals:
+القاموس يربط **مفتاحاً** بـ**قيمة**، كما يربط دفتر الهاتف اسماً برقم:
 
 ```dad
 متغير العواصم = ["مصر": "القاهرة"، "المغرب": "الرباط"]
@@ -131,16 +126,16 @@ countries to their capitals:
 لا أعرف
 ```
 
-`[:]` is an empty map. If you ask a map for a key it doesn't have, you get `عدم`, «nothing».
-`؟؟` means «if that's nothing, take this instead». You'll learn more about `عدم` in lesson 7.
+و`[:]` قاموس فارغ. وإن سألت القاموس عن مفتاح ليس فيه أعطاك `عدم`، أي «لا شيء». و`؟؟` تعني: «فإن كانت
+عدماً فخذ هذه». وستعرف المزيد عن `عدم` في الدرس السابع.
 
-## Exercise
+## تمرين
 
-1. You have a list of prices, `[20، 3، 40، 8]`. Print the prices above 5 after adding 15% tax
-   to each, rounded to two decimal places.
-2. Use a map to count how many times each letter appears in the word «مممتاز».
+1. لديك قائمة أسعار `[20، 3، 40، 8]`. اطبع الأسعار التي تزيد على 5 بعد إضافة ضريبة
+   15٪ إلى كل منها، مقرّبة إلى خانتين عشريتين.
+2. عُدّ كم مرة يتكرر كل حرف في كلمة «مممتاز» باستعمال قاموس.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad
     ثابت الأسعار = [20، 3، 40، 8]
@@ -158,4 +153,4 @@ countries to their capitals:
     [«م»: 3، «ت»: 1، «ا»: 1، «ز»: 1]
     ```
 
-**Next:** [Types and enums](06-types.md)
+**التالي:** [الأنواع والتعدادات](06-types.md)

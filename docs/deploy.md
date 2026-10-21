@@ -1,57 +1,61 @@
-# Putting a program online
+---
+icon: lucide/rocket
+---
 
-`dad serve` runs a program as a real web server. Everyone who visits sees the same tables,
-which live in one SQLite file on the server.
+# النشر على الإنترنت
+
+يشغّل `dad serve` البرنامج خادم ويب حقيقياً. وكل من يزوره يرى الجداول نفسها، المحفوظة في
+ملف SQLite واحد على الخادم.
 
 ```sh
 dad serve todo.dad
 dad serve todo.dad --port 3000 --data /var/lib/todo/todo.db
 ```
 
-It is the server of [`dad dev`](server.md#dad-dev), minus what only makes sense on your own
-computer:
+وبالعربية: `ضاد انشر todo.dad`. وهو خادم [`dad dev`](server.md#dad-dev) نفسه، دون ما لا
+معنى له إلا على جهازك:
 
 | | `dad dev` | `dad serve` |
 |---|---|---|
-| Listens on | your computer only (`127.0.0.1`) | every network interface (`0.0.0.0`); `--host` to change it |
-| Port | `--port`, default 8080 | `--port`, or `$PORT` as hosting platforms set it, default 8080 |
-| Developer page `/_dad` | yes: functions, routes, and every table's rows | **no**: `/_dad/…` answers 404, except what pages need |
-| Reloads when files change | yes | no: restart it to update the program |
-| A program with mistakes | keeps the last good version running | doesn't start (exit code 1) |
-| Logs | the program's output | the program's output, plus one line per request on stderr |
-| Stops | Ctrl+C | Ctrl+C or `SIGTERM`: it finishes the requests in progress and closes the database |
+| يستقبل الاتصال من | جهازك فقط (`127.0.0.1`) | كل واجهات الشبكة (`0.0.0.0`)؛ و`--host` لتغييرها |
+| المنفذ | `--port`، و8080 افتراضياً | `--port`، أو `$PORT` كما تضبطه منصات الاستضافة، و8080 افتراضياً |
+| صفحة المطوّر `/_dad` | نعم: الدوال والمسارات وسجلات كل جدول | **لا**: يجيب `/_dad/…` بـ404، إلا ما تحتاجه الصفحات |
+| إعادة التحميل عند تغيّر الملفات | نعم | لا: أعد تشغيله لتحديث البرنامج |
+| برنامج فيه أخطاء | تبقى آخر نسخة سليمة تعمل | لا يبدأ (رمز الخروج 1) |
+| السجلات | ناتج البرنامج | ناتج البرنامج، وسطر لكل طلب في stderr |
+| الإيقاف | Ctrl+C | Ctrl+C أو `SIGTERM`: ينهي الطلبات الجارية ويغلق قاعدة البيانات |
 
-The site serves:
+ويقدّم الموقع:
 
-- your [interface](ui.md) at `/`, when the program has one;
-- your [routes](server.md#routes) (`مسار`);
-- your server functions at `POST /_dad/call/<name>`;
-- `/_dad/health`, which answers `{"ok": true}` for health checks.
+- [واجهتك](ui.md) عند `/`، إن كانت للبرنامج واجهة؛
+- [مساراتك](server.md#routes) (`مسار`)؛
+- دوال الخادم عند `POST /_dad/call/<الاسم>`؛
+- و`/_dad/health`، الذي يجيب `{"ok": true}` لفحوص التشغيل.
 
-## Where the data is kept
+## أين تُحفظ البيانات { #where-the-data-is-kept }
 
-By default the data goes in `.dad/<name>.db` next to the program, as with `dad dev`. On a
-server, keep it somewhere that survives redeploys and point `--data` there:
+تُحفظ البيانات افتراضياً في `.dad/<الاسم>.db` بجانب البرنامج، كما في `dad dev`. أما على
+الخادم فاحفظها في مكان يبقى بعد كل نشر جديد، ووجّه `--data` إليه:
 
 ```sh
 dad serve app.dad --data /data/app.db
 ```
 
-Changing a `جدول` changes the database the next time the program starts, the same way
-`dad dev` does: see [Changing a table](server.md#changing-a-table). A removed field's data is
-kept, hidden. A type change that some records can't take stops the program from starting,
-and the error lists those records.
+وتغيير `جدول` يغيّر قاعدة البيانات في المرة التالية التي يبدأ فيها البرنامج، كما في
+`dad dev`: انظر [تغيير جدول](server.md#changing-a-table). فبيانات الحقل المحذوف تبقى مخفية،
+وتغيير النوع الذي لا تقبله بعض السجلات يمنع البرنامج من البدء، وتسرد رسالة الخطأ تلك
+السجلات.
 
-To back up while the server runs, use SQLite's own backup, not a plain copy:
+وللنسخ الاحتياطي والخادم يعمل، استعمل النسخ الاحتياطي الخاص بـSQLite، لا النسخ العادي:
 
 ```sh
 sqlite3 /data/app.db ".backup /backups/app-$(date +%F).db"
 ```
 
-## HTTPS
+## HTTPS { #https }
 
-`dad serve` speaks plain HTTP. For a public site, put it behind a server that handles
-certificates. With [Caddy](https://caddyserver.com), this `Caddyfile` is enough:
+يتكلم `dad serve` بـHTTP العادي. وللموقع العام ضعه خلف خادم يتولى الشهادات. ومع
+[Caddy](https://caddyserver.com) يكفي ملف `Caddyfile` هذا:
 
 ```text
 example.com {
@@ -59,9 +63,9 @@ example.com {
 }
 ```
 
-Then run `dad serve app.dad --host 127.0.0.1`, so only Caddy can reach it.
+ثم شغّل `dad serve app.dad --host 127.0.0.1`، فلا يصل إليه إلا Caddy.
 
-## A Linux server with systemd
+## خادم Linux مع systemd { #a-linux-server-with-systemd }
 
 ```ini title="/etc/systemd/system/todo.service"
 [Unit]
@@ -84,10 +88,9 @@ sudo systemctl enable --now todo
 journalctl -u todo -f        # the request log
 ```
 
-## Docker, and platforms such as Fly.io or Render
+## Docker، ومنصات مثل Fly.io وRender { #docker-and-platforms-such-as-flyio-or-render }
 
-`dad` is a single program with no dependencies. SQLite is built in, so a small image is
-enough:
+`dad` برنامج واحد بلا اعتماديات، وSQLite مدمجة فيه، فتكفيه صورة صغيرة:
 
 ```dockerfile title="Dockerfile"
 FROM golang:1.26 AS dad
@@ -101,18 +104,17 @@ VOLUME /data
 CMD ["/dad", "serve", "todo.dad", "--data", "/data/todo.db"]
 ```
 
-The platform sets `$PORT`, and `dad serve` uses it. Give the app a persistent volume
-mounted at `/data`, so the database outlives each deploy. Run a single copy of the app: see
-the next section.
+تضبط المنصة `$PORT`، ويستعمله `dad serve`. وأعطِ التطبيق مساحة تخزين دائمة مثبّتة عند
+`/data`، لتبقى قاعدة البيانات بعد كل نشر. وشغّل نسخة واحدة من التطبيق: انظر القسم التالي.
 
-## What to know before you rely on it
+## ما يجب أن تعرفه قبل أن تعتمد عليه { #what-to-know-before-you-rely-on-it }
 
-- **One copy.** The data is in one SQLite file, and pages keep their state in the
-  server's memory. Run one `dad serve`, not several behind a load balancer.
-- **One request at a time.** Requests are handled in turn. This is plenty for a small team
-  or a class, but not for heavy traffic.
-- **A restart reloads open pages.** What a visitor had typed but not saved is lost. The
-  tables are not lost.
-- **No sign-in yet.** Every visitor can call every server function and route. Don't put a
-  program online with data that only some people should see or change. Users and
-  permissions are on the [roadmap](ROADMAP.md).
+- **نسخة واحدة.** البيانات في ملف SQLite واحد، والصفحات تحفظ حالتها في ذاكرة الخادم. فشغّل
+  `dad serve` واحداً، لا عدة نسخ خلف موزّع أحمال.
+- **طلب واحد في كل مرة.** تُعالَج الطلبات بالدور. وهذا كافٍ لفريق صغير أو فصل دراسي، لا
+  لزيارات كثيفة.
+- **إعادة التشغيل تعيد تحميل الصفحات المفتوحة.** يضيع ما كتبه الزائر ولم يحفظه، أما الجداول
+  فلا تضيع.
+- **لا تسجيل دخول بعد.** كل زائر يستطيع أن يستدعي كل دوال الخادم والمسارات. فلا تنشر
+  برنامجاً فيه بيانات لا يجوز إلا لبعض الناس أن يروها أو يغيّروها. والمستخدمون والصلاحيات
+  في [خارطة الطريق](ROADMAP.md).

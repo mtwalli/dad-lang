@@ -1,9 +1,9 @@
-# 2. Values and names
+# ٢. القيم والأسماء
 
-Every program works with **values**: numbers, text and more. To use a value more than
-once, you give it a **name**.
+كل برنامج يتعامل مع **قيم**: أعداد ونصوص وغيرها. ولكي تستعمل قيمة أكثر من مرة، تعطيها
+**اسماً**.
 
-## `ثابت`: a name for a value that doesn't change
+## «ثابت»: اسم لقيمة لا تتغير
 
 ```dad
 ثابت المدينة = "القاهرة"
@@ -15,11 +15,11 @@ once, you give it a **name**.
 القاهرة فيها 22 مليون نسمة تقريباً
 ```
 
-`ثابت` means «constant». After `ثابت المدينة = "القاهرة"` («the city is Cairo»), the name
-`المدينة` means that value in the rest of the program. Names can be written in Arabic or
-English, and can contain `_`, as in `عدد_الطلاب` («number of students»).
+بعد أن تكتب `ثابت المدينة = "القاهرة"`، يعني الاسم `المدينة` هذه القيمة في بقية
+البرنامج. والأسماء تُكتب بالعربية أو بالإنجليزية، ويمكن أن تحتوي `_`، مثل
+`عدد_الطلاب`.
 
-## `متغير`: a name for a value that changes
+## «متغير»: اسم لقيمة تتغير
 
 ```dad
 متغير النقاط = 0
@@ -32,11 +32,10 @@ English, and can contain `_`, as in `عدد_الطلاب` («number of students�
 النقاط: 15
 ```
 
-`متغير` means «variable». `النقاط += 5` is short for `النقاط = النقاط + 5`, and so are
-`-=`, `*=` and `/=`.
+`النقاط += 5` اختصار لـ`النقاط = النقاط + 5`، ومثلها `-=` و`*=` و`/=`.
 
-Why two different words? Most values in a program never change, and when you say `ثابت`,
-Ḍād protects you from changing one by mistake. Try it:
+لماذا نستعمل اسمين مختلفين؟ لأن معظم القيم في البرنامج لا تتغير، وحين تقول `ثابت`
+يحميك ضاد من تغييرها خطأً. جرّب:
 
 ```dad
 // خطأ مقصود
@@ -48,22 +47,20 @@ Why two different words? Most values in a program never change, and when you say
 خطأ [السطر 3، العمود 1]: لا يمكن تغيير «الاسم» لأنه ثابت — عرّفه بـ«متغير» إذا أردت تغييره
 ```
 
-The message says that «الاسم» can't change because it is a constant, and suggests declaring
-it with «متغير» if you want to change it. Use `ثابت` by default, and switch to `متغير` when you
-really need to change the value.
+استعمل `ثابت` دائماً، وغيّره إلى `متغير` حين تحتاج فعلاً أن تغيّر القيمة.
 
-## Kinds of values
+## أنواع القيم
 
-Every value has a **type**. These are the main ones:
+لكل قيمة **نوع**. هذه أهم الأنواع:
 
-| Type | What it is | Examples |
+| النوع | ما هو | أمثلة |
 |---|---|---|
-| `صحيح` | a whole number | `0`, `42`, `-7` |
-| `عشري` | a number with a fraction | `3.14`, `2.0` |
-| `نص` | text | `"مرحبا"`, `""` |
-| `منطقي` | true or false | `صح` (true), `خطأ` (false) |
+| `صحيح` | عدد بلا كسور | `0`، `42`، `-7` |
+| `عشري` | عدد بكسور | `3.14`، `2.0` |
+| `نص` | كلمات وحروف | `"مرحبا"`، `""` |
+| `منطقي` | صواب أو خطأ | `صح`، `خطأ` |
 
-### Arithmetic
+### الحساب
 
 ```dad
 اطبع(7 + 2، 7 - 2، 7 * 2)
@@ -77,14 +74,14 @@ Every value has a **type**. These are the main ones:
 3 5.0
 ```
 
-- Division `/` always gives a decimal, as in maths: `7 / 2` is `3.5`.
-- `%` is the remainder: `7 % 2` is `1`.
-- `ك` («as») converts a value to another type: `(7 / 2) ك صحيح` is `3`.
-- A decimal always prints with a decimal point, as in `5.0`, so you can tell its type.
+- القسمة `/` تعطي عدداً عشرياً دائماً، كما في الرياضيات: `7 / 2` هي `3.5`.
+- `%` باقي القسمة: `7 % 2` هو `1`.
+- `ك` تحوّل قيمة إلى نوع آخر: `(7 / 2) ك صحيح` هو `3`.
+- العدد العشري يُطبع دائماً بعلامة عشرية، مثل `5.0`، لتعرف نوعه.
 
-### Text
+### النصوص
 
-Put a name between braces `{…}` inside text, and its value appears there:
+ضع اسماً بين قوسين معقوفين `{…}` داخل النص فتظهر قيمته مكانه:
 
 ```dad
 ثابت الاسم = "ليلى"
@@ -98,12 +95,11 @@ Put a name between braces `{…}` inside text, and its value appears there:
 4 ليلى وأختها
 ```
 
-`الاسم.طول` is the number of letters: `طول` means «length». The dot `.` asks a value for
-something it has, «the length of the name», and you'll see it a lot.
+`الاسم.طول` عدد الحروف. والنقطة `.` تعني «من»: «طول الاسم». وستراها كثيراً.
 
-### Converting between types
+### التحويل بين الأنواع
 
-The text `"12"` isn't a number, even though it looks like one. Convert it with `ك`:
+النص `"12"` ليس عدداً، مع أنه يشبهه. حوّله بـ`ك`:
 
 ```dad
 ثابت مدخل = "12"
@@ -116,7 +112,7 @@ The text `"12"` isn't a number, even though it looks like one. Convert it with `
 5!
 ```
 
-### True and false
+### الصواب والخطأ
 
 ```dad
 اطبع(3 > 2، 3 == 4، 3 != 4)
@@ -128,18 +124,16 @@ The text `"12"` isn't a number, even though it looks like one. Convert it with `
 خطأ صح خطأ
 ```
 
-`==` asks «are they equal?», and `!=` asks «are they different?». A single `=` gives a name
-its value: `ثابت س = 1`. `و`, `أو` and `ليس` mean «and», «or» and «not».
+`==` تسأل: هل هما متساويان؟ و`!=`: هل هما مختلفان؟ أما `=` وحدها فهي للإعطاء:
+`ثابت س = 1`.
 
-## Exercise
+## تمرين
 
-1. Write a program with two constants, `الطول` and `العرض` (length and width), for a room
-   4.5 metres long and 3 metres wide. Print its area like this:
-   `مساحة الغرفة 13.5 متراً مربعاً`.
-2. You have 50 riyals, and a book costs 12. Print how many books you can buy, and how much
-   is left.
+1. اكتب برنامجاً فيه ثابتان، `الطول` و`العرض`، لغرفة طولها 4.5 متر وعرضها 3 أمتار، ثم
+   اطبع مساحتها هكذا: `مساحة الغرفة 13.5 متراً مربعاً`.
+2. لديك 50 ريالاً، وثمن الكتاب 12 ريالاً. اطبع كم كتاباً تستطيع أن تشتري، وكم يبقى معك.
 
-??? note "Solution"
+??? note "الحل"
 
     ```dad
     ثابت الطول = 4.5
@@ -156,4 +150,4 @@ its value: `ثابت س = 1`. `و`, `أو` and `ليس` mean «and», «or» and
     كتب: 4 والباقي: 2
     ```
 
-**Next:** [Decisions and loops](03-control.md)
+**التالي:** [القرارات والتكرار](03-control.md)

@@ -1,11 +1,14 @@
-# Roadmap
+---
+icon: lucide/map
+---
 
-Ḍād 0.2 is the first public release. A whole web app can be written in it today: the
-interface, server functions, tables in SQLite and routes, in one file or several. It runs
-with `dad dev`, goes online with `dad serve`, and becomes a static site with `dad build`.
-This page shows how it is built, what is done, and what comes next.
+# خارطة الطريق
 
-## Architecture
+ضاد 0.2 أول إصدار عام. يمكنك اليوم أن تكتب به تطبيق ويب كاملاً: الواجهة، ودوال الخادم،
+والجداول في SQLite، والمسارات، في ملف واحد أو عدة ملفات. ويعمل بـ`dad dev`، ويُنشر بـ`dad serve`،
+ويصير موقعاً ثابتاً بـ`dad build`. وفي هذه الصفحة كيف بُني، وما أُنجز، وما يأتي بعده.
+
+## البنية { #architecture }
 
 ```text
 *.dad ─► lexer ─► parser ─► syntax tree ─► checker ─┬─► interpreter ─► dad run · dad dev · dad serve · playground (WebAssembly)
@@ -13,93 +16,85 @@ This page shows how it is built, what is done, and what comes next.
                        tables ─► SQLite (migrations from table changes)
 ```
 
-- **One program, written in Go.** `dad` is a single binary for each system, with no
-  dependencies: SQLite is built in (`modernc.org/sqlite`, pure Go), and so are the page
-  script, the stylesheet and the Kufi font.
-- **A hand-written parser,** recursive descent with Pratt parsing for expressions, so that
-  error messages can be precise and in Arabic.
-- **A checker** that reports only what is certain: undefined names with suggestions,
-  arguments, declared types, members, and `طابق` that misses cases. A program with mistakes
-  doesn't run.
-- **Two ways to run, one behaviour.** The interpreter is the reference. The JavaScript
-  compiler is tested against it: every example prints the same output and the same errors,
-  and pages render the same HTML after the same clicks.
-- **Pages render on the server** in `dad dev` and `dad serve` (like Phoenix LiveView), and in
-  the browser after `dad build`.
+- **برنامج واحد مكتوب بـGo.** `dad` ملف تنفيذي واحد لكل نظام، بلا اعتماديات: فيه SQLite
+  (`modernc.org/sqlite`، مكتوبة بـGo خالصة)، وفيه سكربت الصفحات وملف تنسيقها والخط الكوفي.
+- **محلل نحوي مكتوب يدوياً،** بالنزول العودي، وبطريقة Pratt للتعابير، لتكون رسائل الأخطاء
+  دقيقة وبالعربية.
+- **فاحص** لا يخبر إلا بما هو مؤكد: الأسماء غير المعرّفة مع اقتراحات، والمعاملات، والأنواع
+  المعلنة، والحقول، و«طابق» التي تنسى حالة. والبرنامج الذي فيه أخطاء لا يعمل.
+- **طريقتان للتشغيل وسلوك واحد.** المفسّر هو المرجع، ومترجم JavaScript يُختبر عليه: كل مثال
+  يطبع الناتج نفسه والأخطاء نفسها، والصفحات تعرض HTML نفسه بعد الضغطات نفسها.
+- **تُرسم الصفحات على الخادم** في `dad dev` و`dad serve` (مثل Phoenix LiveView)، وفي المتصفح
+  بعد `dad build`.
 
-## Phases
+## المراحل { #phases }
 
-| Phase | Goal | Status |
+| المرحلة | الهدف | الحال |
 |---|---|---|
-| **0. Specification** | [The specification](SPEC.md), [the grammar](grammar.md), sample programs, the lexer | ✅ Done |
-| **1. Core language** | Parser, checker, interpreter, programs in several files, JavaScript compiler, Arabic errors | ✅ Done. Next: smart casts for optional values, generic types, unused-variable warnings |
-| **2. Interface** | `مكون`, `حالة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`. Next: more elements, several pages, updating only what changed |
-| **3. Server and data** | `خادم` functions, `جدول` in SQLite, `مسار`, `dad dev`, `dad serve` | ✅ Done. Next: users and sign-in, permissions, requests in parallel |
-| **4. Tooling** | VS Code extension, `dad fmt`, the playground, the `dad lsp` language server | ✅ Done |
-| **5. Distribution** | Homebrew, winget, `.deb` and `.rpm`, install scripts, the tutorial in English and Arabic | ✅ Done in 0.2 |
+| **0. المواصفات** | [المواصفات](SPEC.md)، و[القواعد النحوية](grammar.md)، وبرامج الأمثلة، والمحلل اللغوي | ✅ أُنجزت |
+| **1. نواة اللغة** | المحلل النحوي، والفاحص، والمفسّر، والبرامج متعددة الملفات، ومترجم JavaScript، والأخطاء بالعربية | ✅ أُنجزت. التالي: التحويل الذكي للقيم الاختيارية، والأنواع العامة، والتنبيه على الأسماء غير المستعملة |
+| **2. الواجهة** | `مكون` و`حالة` والعناصر، من اليمين إلى اليسار من الأساس | ✅ في `dad dev` والملعب و`dad build`. التالي: عناصر أكثر، وصفحات متعددة، وتحديث ما تغيّر فقط |
+| **3. الخادم والبيانات** | دوال `خادم`، و`جدول` في SQLite، و`مسار`، و`dad dev`، و`dad serve` | ✅ أُنجزت. التالي: المستخدمون وتسجيل الدخول، والصلاحيات، ومعالجة الطلبات بالتوازي |
+| **4. الأدوات** | إضافة VS Code، و`dad fmt`، والملعب، وخادم اللغة `dad lsp` | ✅ أُنجزت |
+| **5. التوزيع** | Homebrew وwinget وحزم `.deb` و`.rpm` وسكربتات التثبيت، والدليل بالإنجليزية والعربية | ✅ أُنجزت في 0.2 |
 
-## What comes next
+## ما يأتي بعد ذلك { #what-comes-next }
 
-These are the next steps, roughly in order:
+الخطوات التالية، بترتيبها تقريباً:
 
-1. **Users and sign-in**, and permissions on server functions and routes, so that programs
-   with private data can go online.
-2. **Requests in parallel** in `dad serve`, for busier sites.
-3. **More elements:** lists, selects, text areas and dialogs. Also **several pages** in one
-   program, each with its own address.
-4. **Updating only what changed** on a page (signals), instead of laying out the whole
-   component again.
-5. **A sharper checker:** smart casts after `إذا ن != عدم`, generic types, warnings for unused
-   names.
-6. **Signed installers** for macOS and Windows.
+1. **المستخدمون وتسجيل الدخول**، والصلاحيات على دوال الخادم والمسارات، لتُنشر البرامج التي
+   فيها بيانات خاصة.
+2. **معالجة الطلبات بالتوازي** في `dad serve`، للمواقع الأكثر زيارة.
+3. **عناصر أكثر:** القوائم، والاختيار من قائمة منسدلة، ومناطق النص، والنوافذ الحوارية. وأيضاً
+   **صفحات متعددة** في البرنامج الواحد، لكل منها عنوانها.
+4. **تحديث ما تغيّر فقط** في الصفحة (signals)، بدل إعادة ترتيب المكون كله.
+5. **فاحص أدق:** التحويل الذكي بعد `إذا ن != عدم`، والأنواع العامة، والتنبيه على الأسماء غير
+   المستعملة.
+6. **برامج تثبيت موقّعة** لـmacOS وWindows.
 
-## Done so far
+## ما أُنجز حتى الآن { #done-so-far }
 
-### Phase 1: the core language
+### المرحلة 1: نواة اللغة { #phase-1-the-core-language }
 
-1. ✅ The syntax tree (`internal/ast`) and the parser, with Arabic errors that give the line
-   and column (`internal/parser`)
-2. ✅ `dad run`: the interpreter (`internal/interp`), in the terminal and in the
-   [playground](playground.md)
-3. ✅ Golden tests: each example has its expected output in `examples/output/`
-4. ✅ [Programs in several files](modules.md) (`internal/module`): `استورد` and `خاص`,
-   checked across files, and followed by every command and by the editor
-5. ✅ The checker (`internal/check`). Programs with mistakes don't run
-6. ✅ The JavaScript compiler (`internal/codegen/js`) and [`dad build`](build.md)
+1. ✅ شجرة الصياغة (`internal/ast`) والمحلل النحوي، مع أخطاء بالعربية تذكر السطر والعمود
+   (`internal/parser`)
+2. ✅ `dad run`: المفسّر (`internal/interp`)، في الطرفية وفي [الملعب](playground.md)
+3. ✅ اختبارات النتائج: لكل مثال ناتجه المتوقع في `examples/output/`
+4. ✅ [البرامج متعددة الملفات](modules.md) (`internal/module`): `استورد` و`خاص`، تُفحص عبر
+   الملفات، وتتبعها كل الأوامر والمحرر
+5. ✅ الفاحص (`internal/check`). والبرامج التي فيها أخطاء لا تعمل
+6. ✅ مترجم JavaScript (`internal/codegen/js`) و[`dad build`](build.md)
 
-### Phase 2: the interface
+### المرحلة 2: الواجهة { #phase-2-the-interface }
 
-1. ✅ Components with state, and the elements `عمود`، `صف`، `بطاقة`، `عنوان`، `فقرة`، `زر`،
-   `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`
-2. ✅ Pages in `dad dev`: rendered on the server, updated in place, reloaded on save. They use
-   a right-to-left Kufi stylesheet with light and dark themes
-3. ✅ The playground shows the interface (in WebAssembly, tables in memory)
-4. ✅ Static sites from `dad build`: components render in the browser, and tables live in its
-   storage
+1. ✅ المكونات بحالتها، والعناصر `عمود`، `صف`، `بطاقة`، `عنوان`، `فقرة`، `زر`، `حقل`،
+   `مربع_اختيار`، `صورة`، `رابط`، `فاصل`
+2. ✅ الصفحات في `dad dev`: تُرسم على الخادم، وتتحدّث في مكانها، وتُعاد عند الحفظ، بملف تنسيق
+   كوفي من اليمين إلى اليسار بمظهرين فاتح وداكن
+3. ✅ الملعب يعرض الواجهة (في WebAssembly، والجداول في الذاكرة)
+4. ✅ المواقع الثابتة من `dad build`: تُرسم المكونات في المتصفح، وتُحفظ الجداول في ذاكرته
 
-### Phase 3: server and data
+### المرحلة 3: الخادم والبيانات { #phase-3-server-and-data }
 
-1. ✅ Tables behind a `Store` interface: in memory for the playground and the tests, and in
-   SQLite for `dad run`, `dad dev` and `dad serve`
-2. ✅ Migrations when a table changes, and simple `حيث` conditions run as SQL
-3. ✅ `dad dev`: routes with `{params}`, server functions at `/_dad/call/<name>`, a developer
-   page, and live reload that keeps the data
-4. ✅ [`dad serve`](deploy.md): the production server
+1. ✅ الجداول خلف واجهة `Store`: في الذاكرة للملعب والاختبارات، وفي SQLite لـ`dad run`
+   و`dad dev` و`dad serve`
+2. ✅ تحديث قاعدة البيانات حين يتغير جدول، وتنفيذ شروط `حيث` البسيطة بلغة SQL
+3. ✅ `dad dev`: مسارات مع `{معاملات}`، ودوال الخادم عند `/_dad/call/<الاسم>`، وصفحة للمطوّر،
+   وإعادة تحميل تحفظ البيانات
+4. ✅ [`dad serve`](deploy.md): خادم النشر
 
-### Phases 4 and 5: tooling and distribution
+### المرحلتان 4 و5: الأدوات والتوزيع { #phases-4-and-5-tooling-and-distribution }
 
-1. ✅ The VS Code extension, with a right-to-left editor, and the Ḍād Mono font
-2. ✅ `dad fmt`, in the Kotlin style
-3. ✅ `dad lsp`, for definitions, references, rename, hover, completion and the outline in
-   any editor
-4. ✅ Release builds for macOS, Windows and Linux on Intel and ARM: Homebrew, winget, `.deb`,
-   `.rpm` and install scripts
-5. ✅ The [tutorial](tutorial/index.md) in English and Arabic, and this site in both
-   languages
+1. ✅ إضافة VS Code بمحرر من اليمين إلى اليسار، وخط Ḍād Mono
+2. ✅ `dad fmt` بأسلوب Kotlin
+3. ✅ `dad lsp` للتعريفات والمراجع وإعادة التسمية وشرح الأسماء والإكمال والمخطط، في أي محرر
+4. ✅ إصدارات لـmacOS وWindows وLinux على Intel وARM: Homebrew وwinget و`.deb` و`.rpm`
+   وسكربتات التثبيت
+5. ✅ [الدليل](tutorial/index.md) بالإنجليزية والعربية، وهذا الموقع باللغتين
 
-## Costs to know about
+## تكاليف يجب معرفتها { #costs-to-know-about }
 
-- A signed and notarized macOS installer needs the Apple Developer Program, at $99 a year.
-  Until then, Homebrew and the install script cover macOS.
-- A signed Windows installer needs a code-signing certificate. Until then, winget and the
-  zip archive cover Windows.
+- برنامج تثبيت موقّع لـmacOS يحتاج اشتراك Apple Developer Program، بـ99 دولاراً في السنة.
+  وحتى ذلك الحين يغطي Homebrew وسكربت التثبيت نظام macOS.
+- برنامج تثبيت موقّع لـWindows يحتاج شهادة توقيع للكود. وحتى ذلك الحين يغطي winget وأرشيف
+  zip نظام Windows.
