@@ -4,8 +4,10 @@ Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming languag
 
 - **Highlighting** for keywords, strings with `{…}` interpolation, `«…»` strings, numbers, and Ḍād code blocks in Markdown.
 - **Right to left**: `.dad` files open in a right-to-left editor, with lines starting at the right
-  and line numbers on the right. Saving, undo, git and problems work as usual. **Open as text**
-  switches to VS Code's text editor for completion, hovers and find.
+  and line numbers on the right. Saving, undo, git and problems work as usual, and so do go to
+  definition (<kbd>F12</kbd> or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+click), references, rename and
+  symbols, also from the right-click menu with **Format Document**. **Open as text** switches
+  to VS Code's text editor for completion, hovers and find.
 - **Ḍād Mono**, a coding font made for Ḍād: Kufi Arabic that sits with Latin letters and
   digits. The extension uses it for `.dad` files and offers to install it the first time.
 - **Errors as you type**, in Arabic, with the exact word underlined.
@@ -14,7 +16,10 @@ Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming languag
 - **Run** the current file, with the output shown right to left in the **Ḍād** panel until the next run. Use the ▶ button in the editor title, or
   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac).
 - **Keyword help**: hover a keyword to see what it means in English.
-- **Go to definition, references, rename and the outline**, from Ḍād's language server; completion after `.` lists the value's real fields and methods.
+- **Go to definition, references, rename and the outline**, from Ḍād's language server, across
+  the files of a program: imported names and the fields of imported types lead to their file,
+  the file in `استورد … من "./ملف"` is a link, and **Go to Symbol in Workspace** finds every
+  type and function. Completion after `.` lists the value's real fields and methods.
 - **Snippets** for functions, types, enums, loops and matching. They answer to Arabic and English
   prefixes, so `func` and `دالة` both work.
 
@@ -37,7 +42,9 @@ finds `dad` on your `PATH` or in the default install folder. If yours is somewhe
 
 VS Code's own text editor has no right-to-left mode, so the extension opens `.dad` files in
 its own right-to-left editor. It edits VS Code's copy of the file, so saving, undo, git and
-the Problems panel work as usual. Completion, keyword hovers, find and AI suggestions need
+the Problems panel work as usual, and so does moving around the code: go to definition,
+references, rename, symbols and **Go Back**, from the keyboard or the right-click menu.
+Completion, keyword hovers, find and AI suggestions need
 VS Code's text editor: use **Open as text** (title bar or the bar at the bottom) to switch, and
 **Ḍād: Reopen Right to Left** to come back.
 

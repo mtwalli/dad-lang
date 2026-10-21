@@ -22,6 +22,11 @@ macOS, Windows and Linux.
   references** (<kbd>Shift</kbd>+<kbd>F12</kbd>) and **rename** (<kbd>F2</kbd>) for variables,
   functions, types, fields, parameters and cases. Renaming a field also changes `نقطة(س: …)`
   and `نسخة(س: …)` wherever the field is named.
+- **Across files.** In a program of several files, go to definition leads to the file that
+  declares a name, including the fields and methods of an imported type; the file name in
+  `استورد … من "./نماذج"` is a link to that file; and references and rename cover every file
+  that imports the name. **Go to Symbol in Workspace** (<kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>T</kbd>)
+  finds the types, functions, components and fields of all the workspace's `.dad` files.
 - **Hover a name** to see how it is declared, such as `دالة مربع(عدد: صحيح): صحيح`.
 - **The outline** (<kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd>, and the Outline
   view) lists the file's types, functions, tables and components with their fields and methods.
@@ -190,9 +195,21 @@ Indentation follows the code as you type:
 | <kbd>Backspace</kbd> | In the indentation, goes back one level |
 | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> | Format the file |
 
-VS Code's own features that need its text editor are only in the text view: completion,
-hovers, go to definition, references and rename, find and replace, multiple cursors and AI
-suggestions. To switch, use the
+Moving around the code works there too, across the files of a program:
+
+| Key | What it does |
+|---|---|
+| <kbd>F12</kbd>, or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+click | Go to the definition. Holding <kbd>⌘</kbd>/<kbd>Ctrl</kbd> underlines the name under the mouse. On the file name of an `استورد`, opens that file |
+| <kbd>Shift</kbd>+<kbd>F12</kbd> | Find all references: choose one from the list |
+| <kbd>F2</kbd> | Rename the name, in every file that names it |
+| <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> | Go to a type, function or field of the file |
+| <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>T</kbd> | Go to a type, function or field of any file in the workspace |
+| <kbd>Ctrl</kbd>+<kbd>-</kbd> on a Mac, <kbd>Alt</kbd>+<kbd>←</kbd> on Windows, <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>-</kbd> on Linux | Go back to where you were before |
+
+**Right-click** in the editor for the same commands, with **Format Document** and **Run**.
+
+The rest of VS Code's own features need its text editor, and are only in the text view:
+completion, hovers, find and replace, multiple cursors and AI suggestions. To switch, use the
 button in the editor's title bar or at the bottom of the editor:
 
 | To | Do this |
@@ -224,8 +241,9 @@ dad dev file.dad      # serve its routes and server functions
 
 `dad lsp` is a language server: any editor that speaks the
 [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) gets
-errors as you type, go to definition, find references, rename, hover, completion (with
-members after `.`), the outline and formatting. Point the editor at the command `dad lsp`
+errors as you type, go to definition, find references, rename (across the files of a
+program), hover, completion (with members after `.`), the outline, links to imported files,
+the workspace's symbols and formatting. Point the editor at the command `dad lsp`
 for `.dad` files:
 
 === "Neovim"

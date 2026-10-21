@@ -1,8 +1,10 @@
 // A small client for Ḍād's language server («dad lsp»), with no npm dependencies.
 // It starts dad, keeps the server's copy of each open .dad file up to date, and
 // answers VS Code's requests for definitions, references, rename, hover,
-// member completion and the outline. Errors still come from «dad check», and
-// formatting from «dad fmt»; the server is only asked for what needs it.
+// member completion, the outline, links to imported files and the
+// workspace's symbols. Definitions, references and rename reach across the
+// files of a program. Errors still come from «dad check», and formatting from
+// «dad fmt»; the server is only asked for what needs it.
 "use strict";
 
 const vscode = require("vscode");
@@ -22,7 +24,7 @@ class LanguageServer {
   }
 
   /** Starts dad lsp; resolves to true when it answered «initialize». */
-  start() {
+  start(folders) {
     if (this.ready) return this.ready;
     this.ready = new Promise((resolve) => {
       try {
@@ -41,7 +43,9 @@ class LanguageServer {
       this.child.stderr.on("data", (d) => this.log(String(d)));
       this.child.stdout.on("data", (chunk) => this.receive(chunk));
       // VS Code shows keywords and built-ins from the extension itself.
-      this.request("initialize", { processId: process.pid, rootUri: null, capabilities: {}, initializationOptions: { keywords: false } })
+      const workspaceFolders = (folders || []).map((f) => ({ uri: f.uri.toString(), name: f.name }));
+      const rootUri = workspaceFolders.length ? workspaceFolders[0].uri : null;
+      this.request("initialize", { processId: process.pid, rootUri, workspaceFolders, capabilities: {}, initializationOptions: { keywords: false } })
         .then((res) => {
           if (!res || !res.capabilities) { this.dead = true; resolve(false); return; } // an older dad without «lsp»
           this.notify("initialized", {});
@@ -108,6 +112,9 @@ class LanguageServer {
 
 const toRange = (r) => new vscode.Range(r.start.line, r.start.character, r.end.line, r.end.character);
 const at = (doc, pos) => ({ textDocument: { uri: doc.uri.toString() }, position: { line: pos.line, character: pos.character } });
+/** The server answers with URIs; the document's own is kept as VS Code gave it. */
+const toUri = (doc, uri) => (uri === doc.uri.toString() ? doc.uri : vscode.Uri.parse(uri));
+const toLocation = (doc, l) => new vscode.Location(toUri(doc, l.uri), toRange(l.range));
 
 const completionKind = {
   2: vscode.CompletionItemKind.Method, 3: vscode.CompletionItemKind.Function, 5: vscode.CompletionItemKind.Field,
@@ -117,8 +124,11 @@ const completionKind = {
 };
 
 /**
- * Connects the language server to VS Code. dadPath() finds dad. Returns a
- * disposable; the providers answer nothing when dad has no «lsp» command.
+ * Connects the language server to VS Code. dadPath() finds dad. The
+ * providers answer nothing when dad has no «lsp» command. Returns what the
+ * right-to-left editor asks for: definitions, references, rename and symbols
+ * for a document and position, and onJump, called when a definition leads
+ * to another file.
  */
 function register(context, dadPath) {
   let server = null;
@@ -130,7 +140,7 @@ function register(context, dadPath) {
     if (!exe) return null;
     server = new LanguageServer(exe);
     synced.clear();
-    return (await server.start()) ? server : null;
+    return (await server.start(vscode.workspace.workspaceFolders)) ? server : null;
   }
 
   // The server needs the current text before answering about it.
@@ -154,18 +164,55 @@ function register(context, dadPath) {
     return res && res.error ? null : res;
   };
 
+  const api = {
+    onJump: null,
+    async definition(doc, pos) {
+      const loc = await ask(doc, "textDocument/definition", at(doc, pos));
+      return loc && loc.uri ? toLocation(doc, loc) : null;
+    },
+    async references(doc, pos) {
+      const locs = await ask(doc, "textDocument/references", at(doc, pos));
+      return (locs || []).map((l) => toLocation(doc, l));
+    },
+    async prepareRename(doc, pos) {
+      return ask(doc, "textDocument/prepareRename", at(doc, pos));
+    },
+    /** A WorkspaceEdit that renames the name at pos in every file that names it; throws the server's reason when it can't. */
+    async rename(doc, pos, newName) {
+      const s = await ready(doc);
+      if (!s) return null;
+      const res = await s.request("textDocument/rename", Object.assign(at(doc, pos), { newName }));
+      if (!res) return null;
+      if (res.error) throw new Error(res.error.message);
+      const edit = new vscode.WorkspaceEdit();
+      for (const [uri, edits] of Object.entries(res.changes || {})) {
+        for (const e of edits) edit.replace(toUri(doc, uri), toRange(e.range), e.newText);
+      }
+      return edit;
+    },
+    async symbols(doc) {
+      return (await ask(doc, "textDocument/documentSymbol", { textDocument: { uri: doc.uri.toString() } })) || [];
+    },
+    async workspaceSymbols(query) {
+      const s = await get();
+      if (!s) return [];
+      const res = await s.request("workspace/symbol", { query });
+      return res && !res.error ? res : [];
+    },
+  };
+
   const selector = { language: "dad" };
   const disposables = [
     vscode.languages.registerDefinitionProvider(selector, {
       async provideDefinition(doc, pos) {
-        const loc = await ask(doc, "textDocument/definition", at(doc, pos));
-        return loc ? new vscode.Location(doc.uri, toRange(loc.range)) : null;
+        const loc = await api.definition(doc, pos);
+        if (loc && api.onJump && loc.uri.toString() !== doc.uri.toString()) api.onJump(loc.uri, loc.range);
+        return loc;
       },
     }),
     vscode.languages.registerReferenceProvider(selector, {
       async provideReferences(doc, pos) {
-        const locs = await ask(doc, "textDocument/references", at(doc, pos));
-        return (locs || []).map((l) => new vscode.Location(doc.uri, toRange(l.range)));
+        return api.references(doc, pos);
       },
     }),
     vscode.languages.registerDocumentHighlightProvider(selector, {
@@ -176,19 +223,27 @@ function register(context, dadPath) {
     }),
     vscode.languages.registerRenameProvider(selector, {
       async prepareRename(doc, pos) {
-        const r = await ask(doc, "textDocument/prepareRename", at(doc, pos));
+        const r = await api.prepareRename(doc, pos);
         if (!r) throw new Error("لا يوجد اسم هنا يمكن تغييره");
         return { range: toRange(r.range), placeholder: r.placeholder };
       },
-      async provideRenameEdits(doc, pos, newName) {
-        const s = await ready(doc);
-        if (!s) return null;
-        const res = await s.request("textDocument/rename", Object.assign(at(doc, pos), { newName }));
-        if (!res) return null;
-        if (res.error) throw new Error(res.error.message);
-        const edit = new vscode.WorkspaceEdit();
-        for (const e of res.changes[doc.uri.toString()] || []) edit.replace(doc.uri, toRange(e.range), e.newText);
-        return edit;
+      provideRenameEdits: (doc, pos, newName) => api.rename(doc, pos, newName),
+    }),
+    vscode.languages.registerDocumentLinkProvider(selector, {
+      async provideDocumentLinks(doc) {
+        const links = await ask(doc, "textDocument/documentLink", { textDocument: { uri: doc.uri.toString() } });
+        return (links || []).map((l) => {
+          const link = new vscode.DocumentLink(toRange(l.range), toUri(doc, l.target));
+          link.tooltip = l.tooltip;
+          return link;
+        });
+      },
+    }),
+    vscode.languages.registerWorkspaceSymbolProvider({
+      async provideWorkspaceSymbols(query) {
+        const syms = await api.workspaceSymbols(query);
+        return syms.map((s) => new vscode.SymbolInformation(s.name, Math.max((s.kind || 13) - 1, 0), s.containerName || "",
+          new vscode.Location(vscode.Uri.parse(s.location.uri), toRange(s.location.range))));
       },
     }),
     vscode.languages.registerHoverProvider(selector, {
@@ -211,13 +266,13 @@ function register(context, dadPath) {
     }, ".", "؟"),
     vscode.languages.registerDocumentSymbolProvider(selector, {
       async provideDocumentSymbols(doc) {
-        const syms = await ask(doc, "textDocument/documentSymbol", { textDocument: { uri: doc.uri.toString() } });
+        const syms = await api.symbols(doc);
         const convert = (s) => {
           const ds = new vscode.DocumentSymbol(s.name, s.detail || "", Math.max((s.kind || 13) - 1, 0), toRange(s.range), toRange(s.selectionRange));
           ds.children = (s.children || []).map(convert);
           return ds;
         };
-        return (syms || []).map(convert);
+        return syms.map(convert);
       },
     }),
     vscode.workspace.onDidCloseTextDocument((doc) => {
@@ -228,12 +283,11 @@ function register(context, dadPath) {
     { dispose: () => server && server.stop() },
   ];
   context.subscriptions.push(...disposables);
-  return {
-    restart() {
-      if (server) server.stop();
-      server = null;
-    },
+  api.restart = () => {
+    if (server) server.stop();
+    server = null;
   };
+  return api;
 }
 
 /** Whether the cursor follows «x.»: then only members make sense, not keywords. */

@@ -48,7 +48,8 @@ class Uri {
     return this.scheme + "://" + this.fsPath;
   }
   static parse(s) {
-    return new Uri(s, "https");
+    const m = /^file:\/\/(.*)$/.exec(s);
+    return m ? new Uri(decodeURIComponent(m[1])) : new Uri(s, "https");
   }
   static joinPath(base, ...parts) {
     return new Uri(path.join(base.fsPath, ...parts), base.scheme);
@@ -127,9 +128,23 @@ function makeDoc(text, file = "/tmp/test.dad") {
   };
 }
 
+const quickPicks = []; // what the extension offered to choose from, answered by pickAnswers
+const pickAnswers = [];
+const inputAnswers = [];
 const vscode = {
   Position,
   Range,
+  Disposable: { from: (...ds) => ({ dispose: () => ds.forEach((d) => d && d.dispose && d.dispose()) }) },
+  DocumentLink: class {
+    constructor(range, target) {
+      Object.assign(this, { range, target });
+    }
+  },
+  SymbolInformation: class {
+    constructor(name, kind, containerName, location) {
+      Object.assign(this, { name, kind, containerName, location });
+    }
+  },
   WorkspaceEdit: class {
     constructor() {
       this.edits = [];
@@ -207,6 +222,8 @@ const vscode = {
     registerRenameProvider: (sel, p) => ((vscode._rename = p), { dispose() {} }),
     registerDocumentSymbolProvider: (sel, p) => ((vscode._symbols = p), { dispose() {} }),
     registerDocumentFormattingEditProvider: (sel, p) => ((vscode._formatter = p), { dispose() {} }),
+    registerDocumentLinkProvider: (sel, p) => ((vscode._links = p), { dispose() {} }),
+    registerWorkspaceSymbolProvider: (p) => ((vscode._workspaceSymbols = p), { dispose() {} }),
     getDiagnostics: (uri) => diagnosticsByUri.get(uri.toString()) || [],
     onDidChangeDiagnostics: on("diagnosticsChanged"),
   },
@@ -237,6 +254,12 @@ const vscode = {
     registerWebviewViewProvider: (id, provider) => ((viewProvider = provider), { dispose() {} }),
     registerCustomEditorProvider: (viewType, provider) => ((customProvider = { viewType, provider }), { dispose() {} }),
     setStatusBarMessage: (m) => (statusMessages.push(m), { dispose() {} }),
+    showQuickPick: async (items, opts) => {
+      quickPicks.push({ items, opts });
+      const answer = pickAnswers.shift();
+      return answer === undefined ? undefined : items[answer];
+    },
+    showInputBox: async () => inputAnswers.shift(),
   },
   workspace: {
     textDocuments: [],
@@ -248,6 +271,8 @@ const vscode = {
     onDidChangeConfiguration: on("config"),
     onWillSaveTextDocument: on("willSave"),
     applyEdit: (edit) => (applied.push(edit), Promise.resolve(true)),
+    workspaceFolders: undefined,
+    openTextDocument: async (uri) => makeDoc(fs.readFileSync(uri.fsPath, "utf8"), uri.fsPath),
   },
 };
 
@@ -583,6 +608,93 @@ test("the outline lists declarations with their members", async () => {
   const syms = await vscode._symbols.provideDocumentSymbols(doc);
   assert.deepStrictEqual(syms.map((s) => s.name), ["نقطة", "مربع", "ن"]);
   assert.deepStrictEqual(syms[0].children.map((c) => c.name), ["س", "ص", "بعد"]);
+});
+
+// ---------- programs of several files ----------
+
+const progDir = fs.mkdtempSync(path.join(os.tmpdir(), "dad-prog-"));
+const progFiles = {
+  "نماذج.dad": "نوع منتج(اسم: نص، سعر: عشري)\n\nدالة بالضريبة(سعر: عشري): عشري = سعر * 1.15\n",
+  "main.dad": "استورد منتج، بالضريبة من \"./نماذج\"\n\nثابت م = منتج(\"خبز\"، 2.5)\nاطبع(م.اسم، بالضريبة(م.سعر))\n",
+};
+for (const [name, text] of Object.entries(progFiles)) fs.writeFileSync(path.join(progDir, name), text);
+const lastReveal = (panel) => panel.posted.filter((m) => m.type === "reveal").at(-1);
+const progDoc = (name) => makeDoc(progFiles[name], path.join(progDir, name));
+
+test("definitions lead into the files a program imports", async () => {
+  const doc = progDoc("main.dad");
+  const def = await vscode._definition.provideDefinition(doc, new Position(3, 8)); // م.اسم
+  assert.strictEqual(path.basename(def.uri.fsPath), "نماذج.dad");
+  assert.deepStrictEqual([def.range.start.line, def.range.start.character], [0, 9]);
+  const file = await vscode._definition.provideDefinition(doc, new Position(0, 27)); // "./نماذج"
+  assert.strictEqual(path.basename(file.uri.fsPath), "نماذج.dad");
+  const links = await vscode._links.provideDocumentLinks(doc);
+  assert.deepStrictEqual(links.map((l) => path.basename(l.target.fsPath)), ["نماذج.dad"]);
+});
+
+test("references and rename reach every file of the program", async () => {
+  const doc = progDoc("main.dad");
+  const refs = await vscode._references.provideReferences(doc, new Position(3, 12)); // بالضريبة
+  assert.deepStrictEqual(refs.map((r) => path.basename(r.uri.fsPath) + ":" + r.range.start.line).sort(), ["main.dad:0", "main.dad:3", "نماذج.dad:2"]);
+  const edit = await vscode._rename.provideRenameEdits(doc, new Position(3, 12), "مع_الضريبة");
+  assert.deepStrictEqual([...new Set(edit.edits.map((e) => path.basename(e.uri.fsPath)))].sort(), ["main.dad", "نماذج.dad"]);
+  const syms = await vscode._workspaceSymbols.provideWorkspaceSymbols("منتج");
+  assert.ok(syms.some((s) => s.name === "منتج" && path.basename(s.location.uri.fsPath) === "نماذج.dad"), JSON.stringify(syms.map((s) => s.name)));
+});
+
+test("the right-to-left editor's right-click menu has navigation and formatting", () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"), "utf8"));
+  const menu = pkg.contributes.menus["webview/context"].map((m) => m.command);
+  for (const id of ["dad.rtl.definition", "dad.rtl.references", "dad.rtl.rename", "dad.rtl.symbol", "dad.rtl.workspaceSymbol", "dad.rtl.back", "dad.format", "dad.run"]) {
+    assert.ok(menu.includes(id), id);
+    assert.ok(id === "dad.format" || id === "dad.run" || commands[id], "no command " + id);
+  }
+  assert.ok(pkg.contributes.menus["webview/context"].every((m) => m.when.includes("webviewId == 'dad.rtlEditor'")));
+});
+
+test("in the right-to-left editor, go to definition moves the caret or opens the file", async () => {
+  const doc = progDoc("main.dad");
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(doc, panel);
+  await panel.send({ type: "ready" });
+  // the right-clicked place, then the menu's command
+  await panel.send({ type: "caret", line: 3, character: 5 }); // م in اطبع(م.اسم…)
+  await commands["dad.rtl.definition"]();
+  assert.deepStrictEqual(lastReveal(panel), { type: "reveal", line: 2, character: 5, endLine: 2, endCharacter: 6, focus: true });
+  // into the other file: it opens right to left, then its caret goes to the field
+  await panel.send({ type: "definition", line: 3, character: 8 }); // اسم
+  assert.deepStrictEqual([executed.at(-1)[0], executed.at(-1)[2]], ["vscode.openWith", "dad.rtlEditor"]);
+  assert.strictEqual(path.basename(executed.at(-1)[1].fsPath), "نماذج.dad");
+  const other = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(progDoc("نماذج.dad"), other);
+  await other.send({ type: "ready" });
+  assert.deepStrictEqual(lastReveal(other), { type: "reveal", line: 0, character: 9, endLine: 0, endCharacter: 12, focus: true });
+  // back to where the caret was
+  await commands["dad.rtl.back"]();
+  assert.deepStrictEqual(lastReveal(panel), { type: "reveal", line: 3, character: 8, endLine: 3, endCharacter: 8, focus: true });
+});
+
+test("in the right-to-left editor, references, symbols and rename use pickers", async () => {
+  const doc = progDoc("main.dad");
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(doc, panel);
+  await panel.send({ type: "ready" });
+  pickAnswers.push(1);
+  await panel.send({ type: "references", line: 3, character: 12 }); // بالضريبة
+  const refs = quickPicks.at(-1).items;
+  assert.strictEqual(refs.length, 3);
+  assert.ok(refs.some((r) => /^نماذج\.dad:3$/.test(r.description)), refs.map((r) => r.description).join());
+  assert.strictEqual(lastReveal(panel).type, "reveal");
+  pickAnswers.push(0);
+  await panel.send({ type: "caret", line: 0, character: 0 });
+  await commands["dad.rtl.symbol"]();
+  assert.deepStrictEqual(quickPicks.at(-1).items.map((i) => i.label), ["م"]);
+  assert.deepStrictEqual(lastReveal(panel), { type: "reveal", line: 2, character: 5, endLine: 2, endCharacter: 6, focus: true });
+  inputAnswers.push("الثمن");
+  const before = applied.length;
+  await panel.send({ type: "rename", line: 3, character: 12 });
+  assert.strictEqual(applied.length, before + 1);
+  assert.deepStrictEqual([...new Set(applied.at(-1).edits.map((e) => path.basename(e.uri.fsPath)))].sort(), ["main.dad", "نماذج.dad"]);
 });
 
 (async () => {

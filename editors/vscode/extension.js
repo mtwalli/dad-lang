@@ -354,7 +354,7 @@ function activate(context) {
     vscode.commands.registerCommand("dad.check", runCheckCommand),
     vscode.commands.registerCommand("dad.showVersion", showVersion),
     vscode.commands.registerCommand("dad.installFont", () => font.installCommand(context)),
-    RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc)),
+    RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc), lsp),
     vscode.commands.registerCommand("dad.openRightToLeft", (uri) => reopen(uri, VIEW_TYPE)),
     vscode.commands.registerCommand("dad.openAsText", (uri) => reopen(uri, "default")),
     vscode.languages.registerHoverProvider(selector, hoverProvider),

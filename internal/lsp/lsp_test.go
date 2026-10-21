@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -294,5 +295,104 @@ func TestPagesInTheOutline(t *testing.T) {
 		if l := it.(map[string]any)["label"].(string); strings.HasPrefix(l, "/") {
 			t.Errorf("completion offers the address %q", l)
 		}
+	}
+}
+
+// A program of three files: names, fields and files lead across them.
+func TestAcrossFiles(t *testing.T) {
+	dir := t.TempDir()
+	files := map[string]string{
+		"نماذج.dad": "نوع منتج(اسم: نص، سعر: عشري)\n\nدالة بالضريبة(سعر: عشري): عشري = سعر * 1.15\n",
+		"أسعار.dad": "استورد منتج، بالضريبة من \"./نماذج\"\n\nدالة السعر(م: منتج): عشري = بالضريبة(م.سعر)\n",
+		"main.dad":  "استورد منتج من \"./نماذج\"\nاستورد السعر من \"./أسعار\"\n\nثابت م = منتج(\"خبز\"، 2.5)\nاطبع(م.اسم، السعر(م))\n",
+	}
+	uris := map[string]string{}
+	for name, text := range files {
+		p := filepath.Join(dir, name)
+		os.WriteFile(p, []byte(text), 0o644)
+		u := filepath.ToSlash(p)
+		if !strings.HasPrefix(u, "/") {
+			u = "/" + u
+		}
+		uris[name] = (&url.URL{Scheme: "file", Path: u}).String()
+	}
+	base := func(u string) string {
+		parsed, _ := url.Parse(u)
+		return filepath.Base(filepath.FromSlash(parsed.Path))
+	}
+	c := start(t)
+	open := func(name string) {
+		c.notify("textDocument/didOpen", map[string]any{"textDocument": map[string]any{"uri": uris[name], "languageId": "dad", "version": 1, "text": files[name]}})
+	}
+	pos := func(name string, line, char int) map[string]any {
+		return map[string]any{"textDocument": map[string]any{"uri": uris[name]}, "position": map[string]any{"line": line, "character": char}}
+	}
+	start := func(loc map[string]any) string {
+		r := loc["range"].(map[string]any)["start"].(map[string]any)
+		return fmt.Sprintf("%s:%v:%v", base(loc["uri"].(string)), r["line"], r["character"])
+	}
+	open("main.dad")
+
+	// a field of an imported type
+	if def, ok := c.request("textDocument/definition", pos("main.dad", 4, 8)).(map[string]any); !ok || start(def) != "نماذج.dad:0:9" {
+		t.Errorf("definition of م.اسم: %v", def)
+	}
+	h := c.request("textDocument/hover", pos("main.dad", 4, 8)).(map[string]any)
+	if r := h["range"].(map[string]any)["start"].(map[string]any); r["line"] != 4.0 || r["character"] != 7.0 {
+		t.Errorf("hover range: %v", h["range"])
+	}
+	// the file an import names
+	if def, ok := c.request("textDocument/definition", pos("main.dad", 1, 20)).(map[string]any); !ok || start(def) != "أسعار.dad:0:0" {
+		t.Errorf("definition of an import's file: %v", def)
+	}
+	links := c.request("textDocument/documentLink", map[string]any{"textDocument": map[string]any{"uri": uris["main.dad"]}}).([]any)
+	var targets []string
+	for _, l := range links {
+		targets = append(targets, base(l.(map[string]any)["target"].(string)))
+	}
+	if strings.Join(targets, " ") != "نماذج.dad أسعار.dad" {
+		t.Errorf("links: %v", targets)
+	}
+
+	// every file that names منتج, from the file that declares it
+	open("نماذج.dad")
+	var found []string
+	for _, l := range c.request("textDocument/references", pos("نماذج.dad", 0, 5)).([]any) {
+		found = append(found, start(l.(map[string]any)))
+	}
+	want := "نماذج.dad:0:4 أسعار.dad:0:7 أسعار.dad:2:14 main.dad:0:7 main.dad:3:9"
+	if strings.Join(found, " ") != want {
+		t.Errorf("references:\n got %v\nwant %v", strings.Join(found, " "), want)
+	}
+
+	// renaming from a file that imports the name changes the file that declares it
+	open("أسعار.dad")
+	res := c.request("textDocument/rename", map[string]any{"textDocument": map[string]any{"uri": uris["أسعار.dad"]},
+		"position": map[string]any{"line": 2, "character": 30}, "newName": "مع_الضريبة"}).(map[string]any)
+	var edited []string
+	for u, edits := range res["changes"].(map[string]any) {
+		edited = append(edited, fmt.Sprintf("%s:%d", base(u), len(edits.([]any))))
+	}
+	sort.Strings(edited)
+	if strings.Join(edited, " ") != "أسعار.dad:2 نماذج.dad:1" {
+		t.Errorf("rename: %v", edited)
+	}
+
+	// Go to Symbol in Workspace
+	var syms []string
+	for _, s := range c.request("workspace/symbol", map[string]any{"query": "ضريبه"}).([]any) {
+		m := s.(map[string]any)
+		syms = append(syms, m["name"].(string)+" @"+m["containerName"].(string))
+	}
+	if strings.Join(syms, " ") != "بالضريبة @نماذج" {
+		t.Errorf("workspace symbols: %v", syms)
+	}
+	var fields []string
+	for _, s := range c.request("workspace/symbol", map[string]any{"query": "سعر"}).([]any) {
+		m := s.(map[string]any)
+		fields = append(fields, m["name"].(string)+" @"+m["containerName"].(string))
+	}
+	if strings.Join(fields, " ") != "السعر @أسعار سعر @منتج" {
+		t.Errorf("workspace symbols for سعر: %v", fields)
 	}
 }

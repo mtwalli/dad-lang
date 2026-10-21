@@ -137,6 +137,17 @@ body {
 }
 
 #src::selection { background: var(--sel); }
+#src.linking { cursor: pointer; }
+
+/* Under a name while Cmd/Ctrl is held: a click goes to its definition. */
+#link {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  height: 0;
+  border-bottom: 1px solid var(--vscode-editorLink-activeForeground, var(--t-kw));
+  pointer-events: none;
+}
 
 #current {
   position: absolute;

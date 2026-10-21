@@ -2,6 +2,16 @@
 
 ## Next release
 
+- Across files: go to definition opens the file that declares an imported name, and the
+  fields and methods of an imported type; the file in `استورد … من "./ملف"` is a link;
+  references and rename cover every file that imports the name; **Go to Symbol in Workspace**
+  (Cmd/Ctrl+T) lists the types, functions, components and fields of every `.dad` file.
+- The right-to-left editor moves around the code too: F12 or Cmd/Ctrl+click (the name is
+  underlined while Cmd/Ctrl is held) for the definition, Shift+F12 for references, F2 to
+  rename, Cmd/Ctrl+Shift+O and Cmd/Ctrl+T for symbols, and **Go Back**. Jumps into another
+  file open it right to left at the definition.
+- A right-click menu in the right-to-left editor: Go to Definition, Find All References, Go to
+  Symbol, Rename Symbol, **Format Document**, Run and Open as Text.
 - Pages: `صفحة` is highlighted before an address, `انتقل` like the other built-ins, and
   hovers explain both. A `صفحة` snippet, and pages appear in the outline by their address.
 - The new elements (`قائمة_منسدلة`، `اختيار`، `منطقة_نص`، `جدول_عرض`، `قائمة_عناصر`، `ألسنة`،

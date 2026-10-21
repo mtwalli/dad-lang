@@ -25,7 +25,7 @@ type Def struct {
 	Parent   *Def    // the type a field, method or case belongs to
 	Children []*Def  // fields, methods and cases of a type
 	Global   bool    // declared at the top of the file
-	Origin   *Origin // for an imported name: where the other file declares it
+	Origin   *Origin // for a name from another file: where that file declares it
 }
 
 // Origin is a declaration in another file.
@@ -72,19 +72,18 @@ func Analyze(src string) (*Info, []lexer.Diagnostic) {
 func AnalyzeProgram(p *module.Program) (*Info, []lexer.Diagnostic) {
 	main := p.Main
 	c := newChecker()
+	c.main = main
+	// The other files are recorded too, so that a field or method of a type
+	// they declare leads to its declaration there (see Def.Origin).
 	for _, m := range p.Modules {
 		if m != main {
-			c.module(m, nil)
+			c.module(m, newInfo(m.Src))
 		}
 	}
 	if main.File == nil {
 		return nil, main.Diags
 	}
-	toks, _ := lexer.Tokenize(main.Src)
-	info := &Info{Refs: map[token.Pos]*Def{}, Toks: toks, byPos: map[token.Pos]token.Token{}}
-	for _, t := range toks {
-		info.byPos[t.Pos] = t
-	}
+	info := newInfo(main.Src)
 	c.module(main, info)
 	for imp, dep := range main.Deps {
 		for _, d := range dep.Diags {
@@ -98,6 +97,15 @@ func AnalyzeProgram(p *module.Program) (*Info, []lexer.Diagnostic) {
 	all := append([]lexer.Diagnostic(nil), main.Diags...)
 	sort.SliceStable(all, func(i, j int) bool { return before(all[i].Pos, all[j].Pos) })
 	return info, all
+}
+
+func newInfo(src string) *Info {
+	toks, _ := lexer.Tokenize(src)
+	info := &Info{Refs: map[token.Pos]*Def{}, Toks: toks, byPos: map[token.Pos]token.Token{}}
+	for _, t := range toks {
+		info.byPos[t.Pos] = t
+	}
+	return info
 }
 
 func before(a, b token.Pos) bool { return a.Line < b.Line || a.Line == b.Line && a.Col < b.Col }
@@ -132,8 +140,14 @@ func (in *Info) DefAt(line, col int) (*Def, bool) {
 
 // Uses lists the positions where a definition's name appears: the declaration
 // first, then every use, in order.
+//
+// A definition from another file, such as a field of an imported type, has
+// no declaration here: only its uses are listed.
 func (in *Info) Uses(d *Def) []token.Pos {
-	out := []token.Pos{d.Pos}
+	var out []token.Pos
+	if in.Declares(d) {
+		out = append(out, d.Pos)
+	}
 	var refs []token.Pos
 	for p, x := range in.Refs {
 		if x == d && p != d.Pos {
@@ -142,6 +156,17 @@ func (in *Info) Uses(d *Def) []token.Pos {
 	}
 	sort.Slice(refs, func(i, j int) bool { return before(refs[i], refs[j]) })
 	return append(out, refs...)
+}
+
+// Declares reports whether a definition is written in this file. An imported
+// name is: its declaration here is the name in «استورد».
+func (in *Info) Declares(d *Def) bool {
+	for _, x := range in.Defs {
+		if x == d {
+			return true
+		}
+	}
+	return false
 }
 
 // NameLen is the length in runes of the name token at a position, as written.
@@ -356,6 +381,9 @@ func (c *checker) def(name string, pos token.Pos, kind, detail string, t *Type, 
 		return nil
 	}
 	d := &Def{Name: name, Pos: pos, Kind: kind, Detail: detail, Type: t, Parent: parent, Global: c.atTopLevel() && parent == nil}
+	if c.main != nil && c.mod != nil && c.mod != c.main {
+		d.Origin = &Origin{Path: c.mod.Path, Src: c.mod.Src, Pos: pos, Len: c.info.NameLen(pos)}
+	}
 	if parent != nil {
 		parent.Children = append(parent.Children, d)
 		d.Global = false

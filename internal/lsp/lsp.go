@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -128,7 +127,8 @@ type Server struct {
 	out      io.Writer
 	outMu    sync.Mutex
 	docs     map[string]*document
-	keywords bool // offer keywords and built-ins in completion (VS Code's extension does its own)
+	keywords bool     // offer keywords and built-ins in completion (VS Code's extension does its own)
+	roots    []string // the workspace folders
 	shutdown bool
 }
 
@@ -216,6 +216,7 @@ func (s *Server) handle(m *message) {
 			} `json:"initializationOptions"`
 		}
 		json.Unmarshal(m.Params, &p)
+		s.setRoots(m.Params)
 		if p.InitializationOptions.Keywords != nil {
 			s.keywords = *p.InitializationOptions.Keywords
 		}
@@ -230,6 +231,8 @@ func (s *Server) handle(m *message) {
 				"completionProvider":         map[string]any{"triggerCharacters": []string{".", "؟"}},
 				"documentSymbolProvider":     true,
 				"documentFormattingProvider": true,
+				"documentLinkProvider":       map[string]any{},
+				"workspaceSymbolProvider":    true,
 			},
 			"serverInfo": map[string]any{"name": "dad lsp"},
 		})
@@ -286,6 +289,10 @@ func (s *Server) handle(m *message) {
 		s.reply(m.ID, s.symbols(m.Params))
 	case "textDocument/formatting":
 		s.reply(m.ID, s.formatting(m.Params))
+	case "textDocument/documentLink":
+		s.reply(m.ID, s.links(m.Params))
+	case "workspace/symbol":
+		s.reply(m.ID, s.workspaceSymbols(m.Params))
 	default:
 		if m.ID != nil && !strings.HasPrefix(m.Method, "$/") {
 			s.send(message{ID: m.ID, Error: &rpcError{Code: -32601, Message: "method not found: " + m.Method}})
@@ -304,13 +311,7 @@ func (s *Server) analyze(uri, text string) (*check.Info, []lexer.Diagnostic) {
 		if filepath.Clean(p) == filepath.Clean(path) {
 			return text, nil
 		}
-		for u, d := range s.docs {
-			if up, ok := uriPath(u); ok && filepath.Clean(up) == filepath.Clean(p) {
-				return d.text, nil
-			}
-		}
-		b, err := os.ReadFile(p)
-		return string(b), err
+		return s.read(p)
 	}
 	return check.AnalyzeProgram(module.Load(path, read))
 }
@@ -397,9 +398,24 @@ var kindNames = map[string]string{
 }
 
 func (s *Server) hover(params json.RawMessage) any {
-	d, _, def, _, _ := s.at(params)
+	d, uri, def, line, col := s.at(params)
 	if def == nil {
-		return nil
+		if d == nil || d.info == nil {
+			return nil
+		}
+		// the file an «استورد» names
+		path, _ := uriPath(uri)
+		target, t, ok := importPath(d.info, path, line, col)
+		if !ok {
+			return nil
+		}
+		if _, err := s.read(target); err != nil {
+			return nil
+		}
+		return map[string]any{
+			"contents": map[string]any{"kind": "markdown", "value": "`" + filepath.Base(target) + "`"},
+			"range":    d.rangeOf(t.Pos, len([]rune(t.Lit))),
+		}
 	}
 	text := "```dad\n" + def.Detail + "\n```"
 	what := kindNames[def.Kind]
@@ -407,20 +423,34 @@ func (s *Server) hover(params json.RawMessage) any {
 		what += " في «" + def.Parent.Name + "»"
 	}
 	text += "\n\n" + what
+	t, ok := d.info.TokenAt(line, col)
+	if !ok {
+		t, _ = d.info.TokenAt(line, col-1)
+	}
 	return map[string]any{
 		"contents": map[string]any{"kind": "markdown", "value": text},
-		"range":    d.rangeOf(def.Pos, 0),
+		"range":    d.rangeOf(t.Pos, len([]rune(t.Lit))),
 	}
 }
 
 func (s *Server) definition(params json.RawMessage) any {
-	d, uri, def, _, _ := s.at(params)
+	d, uri, def, line, col := s.at(params)
 	if def == nil {
+		if d == nil || d.info == nil {
+			return nil
+		}
+		// «استورد … من "./ملف"»: the file itself
+		path, _ := uriPath(uri)
+		if target, _, ok := importPath(d.info, path, line, col); ok {
+			if _, err := s.read(target); err == nil {
+				return Location{URI: s.uriFor(target), Range: Range{}}
+			}
+		}
 		return nil
 	}
 	if o := def.Origin; o != nil {
-		// an imported name: go to the file that declares it
-		return Location{URI: pathURI(o.Path), Range: newDocument(strings.ReplaceAll(o.Src, "\r\n", "\n")).rangeOf(o.Pos, o.Len)}
+		// a name from another file: go to the file that declares it
+		return Location{URI: s.uriFor(o.Path), Range: newDocument(strings.ReplaceAll(o.Src, "\r\n", "\n")).rangeOf(o.Pos, o.Len)}
 	}
 	return Location{URI: uri, Range: d.rangeOf(def.Pos, d.info.NameLen(def.Pos))}
 }
@@ -431,8 +461,16 @@ func (s *Server) references(params json.RawMessage) any {
 		return []Location{}
 	}
 	out := []Location{}
-	for _, p := range d.info.Uses(def) {
-		out = append(out, Location{URI: uri, Range: d.rangeOf(p, d.info.NameLen(p))})
+	found := s.everywhere(d, uri, def)
+	uris := make([]string, 0, len(found))
+	for u := range found {
+		uris = append(uris, u)
+	}
+	sort.Slice(uris, func(i, j int) bool { return uris[i] == uri || uris[j] != uri && uris[i] < uris[j] })
+	for _, u := range uris {
+		for _, r := range found[u] {
+			out = append(out, Location{URI: u, Range: r})
+		}
 	}
 	return out
 }
@@ -484,11 +522,13 @@ func (s *Server) rename(params json.RawMessage) (any, string) {
 	if len(diags) > 0 || len(words) != 1 || words[0].Kind != token.IDENT {
 		return nil, "«" + p.NewName + "» ليس اسماً صالحاً في ضاد"
 	}
-	var edits []TextEdit
-	for _, pos := range d.info.Uses(def) {
-		edits = append(edits, TextEdit{Range: d.rangeOf(pos, d.info.NameLen(pos)), NewText: p.NewName})
+	changes := map[string][]TextEdit{}
+	for u, ranges := range s.everywhere(d, uri, def) {
+		for _, r := range ranges {
+			changes[u] = append(changes[u], TextEdit{Range: r, NewText: p.NewName})
+		}
 	}
-	return map[string]any{"changes": map[string][]TextEdit{uri: edits}}, ""
+	return map[string]any{"changes": changes}, ""
 }
 
 // ---------------------------------------------------------------- completion
@@ -581,7 +621,7 @@ func (s *Server) symbols(params json.RawMessage) any {
 	}
 	var defs []*check.Def
 	for _, def := range d.info.Defs {
-		if def.Global && def.Parent == nil && def.Kind != "parameter" {
+		if def.Global && def.Parent == nil && def.Kind != "parameter" && def.Origin == nil {
 			defs = append(defs, def)
 		}
 	}

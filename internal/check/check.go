@@ -128,6 +128,7 @@ type checker struct {
 
 	// programs of several files
 	mod      *module.Module             // the file being checked; nil for a lone source text
+	main     *module.Module             // for editors: the file being edited, when others are recorded too
 	scopes   map[*module.Module]*scope  // each checked file's top-level names
 	imported map[*scope]map[string]bool // names a file imported rather than declared
 	owners   map[string]*module.Module  // file that declares each type, table, enum, case and server function

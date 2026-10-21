@@ -111,6 +111,36 @@
         "command": "dad.format",
         "title": "Format Document",
         "category": "Ḍād"
+      },
+      {
+        "command": "dad.rtl.definition",
+        "title": "Go to Definition",
+        "category": "Ḍād"
+      },
+      {
+        "command": "dad.rtl.references",
+        "title": "Find All References",
+        "category": "Ḍād"
+      },
+      {
+        "command": "dad.rtl.symbol",
+        "title": "Go to Symbol in File…",
+        "category": "Ḍād"
+      },
+      {
+        "command": "dad.rtl.workspaceSymbol",
+        "title": "Go to Symbol in Workspace…",
+        "category": "Ḍād"
+      },
+      {
+        "command": "dad.rtl.rename",
+        "title": "Rename Symbol",
+        "category": "Ḍād"
+      },
+      {
+        "command": "dad.rtl.back",
+        "title": "Go Back",
+        "category": "Ḍād"
       }
     ],
     "menus": {
@@ -126,11 +156,6 @@
           "command": "dad.run",
           "when": "editorLangId == dad",
           "group": "navigation"
-        },
-        {
-          "command": "dad.format",
-          "when": "activeCustomEditorId == dad.rtlEditor",
-          "group": "1_modification"
         }
       ],
       "explorer/context": [
@@ -160,6 +185,30 @@
         {
           "command": "dad.format",
           "when": "editorLangId == dad || activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.rtl.definition",
+          "when": "activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.rtl.references",
+          "when": "activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.rtl.symbol",
+          "when": "activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.rtl.workspaceSymbol",
+          "when": "activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.rtl.rename",
+          "when": "activeCustomEditorId == dad.rtlEditor"
+        },
+        {
+          "command": "dad.rtl.back",
+          "when": "activeCustomEditorId == dad.rtlEditor && dad.rtlCanGoBack"
         }
       ],
       "editor/title": [
@@ -172,6 +221,53 @@
           "command": "dad.openAsText",
           "when": "activeCustomEditorId == dad.rtlEditor",
           "group": "navigation"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "dad.rtl.definition",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dad.rtl.references",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "navigation@2"
+        },
+        {
+          "command": "dad.rtl.symbol",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "navigation@3"
+        },
+        {
+          "command": "dad.rtl.workspaceSymbol",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "navigation@4"
+        },
+        {
+          "command": "dad.rtl.back",
+          "when": "webviewId == 'dad.rtlEditor' && dad.rtlCanGoBack",
+          "group": "navigation@5"
+        },
+        {
+          "command": "dad.rtl.rename",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "1_modification@1"
+        },
+        {
+          "command": "dad.format",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "1_modification@2"
+        },
+        {
+          "command": "dad.run",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "z_commands@1"
+        },
+        {
+          "command": "dad.openAsText",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "z_commands@2"
         }
       ]
     },
@@ -187,6 +283,25 @@
         "key": "shift+alt+f",
         "linux": "ctrl+shift+i",
         "when": "activeCustomEditorId == dad.rtlEditor && !editorTextFocus"
+      },
+      {
+        "command": "dad.rtl.symbol",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
+        "when": "activeCustomEditorId == dad.rtlEditor && !editorTextFocus && !inQuickOpen"
+      },
+      {
+        "command": "dad.rtl.workspaceSymbol",
+        "key": "ctrl+t",
+        "mac": "cmd+t",
+        "when": "activeCustomEditorId == dad.rtlEditor && !editorTextFocus && !inQuickOpen"
+      },
+      {
+        "command": "dad.rtl.back",
+        "key": "alt+left",
+        "mac": "ctrl+-",
+        "linux": "ctrl+alt+-",
+        "when": "activeCustomEditorId == dad.rtlEditor && !editorTextFocus && !inQuickOpen && dad.rtlCanGoBack"
       }
     ],
     "configuration": {

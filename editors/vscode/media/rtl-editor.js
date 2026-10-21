@@ -177,6 +177,152 @@
     vscode.setState({ caret: src.selectionStart, scroll: scroller.scrollTop });
   }
 
+  // ---------- positions ----------
+
+  /** The line and UTF-16 column of an offset, as VS Code counts them. */
+  function position(offset) {
+    const before = src.value.slice(0, offset);
+    const line = before.split("\n").length - 1;
+    return { line, character: offset - (before.lastIndexOf("\n") + 1) };
+  }
+
+  /** Tells the extension where the caret is, for the commands of the context menu. */
+  function postCaret() {
+    vscode.postMessage(Object.assign({ type: "caret" }, position(src.selectionStart)));
+  }
+
+  /** The offset in the text under a point of the window, or null. */
+  function offsetAt(x, y) {
+    // The coloured layer lies under the textarea: look through to it.
+    src.style.pointerEvents = "none";
+    hl.style.pointerEvents = "auto";
+    let node = null, off = 0;
+    try {
+      if (document.caretPositionFromPoint) {
+        const p = document.caretPositionFromPoint(x, y);
+        if (p) { node = p.offsetNode; off = p.offset; }
+      } else if (document.caretRangeFromPoint) {
+        const r = document.caretRangeFromPoint(x, y);
+        if (r) { node = r.startContainer; off = r.startOffset; }
+      }
+    } finally {
+      src.style.pointerEvents = "";
+      hl.style.pointerEvents = "";
+    }
+    if (!node || !hl.contains(node)) return null;
+    if (node.nodeType !== Node.TEXT_NODE) {
+      // between elements: the start of the child at off
+      const child = node.childNodes[off];
+      if (!child) return src.value.length;
+      node = child; off = 0;
+      while (node.firstChild) node = node.firstChild;
+    }
+    let total = 0;
+    const walker = document.createTreeWalker(hl, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      if (walker.currentNode === node) return Math.min(total + off, src.value.length);
+      total += walker.currentNode.length;
+    }
+    return null;
+  }
+
+  /** A DOM range over the coloured layer for [a, b) of the text. */
+  function domRange(a, b) {
+    const r = document.createRange();
+    let total = 0, started = false;
+    const walker = document.createTreeWalker(hl, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const n = walker.currentNode, len = n.length;
+      if (!started && a <= total + len) { r.setStart(n, a - total); started = true; }
+      if (started && b <= total + len) { r.setEnd(n, b - total); return r; }
+      total += len;
+    }
+    return null;
+  }
+
+  // ---------- going to definitions ----------
+
+  const NAME_CHAR = /[\p{L}\p{Mn}0-9_]/u;
+  const link = document.getElementById("link");
+
+  /** What a Cmd/Ctrl+click at an offset would follow: a name, or the file an «استورد» names. */
+  function linkAt(offset) {
+    const text = src.value;
+    const ls = text.lastIndexOf("\n", offset - 1) + 1;
+    const le = text.indexOf("\n", offset) < 0 ? text.length : text.indexOf("\n", offset);
+    const line = text.slice(ls, le);
+    const col = offset - ls;
+    if (/^\s*استورد\s/.test(line)) {
+      const m = /"[^"]*"|«[^»]*»/.exec(line.slice(line.indexOf(" من ") + 1));
+      if (m) {
+        const start = line.indexOf(m[0], line.indexOf(" من "));
+        if (col >= start && col <= start + m[0].length) return [ls + start, ls + start + m[0].length];
+      }
+    }
+    let a = offset, b = offset;
+    while (a > ls && NAME_CHAR.test(text[a - 1])) a--;
+    while (b < le && NAME_CHAR.test(text[b])) b++;
+    if (a === b || /^[0-9]/.test(text.slice(a, b))) return null;
+    const word = text.slice(a, b);
+    if (KW[word] || (word === "صفحة" && /^[ \t]*"/.test(text.slice(b, b + 8)))) return null;
+    return [a, b];
+  }
+
+  function showLink(x, y) {
+    const offset = offsetAt(x, y);
+    const span = offset === null ? null : linkAt(offset);
+    const r = span && domRange(span[0], span[1]);
+    const rect = r && r.getBoundingClientRect();
+    if (!rect || !rect.width) return hideLink();
+    const box = link.parentElement.getBoundingClientRect();
+    Object.assign(link.style, {
+      display: "block",
+      top: rect.bottom - box.top - 2 + "px",
+      left: rect.left - box.left + "px",
+      width: rect.width + "px",
+    });
+    src.classList.add("linking");
+  }
+
+  function hideLink() {
+    link.style.display = "none";
+    src.classList.remove("linking");
+  }
+
+  let mouse = null;
+  src.addEventListener("mousemove", (e) => {
+    mouse = { x: e.clientX, y: e.clientY };
+    if (e.metaKey || e.ctrlKey) showLink(e.clientX, e.clientY);
+    else hideLink();
+  });
+  src.addEventListener("mouseleave", () => { mouse = null; hideLink(); });
+  window.addEventListener("keydown", (e) => { if ((e.key === "Meta" || e.key === "Control") && mouse) showLink(mouse.x, mouse.y); });
+  window.addEventListener("keyup", (e) => { if (e.key === "Meta" || e.key === "Control") hideLink(); });
+  window.addEventListener("blur", hideLink);
+
+  src.addEventListener("click", (e) => {
+    if (!(e.metaKey || e.ctrlKey) || e.button !== 0) return;
+    const offset = offsetAt(e.clientX, e.clientY);
+    if (offset === null || !linkAt(offset)) return;
+    e.preventDefault();
+    hideLink();
+    src.setSelectionRange(offset, offset);
+    caretMoved();
+    flush();
+    vscode.postMessage(Object.assign({ type: "definition" }, position(offset)));
+  });
+
+  // A right click puts the caret where it points, so the menu's commands act there.
+  src.addEventListener("contextmenu", (e) => {
+    const offset = offsetAt(e.clientX, e.clientY);
+    if (offset !== null && (offset < src.selectionStart || offset > src.selectionEnd)) {
+      src.setSelectionRange(offset, offset);
+      caretMoved();
+    }
+    flush();
+    postCaret();
+  });
+
   // ---------- editing ----------
   function edited() {
     render();
@@ -307,11 +453,21 @@
       e.preventDefault(); flush(); vscode.postMessage({ type: "format" }); return;
     }
     if (mod && e.key === "Enter") { e.preventDefault(); vscode.postMessage({ type: "run" }); return; }
+    if (e.key === "F12" && !mod && !e.altKey) {
+      e.preventDefault(); flush();
+      vscode.postMessage(Object.assign({ type: e.shiftKey ? "references" : "definition" }, position(src.selectionStart)));
+      return;
+    }
+    if (e.key === "F2" && !mod && !e.shiftKey && !e.altKey) {
+      e.preventDefault(); flush();
+      vscode.postMessage(Object.assign({ type: "rename" }, position(src.selectionStart)));
+      return;
+    }
     if (mod && !e.shiftKey && e.key.toLowerCase() === "z") { e.preventDefault(); flush(); vscode.postMessage({ type: "undo" }); return; }
     if (mod && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) { e.preventDefault(); flush(); vscode.postMessage({ type: "redo" }); return; }
     if (mod && e.key.toLowerCase() === "s") { flush(); }
   });
-  ["keyup", "click", "select", "focus"].forEach((ev) => src.addEventListener(ev, caretMoved));
+  ["keyup", "click", "select", "focus"].forEach((ev) => src.addEventListener(ev, () => { caretMoved(); postCaret(); }));
   window.addEventListener("resize", size);
 
   function flush() {
@@ -333,11 +489,18 @@
       diagnostics = msg.diagnostics;
       render();
     } else if (msg.type === "reveal") {
+      // Go to a place (a definition, a reference, a symbol), selecting it and
+      // showing its line a third of the way down.
       const starts = lineStarts(src.value);
-      const pos = (starts[msg.line] ?? 0) + msg.character;
-      src.focus();
-      src.setSelectionRange(pos, pos);
+      const at = (line, ch) => Math.min((starts[line] ?? src.value.length) + ch, src.value.length);
+      const a = at(msg.line, msg.character);
+      const b = msg.endLine === undefined ? a : at(msg.endLine, msg.endCharacter);
+      if (msg.focus !== false) src.focus();
+      src.setSelectionRange(a, b);
+      const top = parseFloat(getComputedStyle(src).paddingTop) + msg.line * LINE();
+      scroller.scrollTop = Math.max(0, top - scroller.clientHeight / 3);
       caretMoved();
+      postCaret();
     }
   });
 
