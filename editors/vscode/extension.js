@@ -158,16 +158,21 @@ function check(doc, withPath) {
       warnMissing();
     }
   });
-  child.on("close", () => {
+  child.on("close", (code, signal) => {
     clearTimeout(timer);
     if (pending.get(key) !== child) return; // a newer check replaced this one
     pending.delete(key);
     if (doc.isClosed || doc.version !== version) return;
+    // Stopped before it answered (too slow, say, the first time macOS scans a
+    // new dad): keep the problems already shown; the next edit checks again.
+    if (signal || code === null) return;
     try {
       diagnostics.set(doc.uri, parseCheckOutput(doc, out));
     } catch {
-      if (withPath) {
-        pathFlag = false; // an older dad: check the text alone
+      // Only a dad that exited without any output, as one older than «--path»
+      // does, is checked again with the text alone.
+      if (withPath && out.trim() === "" && code !== 0) {
+        pathFlag = false;
         check(doc, false);
         return;
       }

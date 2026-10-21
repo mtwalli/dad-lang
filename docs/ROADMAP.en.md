@@ -37,7 +37,7 @@ This page shows how it is built, what is done, and what comes next.
 |---|---|---|
 | **0. Specification** | [The specification](SPEC.md), [the grammar](grammar.md), sample programs, the lexer | ✅ Done |
 | **1. Core language** | Parser, checker, interpreter, programs in several files, JavaScript compiler, Arabic errors | ✅ Done. Next: smart casts for optional values, generic types, unused-variable warnings |
-| **2. Interface** | `مكون`, `حالة`, `صفحة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`, with several pages. Next (0.3): more elements, forms, styling |
+| **2. Interface** | `مكون`, `حالة`, `صفحة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`, with several pages, 21 elements and themes. Next (0.3): forms that check their fields |
 | **3. Server and data** | `خادم` functions, `جدول` in SQLite, `مسار`, `dad dev`, `dad serve` | ✅ Done. Next: users and sign-in, permissions, requests in parallel |
 | **4. Tooling** | VS Code extension, `dad fmt`, the playground, the `dad lsp` language server | ✅ Done |
 | **5. Distribution** | Homebrew, winget, `.deb` and `.rpm`, install scripts, the tutorial in English and Arabic | ✅ Done in 0.2 |
@@ -46,9 +46,10 @@ This page shows how it is built, what is done, and what comes next.
 
 These are the next steps, roughly in order:
 
-1. **The interface, for 0.3:** ✅ several pages, each with its own address; then more
-   elements (selects, text areas, number and date fields, tables of records, tabs, dialogs,
-   icons), forms that check their fields, and styling without CSS.
+1. **The interface, for 0.3:** ✅ several pages, each with its own address; ✅ more elements
+   (drop-down lists, radio buttons, text areas, dates and times, tables of records, lists,
+   tabs, dialogs, alerts, icons); ✅ customizing the look without CSS, and with it; then forms
+   that check their fields.
 2. **Users and sign-in, for 0.4,** and permissions on server functions and routes, so that
    programs with private data can go online. Their sign-in pages are made of ordinary pages
    and forms.
@@ -84,6 +85,10 @@ These are the next steps, roughly in order:
    storage
 5. ✅ [Several pages](ui.md#pages) (`صفحة`): each at its own address, with links that open in
    place, `انتقل`, the back button and a page for addresses with none
+6. ✅ Ten more elements: `قائمة_منسدلة`، `اختيار`، `منطقة_نص`، `جدول_عرض`، `قائمة_عناصر`،
+   `ألسنة`، `نافذة`، `تنبيه`، `أيقونة`، and dates and times in `حقل`
+7. ✅ [Customizing the look](styling.md): options on elements, a theme with `سمة`, and the
+   program's own stylesheet with `صنف`
 
 ### Phase 3: server and data
 

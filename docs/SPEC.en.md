@@ -347,8 +347,13 @@ component named `الرئيسية` or `التطبيق`, otherwise the last one t
 *Implemented:* in `dad dev` and `dad serve`, components run in the interpreter on the server;
 the page sends events and updates in place, LiveView style. After `dad build`, the same
 components are compiled to JavaScript and run in the browser. Elements: `عمود`، `صف`، `بطاقة`،
-`عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل` (see the
-[interface guide](ui.md)). *Planned:* a reactive runtime that updates only what changed.
+`عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`، `قائمة_منسدلة`، `اختيار`،
+`منطقة_نص`، `جدول_عرض`، `قائمة_عناصر`، `ألسنة`، `لسان`، `نافذة`، `تنبيه`، `أيقونة` (see the
+[interface guide](ui.md)). Every element takes `صنف`; options such as `نمط`، `حجم`، `لون` and
+`خلفية` change its look, and the built-in `سمة(…)`, called at the top level, sets a theme for
+the whole app (see [Customizing the look](styling.md)). The checker knows each element's
+options, the words some of them take, the colour names and the icon names. *Planned:* a
+reactive runtime that updates only what changed.
 
 ### 5.5 Pages — `صفحة`
 ```dad

@@ -5,16 +5,24 @@ import (
 	"strings"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
+	"github.com/mtwalli/dad-lang/internal/interp"
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
-var builtins = map[string]bool{"اطبع": true, "مشكلة": true, "جذر": true, "مطلق": true, "أدنى": true, "أقصى": true, "انتقل": true}
+var builtins = map[string]bool{"اطبع": true, "مشكلة": true, "جذر": true, "مطلق": true, "أدنى": true, "أقصى": true,
+	"انتقل": true, "سمة": true}
 
-var elements = map[string]bool{"عمود": true, "صف": true, "بطاقة": true, "عنوان": true, "فقرة": true, "زر": true,
-	"حقل": true, "مربع_اختيار": true, "صورة": true, "رابط": true, "فاصل": true}
+var elements = map[string]bool{}
+
+func init() {
+	for _, e := range interp.Elements {
+		elements[e] = true
+	}
+}
 
 // bindFirst elements get a state variable itself, so they can change it.
-var bindFirst = map[string]bool{"حقل": true, "مربع_اختيار": true}
+var bindFirst = map[string]bool{"حقل": true, "مربع_اختيار": true, "قائمة_منسدلة": true, "اختيار": true,
+	"منطقة_نص": true, "ألسنة": true, "نافذة": true}
 
 var binOps = map[token.Kind]string{
 	token.PLUS: "+", token.MINUS: "-", token.STAR: "*", token.SLASH: "/", token.PERCENT: "%",

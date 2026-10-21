@@ -14,9 +14,27 @@ Each release on GitHub uses its section from this file as its notes.
   It works the same in `dad dev`, `dad serve`, the playground and `dad build`, where pages
   have addresses such as `index.html#/عن`. `صفحة` is a keyword only before an address, so
   existing programs keep working. See `examples/08-pages.dad`.
+- **Ten more elements:** `قائمة_منسدلة` (drop-down list) and `اختيار` (radio buttons), which
+  choose a state's value from any list of values; `منطقة_نص` (text area); `جدول_عرض` (records
+  as a table, with a block for each row); `قائمة_عناصر` (bulleted or numbered list);
+  `ألسنة` and `لسان` (tabs); `نافذة` (a dialog, closed with ×, Esc or a click outside);
+  `تنبيه` (info, success, warning or error); and `أيقونة`, 50 icons with Arabic names from
+  Lucide, which buttons, links and tabs take too. `حقل` gains dates and times, and `أدنى` and
+  `أقصى`.
+- **Customizing the look,** in three layers: options on elements (`نمط`، `حجم`، `ملء`، `لون`،
+  `خلفية`، `حشو`، `عرض`، `محاذاة`), a theme for the whole app with `سمة(اللون: …، الخط: …،
+  الزوايا: …، الوضع: "داكن")`, and the program's own stylesheet, `app.css` next to `app.dad`,
+  whose classes elements take with `صنف`. See `examples/09-library.dad`.
 - The checker finds two pages, or a page and a `مسار جلب` route, at the same address, and
-  mistakes in an address's `{names}`.
+  mistakes in an address's `{names}`. It also knows the words options take, the colour names
+  and the icon names, and suggests the closest one.
 - `dad dev`'s developer page lists the pages; editors show them in the outline.
+
+### Fixed
+
+- VS Code: a slow check no longer turns off checking imports for the rest of the session,
+  which showed an import error on every `استورد` in saved files. The message for code that
+  is not in a saved file now says to save it.
 
 ## 0.2.0
 

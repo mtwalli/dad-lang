@@ -65,3 +65,20 @@ func TestBuild(t *testing.T) {
 		t.Errorf("a program with errors: exit code %d", code)
 	}
 }
+
+// A program's own stylesheet (09-library.css next to 09-library.dad) goes with the site.
+func TestBuildKeepsTheProgramsStylesheet(t *testing.T) {
+	site := filepath.Join(t.TempDir(), "site")
+	if code := cmdBuild([]string{"../../examples/09-library.dad", "--out", site}); code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	css, err := os.ReadFile(filepath.Join(site, "style.css"))
+	want, _ := os.ReadFile("../../examples/09-library.css")
+	if err != nil || string(css) != string(want) {
+		t.Errorf("style.css: %v", err)
+	}
+	page, _ := os.ReadFile(filepath.Join(site, "index.html"))
+	if !strings.Contains(string(page), "<link rel=\"stylesheet\" href=\"assets/ui.css\">\n<link rel=\"stylesheet\" href=\"style.css\">") {
+		t.Errorf("index.html:\n%s", page)
+	}
+}

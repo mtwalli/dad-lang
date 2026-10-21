@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -72,6 +73,12 @@ func storeNotes(store interp.Store) {
 	st.FinishImport()
 }
 
+// stylePath is a program's own stylesheet: app.css next to app.dad. Its classes
+// are given to elements with «صنف».
+func stylePath(path string) string {
+	return strings.TrimSuffix(path, filepath.Ext(path)) + ".css"
+}
+
 // devServer runs one Ḍād program as a web server. For «dad dev» it reloads the
 // program when a file changes and serves the developer tools; for «dad serve»
 // (production) it runs the program it started with and serves only the program.
@@ -99,7 +106,7 @@ func (s *devServer) load() {
 	s.version++
 	prog, diags := check.Load(s.path, readFile)
 	s.mtimes = map[string]time.Time{}
-	for _, p := range prog.Paths() {
+	for _, p := range append(prog.Paths(), stylePath(s.path)) {
 		if fi, err := os.Stat(p); err == nil {
 			s.mtimes[p] = fi.ModTime()
 		}
@@ -198,6 +205,10 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer s.mu.Unlock()
 	path := r.URL.Path
 
+	if path == "/_dad/style.css" {
+		s.style(w)
+		return
+	}
 	if s.production {
 		switch {
 		case path == "/_dad/health":
@@ -297,9 +308,25 @@ func (s *devServer) appPage(w http.ResponseWriter, path string) {
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
 	}
+	var styles []string
+	if fi, err := os.Stat(stylePath(s.path)); err == nil {
+		styles = []string{"/_dad/style.css?v=" + strconv.FormatInt(fi.ModTime().UnixNano(), 36)}
+	}
 	io.WriteString(w, web.Page(web.PageOptions{
-		Title: s.title(sess), Body: body, Session: id, Version: sess.Version, Error: msg, Live: live,
+		Title: s.title(sess), Body: body, Session: id, Version: sess.Version, Error: msg, Live: live, Styles: styles,
 	}))
+}
+
+// style serves the program's own stylesheet.
+func (s *devServer) style(w http.ResponseWriter) {
+	css, err := os.ReadFile(stylePath(s.path))
+	if err != nil {
+		writeError(w, 404, "لا يوجد ملف تنسيق للبرنامج")
+		return
+	}
+	w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Write(css)
 }
 
 // title is what the browser tab shows: the page's first heading, or the program's name.

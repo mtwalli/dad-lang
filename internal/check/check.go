@@ -948,7 +948,7 @@ func (c *checker) importDecl(d *ast.Import) {
 	if c.mod != nil {
 		dep = c.mod.Deps[d]
 	} else {
-		c.errorf(d.Pos, "الاستيراد يحتاج ملفاً محفوظاً؛ هنا ضع الكود في ملف واحد")
+		c.errorf(d.Pos, "الاستيراد يقرأ ملفاً آخر بجانب هذا الملف، وهذا الكود ليس في ملف محفوظ: احفظه أولاً، أو ضع الكود كله في ملف واحد")
 	}
 	from := c.scopes[dep]
 	for i, n := range d.Names {

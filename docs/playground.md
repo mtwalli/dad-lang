@@ -22,6 +22,7 @@ hide:
       <option value="safety">القيم الاختيارية والأخطاء</option>
       <option value="counter">واجهة: عدّادات</option>
       <option value="pages">واجهة: عدة صفحات</option>
+      <option value="library">واجهة: العناصر والسمة</option>
       <option value="todo">تطبيق مهام بجدول</option>
       <option value="mistakes">ملف فيه أخطاء</option>
     </select>

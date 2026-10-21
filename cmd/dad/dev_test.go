@@ -352,3 +352,30 @@ func TestServeServesPages(t *testing.T) {
 		t.Errorf("not found: %d\n%s", code, html)
 	}
 }
+
+// A program's own stylesheet is served after the built-in one, and changing it
+// reloads the page in «dad dev».
+func TestDevServesTheProgramsStylesheet(t *testing.T) {
+	s, ts, path := startDev(t, "مكون الرئيسية() {\n    فقرة(\"أ\"، صنف: \"مميز\")\n}\n")
+	if _, html := getPage(t, ts.URL+"/", true); strings.Contains(html, "/_dad/style.css") {
+		t.Errorf("a stylesheet without a file:\n%s", html)
+	}
+	css := filepath.Join(filepath.Dir(path), "app.css")
+	os.WriteFile(css, []byte(".مميز { color: teal; }\n"), 0o644)
+	s.load()
+	_, html := getPage(t, ts.URL+"/", true)
+	if !strings.Contains(html, `<link rel="stylesheet" href="/_dad/style.css?v=`) || !strings.Contains(html, `<p class="مميز">أ</p>`) {
+		t.Fatalf("page:\n%s", html)
+	}
+	res, err := http.Get(ts.URL + "/_dad/style.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(res.Body)
+	if res.Header.Get("Content-Type") != "text/css; charset=utf-8" || string(body) != ".مميز { color: teal; }\n" {
+		t.Errorf("style.css: %s %q", res.Header.Get("Content-Type"), body)
+	}
+	if _, ok := s.mtimes[css]; !ok {
+		t.Error("the stylesheet is not watched")
+	}
+}

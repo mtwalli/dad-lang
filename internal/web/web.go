@@ -41,6 +41,7 @@ type PageOptions struct {
 	Assets  string   // where ui.js and ui.css are; AssetsPath when empty
 	Scripts []string // scripts loaded before ui.js, such as a compiled program
 	Routing string   // how pages keep their address: "history" (default), "hash" or "none"; see ui.js
+	Styles  []string // the program's own stylesheets, after ui.css
 }
 
 // Assets lists every asset by name: ui.js, ui.css and fonts/….
@@ -71,7 +72,12 @@ func Page(o PageOptions) string {
 	b.WriteString(html.EscapeString(o.Title))
 	b.WriteString(`</title>
 <link rel="stylesheet" href="` + html.EscapeString(base) + `ui.css">
-</head>
+`)
+	for _, href := range o.Styles {
+		b.WriteString(`<link rel="stylesheet" href="` + html.EscapeString(href) + `">
+`)
+	}
+	b.WriteString(`</head>
 <body>
 <main id="dad-root" data-session="`)
 	b.WriteString(html.EscapeString(o.Session))

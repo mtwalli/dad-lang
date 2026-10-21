@@ -150,17 +150,39 @@ Here is a whole program with pages, `examples/08-pages.dad`:
 | `صورة` | An image | `صورة("شعار.png"، وصف: "الشعار")` |
 | `رابط` | A link; to one of the [pages](#pages), it opens in place | `رابط("الموقع"، "https://…")` |
 | `فاصل` | A line between sections | `فاصل()` |
+| `قائمة_منسدلة` | A drop-down list that chooses a state's value | `قائمة_منسدلة(اللون، ["أحمر"، "أخضر"])` |
+| `اختيار` | The same, as radio buttons | `اختيار(اللون، ["أحمر"، "أخضر"])` |
+| `منطقة_نص` | A field for longer text | `منطقة_نص(الملاحظات)` |
+| `جدول_عرض` | Records as a table | `جدول_عرض(مهمة.الكل())` |
+| `قائمة_عناصر` | A bulleted or numbered list | `قائمة_عناصر(["أ"، "ب"])` |
+| `ألسنة`, `لسان` | Tabs | `ألسنة { لسان("الأول") { … } }` |
+| `نافذة` | A dialog over the page | `نافذة(مفتوحة) { … }` |
+| `تنبيه` | A message that stands out | `تنبيه("تم الحفظ"، نمط: "نجاح")` |
+| `أيقونة` | An icon | `أيقونة("بحث")` |
 
 Options are named arguments:
 
 | Element | Options |
 |---|---|
-| `عمود`, `صف` | `محاذاة: "وسط"` (or `"بداية"`, `"نهاية"`), `مسافة: 24` (pixels) |
+| `عمود`, `صف`, `بطاقة` | `محاذاة: "وسط"` (or `"بداية"`, `"نهاية"`), `مسافة: 24` (pixels) |
 | `عنوان` | `مستوى: 1` to `6` |
-| `زر` | `معطل: صح` |
-| `حقل` | `تلميح: "…"`, `صيغة: "رقم"` (or `"نص"`, `"كلمة_سر"`, `"بريد"`), `معطل: صح` |
+| `زر` | `معطل: صح`, `أيقونة: "حفظ"` |
+| `حقل` | `تلميح: "…"`, `صيغة: "رقم"` (or `"نص"`, `"كلمة_سر"`, `"بريد"`, `"تاريخ"`, `"وقت"`), `أدنى` and `أقصى` (for numbers and dates), `معطل: صح` |
 | `مربع_اختيار` | `نص: "…"` (a label next to it), `معطل: صح` |
+| `قائمة_منسدلة` | `تلميح: "…"` (shown before a choice is made), `معطل: صح` |
+| `اختيار` | `معطل: صح` |
+| `منطقة_نص` | `تلميح: "…"`, `أسطر: 6`, `معطل: صح` |
+| `جدول_عرض` | `أعمدة: ["…"]`, `فارغ: "…"` (shown when there are no rows) |
+| `قائمة_عناصر` | `مرقمة: صح`, `فارغ: "…"` |
+| `لسان` | `أيقونة: "…"` |
+| `نافذة` | `عنوان: "…"` |
+| `تنبيه` | `نمط: "نجاح"` (or `"معلومة"`, `"تحذير"`, `"خطأ"`) |
+| `أيقونة` | `وصف: "…"` (for screen readers) |
 | `صورة` | `وصف: "…"` (for screen readers), `عرض: 120` |
+| `رابط` | `أيقونة: "…"` |
+
+Other options change how an element looks: `نمط`, `حجم`, `لون`, `خلفية` and more, and `صنف`
+for your own stylesheet. They are explained in [Customizing the look](styling.md).
 
 ### Fields
 
@@ -189,6 +211,139 @@ record's field, its block runs with the new value as `هو`:
 مربع_اختيار(م.منجزة) { بدل(م) }
 ```
 
+### Choices — `قائمة_منسدلة` and `اختيار`
+
+Both choose a state's value from a list. `قائمة_منسدلة` is a drop-down list, and `اختيار`
+shows the choices as radio buttons, which suits two to five of them:
+
+```dad
+حالة اللون = "أخضر"
+قائمة_منسدلة(اللون، ["أحمر"، "أخضر"، "أزرق"])
+اختيار(اللون، ["أحمر"، "أخضر"، "أزرق"])
+فقرة("اخترت {اللون}")
+```
+
+The choices can be any values, not only text: numbers, the cases of a `تعداد`, or records.
+A case shows its name and a record its first text field, and the state gets the value
+itself:
+
+```dad
+تعداد أولوية {
+    منخفضة
+    عادية
+    عاجلة
+}
+
+حالة الأولوية = عادية
+اختيار(الأولوية، [منخفضة، عادية، عاجلة])
+```
+
+As with `مربع_اختيار`, a block after the list runs with the new choice as `هو`.
+
+### Longer text, dates and times
+
+`منطقة_نص` is a field for text over several lines, such as notes. `حقل` with
+`صيغة: "تاريخ"` or `"وقت"` shows the browser's date or time picker; the state holds the
+value as text, such as `"2026-10-21"` or `"09:30"`.
+
+```dad
+حالة الملاحظات = ""
+حالة الموعد = ""
+منطقة_نص(الملاحظات، أسطر: 5، تلميح: "ملاحظات…")
+حقل(الموعد، صيغة: "تاريخ"، أدنى: "2026-01-01")
+```
+
+## Tables and lists
+
+`جدول_عرض` shows a list of records as a table, with a column for each field. `أعمدة` chooses
+the fields and their order; an underscore in a name shows as a space. A block after it adds
+a last column with elements for each row, such as buttons:
+
+```dad
+جدول_عرض(مهمة.الكل()، أعمدة: ["العنوان"، "منجزة"]، فارغ: "لا مهام بعد") { م =>
+    زر("احذف"، نمط: "خفيف"، أيقونة: "حذف") { احذف(م) }
+}
+```
+
+صح shows as ✓, and خطأ and عدم as nothing. A wide table scrolls sideways on a phone.
+
+`قائمة_عناصر` shows a bulleted list, or a numbered one with `مرقمة: صح`. Without a block, each
+item shows as text; with one, the block lays out each item:
+
+```dad
+قائمة_عناصر(["الحليب"، "الخبز"، "التمر"])
+
+قائمة_عناصر(مهمة.الكل()، مرقمة: صح) { م =>
+    رابط(م.العنوان، "/مهمة/{م.رقم}")
+}
+```
+
+Both show `فارغ` (or «لا شيء لعرضه بعد.») when the list is empty.
+
+## Tabs — `ألسنة`
+
+Inside `ألسنة`, each `لسان` has a title and the elements it shows. Only the open tab is laid
+out. The open tab is kept like a `حالة`; give a state as the first argument to choose it from
+code, either by number (from 0) or by title:
+
+```dad
+حالة اللسان = "الإعدادات"
+ألسنة(اللسان) {
+    لسان("الحساب"، أيقونة: "مستخدم") {
+        فقرة("بياناتك")
+    }
+    لسان("الإعدادات"، أيقونة: "إعدادات") {
+        فقرة("الإعدادات")
+    }
+}
+```
+
+The arrow keys move between tabs.
+
+## Dialogs — `نافذة`
+
+`نافذة` shows its elements over the page while its state is صح. The × button, <kbd>Esc</kbd>
+and a click outside it set the state back to خطأ:
+
+```dad
+حالة مفتوحة = خطأ
+زر("احذف الكل"، نمط: "خطر") { مفتوحة = صح }
+نافذة(مفتوحة، عنوان: "هل أنت متأكد؟") {
+    فقرة("ستُحذف كل المهام.")
+    صف {
+        زر("احذف"، نمط: "خطر") {
+            امسح_الكل()
+            مفتوحة = خطأ
+        }
+        زر("إلغاء"، نمط: "ثانوي") { مفتوحة = خطأ }
+    }
+}
+```
+
+## Alerts and icons
+
+`تنبيه` is a message that stands out, with an icon for its kind: `"معلومة"` (the default),
+`"نجاح"`, `"تحذير"` or `"خطأ"`. Screen readers announce warnings and errors at once.
+
+```dad
+تنبيه("حُفظت التغييرات."، نمط: "نجاح")
+تنبيه("ستنتهي الجلسة بعد دقيقة."، نمط: "تحذير")
+```
+
+`أيقونة` shows an icon by its Arabic name. Buttons, links and tabs take one too, before
+their text, with the option `أيقونة`. An icon on its own is decoration; give it `وصف` when it
+carries meaning, so screen readers can say it.
+
+```dad
+أيقونة("بحث"، وصف: "بحث")
+زر("احفظ"، أيقونة: "حفظ") { احفظ() }
+رابط("الإعدادات"، "/الإعدادات"، أيقونة: "إعدادات")
+```
+
+These are the icons, from [Lucide](https://lucide.dev):
+
+--8<-- "tools/icons/gallery.html"
+
 ## With a server and data
 
 Components can call [server functions and tables](server.md) directly. This is the whole
@@ -210,7 +365,8 @@ components are compiled to JavaScript and run in the browser, with no server, an
 addresses such as `index.html#/عن`. The program stays the same either way.
 
 The look comes from a built-in stylesheet: right to left, Noto Kufi Arabic, light and dark
-themes that follow the system setting.
+themes that follow the system setting. You can change it, for one element or for the whole
+app: see [Customizing the look](styling.md).
 
 When you save the file, `dad dev` reloads the program and the page reloads with it. Data in
 tables is kept; state starts again. Errors in a block appear at the bottom of the page.

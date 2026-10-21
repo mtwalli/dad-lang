@@ -38,6 +38,7 @@ type Node struct {
 	Tag   string
 	Attrs [][2]string
 	Text  string
+	Raw   string // markup written as it is, after Text: the drawing inside an icon's <svg>
 	Kids  []*Node
 }
 
@@ -64,9 +65,11 @@ func NewUISession() *UISession {
 }
 
 type uiHandler struct {
-	kind string // "click", "input" or "toggle"
-	fn   Value  // the lambda to run, if any
-	cell *binding
+	kind    string // "click", "input", "toggle", "choose" (one of options) or "set" (cell = value)
+	fn      Value  // the lambda to run, if any
+	cell    *binding
+	options []Value // choose: what each choice stands for
+	value   Value   // set: the value to put in cell
 }
 
 // renderCtx is the work in progress of one render.
@@ -78,6 +81,7 @@ type renderCtx struct {
 	handlers map[string]uiHandler
 	nextID   int
 	seen     map[string]bool // component instances in this render
+	tabs     *[]tabSpec      // inside «ألسنة»: the tabs found so far
 }
 
 // frame is one component instance being rendered.
@@ -135,6 +139,7 @@ func (in *Interp) render(sess *UISession, draw func()) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	in.themed(root)
 	sess.Title = firstHeading(root)
 	for k := range sess.states {
 		if !ctx.seen[k] {
@@ -185,6 +190,20 @@ func (in *Interp) Event(sess *UISession, version int, id string, value any) erro
 			if h.fn != nil {
 				in.callValue(h.fn, &callInfo{name: "مربع_اختيار", args: []Value{checked}})
 			}
+		case "choose":
+			i, ok := choiceIndex(value)
+			if !ok || i < 0 || i >= len(h.options) {
+				return
+			}
+			v := h.options[i]
+			if h.cell != nil {
+				h.cell.val = v
+			}
+			if h.fn != nil {
+				in.callValue(h.fn, &callInfo{name: "اختيار", args: []Value{v}})
+			}
+		case "set":
+			h.cell.val = h.value
 		}
 	})
 }
@@ -254,13 +273,52 @@ func (in *Interp) declareState(s *ast.StateDecl, env *Env) {
 // ---------------------------------------------------------------- elements
 
 // Elements are the names of the interface elements, for editors and docs.
-var Elements = []string{"عمود", "صف", "بطاقة", "عنوان", "فقرة", "زر", "حقل", "مربع_اختيار", "صورة", "رابط", "فاصل"}
+var Elements = []string{"عمود", "صف", "بطاقة", "عنوان", "فقرة", "زر", "حقل", "مربع_اختيار", "صورة", "رابط", "فاصل",
+	"قائمة_منسدلة", "اختيار", "منطقة_نص", "جدول_عرض", "قائمة_عناصر", "ألسنة", "لسان", "نافذة", "تنبيه", "أيقونة"}
 
-// ElementOptions are the named arguments each element takes.
+// ElementOptions are the named arguments each element takes. Every element also
+// takes «صنف», a class for a program's own stylesheet.
 var ElementOptions = map[string][]string{
-	"عمود": {"محاذاة", "مسافة"}, "صف": {"محاذاة", "مسافة"}, "بطاقة": {"محاذاة", "مسافة"},
-	"عنوان": {"مستوى"}, "فقرة": nil, "زر": {"معطل"}, "حقل": {"تلميح", "صيغة", "معطل"},
-	"مربع_اختيار": {"نص", "معطل"}, "صورة": {"وصف", "عرض"}, "رابط": nil, "فاصل": nil,
+	"عمود": boxOptions, "صف": boxOptions, "بطاقة": boxOptions,
+	"عنوان":        {"مستوى", "لون", "محاذاة", "صنف"},
+	"فقرة":         {"لون", "محاذاة", "حجم", "صنف"},
+	"زر":           {"معطل", "نمط", "حجم", "ملء", "أيقونة", "صنف"},
+	"حقل":          {"تلميح", "صيغة", "معطل", "أدنى", "أقصى", "صنف"},
+	"مربع_اختيار":  {"نص", "معطل", "صنف"},
+	"صورة":         {"وصف", "عرض", "صنف"},
+	"رابط":         {"نمط", "حجم", "أيقونة", "صنف"},
+	"فاصل":         {"صنف"},
+	"قائمة_منسدلة": {"تلميح", "معطل", "صنف"},
+	"اختيار":       {"معطل", "صنف"},
+	"منطقة_نص":     {"تلميح", "أسطر", "معطل", "صنف"},
+	"جدول_عرض":     {"أعمدة", "فارغ", "صنف"},
+	"قائمة_عناصر":  {"مرقمة", "فارغ", "صنف"},
+	"ألسنة":        {"صنف"},
+	"لسان":         {"أيقونة", "صنف"},
+	"نافذة":        {"عنوان", "صنف"},
+	"تنبيه":        {"نمط", "صنف"},
+	"أيقونة":       {"وصف", "حجم", "لون", "صنف"},
+}
+
+var boxOptions = []string{"محاذاة", "مسافة", "حشو", "خلفية", "عرض", "صنف"}
+
+// OptionValues are the words some options take, for the checker and the errors.
+var OptionValues = map[string][]string{
+	"نمط":    {"أساسي", "ثانوي", "خفيف", "خطر"},
+	"حجم":    {"صغير", "عادي", "كبير"},
+	"محاذاة": {"بداية", "وسط", "نهاية"},
+	"صيغة":   {"نص", "رقم", "كلمة_سر", "بريد", "تاريخ", "وقت"},
+}
+
+// AlertStyles are the words «نمط» takes in «تنبيه».
+var AlertStyles = []string{"معلومة", "نجاح", "تحذير", "خطأ"}
+
+// OptionWords are the words an option of an element takes, if it takes words.
+func OptionWords(element, opt string) []string {
+	if element == "تنبيه" && opt == "نمط" {
+		return AlertStyles
+	}
+	return OptionValues[opt]
 }
 
 func (in *Interp) installElements(env *Env) {
@@ -277,11 +335,9 @@ func (in *Interp) installElements(env *Env) {
 			opts := in.uiOptions(ci, name)
 			n := &Node{Tag: "div", Attrs: [][2]string{{"class", class}}}
 			if a, ok := opts["محاذاة"]; ok {
-				n.attr("data-align", in.optText(a, ci.pos, name, "محاذاة"))
+				n.attr("data-align", in.choice(a, ci.pos, name, "محاذاة"))
 			}
-			if g, ok := opts["مسافة"]; ok {
-				n.attr("style", "gap:"+strconv.FormatInt(in.intValue(g, ci.pos, "مسافة"), 10)+"px")
-			}
+			in.look(n, opts, ci, name)
 			in.withChildren(n, ci, name)
 			return nil
 		})
@@ -296,18 +352,24 @@ func (in *Interp) installElements(env *Env) {
 		if l, ok := opts["مستوى"]; ok {
 			level = min(max(in.intValue(l, ci.pos, "مستوى"), 1), 6)
 		}
-		in.emit(&Node{Tag: "h" + strconv.FormatInt(level, 10), Text: in.textArg(ci, "عنوان")})
+		n := &Node{Tag: "h" + strconv.FormatInt(level, 10), Text: in.textArg(ci, "عنوان")}
+		in.look(n, opts, ci, "عنوان")
+		in.emit(n)
 		return nil
 	})
 	def("فقرة", false, func(in *Interp, ci *callInfo) Value {
-		in.uiOptions(ci, "فقرة")
-		in.emit(&Node{Tag: "p", Text: in.textArg(ci, "فقرة")})
+		opts := in.uiOptions(ci, "فقرة")
+		n := &Node{Tag: "p", Text: in.textArg(ci, "فقرة")}
+		in.look(n, opts, ci, "فقرة")
+		in.emit(n)
 		return nil
 	})
 	def("زر", false, func(in *Interp, ci *callInfo) Value {
 		opts := in.uiOptions(ci, "زر")
-		n := &Node{Tag: "button", Text: in.textArg(ci, "زر")}
+		n := &Node{Tag: "button"}
+		in.withIcon(n, opts, ci, "زر", in.textArg(ci, "زر"))
 		n.attr("type", "button")
+		in.look(n, opts, ci, "زر")
 		if in.flag(opts, "معطل", ci.pos) {
 			n.attr("disabled", "")
 		}
@@ -329,18 +391,7 @@ func (in *Interp) installElements(env *Env) {
 			kind = "number" // a number state gets a number field
 		}
 		if t, ok := opts["صيغة"]; ok {
-			switch in.optText(t, ci.pos, "حقل", "صيغة") {
-			case "نص":
-				kind = "text"
-			case "رقم":
-				kind = "number"
-			case "كلمة_سر", "كلمة سر":
-				kind = "password"
-			case "بريد":
-				kind = "email"
-			default:
-				in.fail(ci.pos, "صيغة الحقل تكون «نص» أو «رقم» أو «كلمة_سر» أو «بريد»")
-			}
+			kind = map[string]string{"نص": "text", "رقم": "number", "كلمة_سر": "password", "بريد": "email", "تاريخ": "date", "وقت": "time"}[in.choice(t, ci.pos, "حقل", "صيغة")]
 		}
 		n.attr("type", kind)
 		h := uiHandler{kind: "input", fn: in.lambdaAfter(ci, 1, "حقل")}
@@ -354,6 +405,12 @@ func (in *Interp) installElements(env *Env) {
 		if p, ok := opts["تلميح"]; ok {
 			n.attr("placeholder", in.optText(p, ci.pos, "حقل", "تلميح"))
 		}
+		for _, o := range [][2]string{{"أدنى", "min"}, {"أقصى", "max"}} {
+			if v, ok := opts[o[0]]; ok {
+				n.attr(o[1], in.limit(v, ci.pos, o[0]))
+			}
+		}
+		in.look(n, opts, ci, "حقل")
 		if in.flag(opts, "معطل", ci.pos) {
 			n.attr("disabled", "")
 		}
@@ -391,8 +448,11 @@ func (in *Interp) installElements(env *Env) {
 			box.attr("data-toggle", in.handler(h))
 		}
 		if t, ok := opts["نص"]; ok {
-			in.emit(&Node{Tag: "label", Attrs: [][2]string{{"class", "dad-check"}}, Kids: []*Node{box, {Tag: "span", Text: in.optText(t, ci.pos, "مربع_اختيار", "نص")}}})
+			label := &Node{Tag: "label", Attrs: [][2]string{{"class", "dad-check"}}, Kids: []*Node{box, {Tag: "span", Text: in.optText(t, ci.pos, "مربع_اختيار", "نص")}}}
+			in.look(label, opts, ci, "مربع_اختيار")
+			in.emit(label)
 		} else {
+			in.look(box, opts, ci, "مربع_اختيار")
 			in.emit(box)
 		}
 		return nil
@@ -409,17 +469,19 @@ func (in *Interp) installElements(env *Env) {
 		if w, ok := opts["عرض"]; ok {
 			n.attr("width", strconv.FormatInt(in.intValue(w, ci.pos, "عرض"), 10))
 		}
+		in.look(n, opts, ci, "صورة")
 		in.emit(n)
 		return nil
 	})
 	def("رابط", false, func(in *Interp, ci *callInfo) Value {
-		in.uiOptions(ci, "رابط")
+		opts := in.uiOptions(ci, "رابط")
 		if len(ci.args) != 2 {
 			in.fail(ci.pos, "«رابط» يأخذ النص والعنوان، مثل: رابط(\"الموقع\"، \"https://…\")")
 		}
-		n := &Node{Tag: "a", Text: textOf(ci.args[0])}
+		n := &Node{Tag: "a"}
 		href := in.optText(ci.args[1], ci.pos, "رابط", "العنوان")
 		n.attr("href", href)
+		in.withIcon(n, opts, ci, "رابط", textOf(ci.args[0]))
 		// A link to one of the program's pages opens it in place; the link to the
 		// page being shown is marked, for navigation bars.
 		if isPageLink(href) && in.hasPage(href) {
@@ -428,17 +490,23 @@ func (in *Interp) installElements(env *Env) {
 				n.attr("aria-current", "page")
 			}
 		}
+		in.look(n, opts, ci, "رابط")
 		in.emit(n)
 		return nil
 	})
-	// «انتقل("/المهام")» moves to another page after an event.
-	env.define("انتقل", &Builtin{Name: "انتقل", Fn: (*Interp).navigate}, false)
-
 	def("فاصل", false, func(in *Interp, ci *callInfo) Value {
-		in.uiOptions(ci, "فاصل")
-		in.emit(&Node{Tag: "hr"})
+		opts := in.uiOptions(ci, "فاصل")
+		n := &Node{Tag: "hr"}
+		in.look(n, opts, ci, "فاصل")
+		in.emit(n)
 		return nil
 	})
+	in.installMoreElements(def)
+
+	// «انتقل("/المهام")» moves to another page after an event.
+	env.define("انتقل", &Builtin{Name: "انتقل", Fn: (*Interp).navigate}, false)
+	// «سمة(اللون: "فيروزي")» sets the look of the whole app.
+	env.define("سمة", &Builtin{Name: "سمة", Fn: (*Interp).setTheme}, false)
 }
 
 func (in *Interp) emit(n *Node) {
@@ -564,6 +632,7 @@ func writeHTML(b *strings.Builder, n *Node) {
 		return
 	}
 	b.WriteString(html.EscapeString(n.Text))
+	b.WriteString(n.Raw)
 	for _, k := range n.Kids {
 		writeHTML(b, k)
 	}

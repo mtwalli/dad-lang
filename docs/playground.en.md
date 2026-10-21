@@ -23,6 +23,7 @@ compiled to WebAssembly. Press **Run**, or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
       <option value="safety">Optionals and errors</option>
       <option value="counter">An interface: counters</option>
       <option value="pages">Interface: several pages</option>
+      <option value="library">Interface: elements and a theme</option>
       <option value="todo">A to-do app with a table</option>
       <option value="mistakes">A file with mistakes</option>
     </select>

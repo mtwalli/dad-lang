@@ -54,12 +54,18 @@ func cmdBuild(args []string) int {
 
 	files := map[string][]byte{"dad-runtime.js": []byte(js.Runtime)}
 	if compiled.Site() {
+		var styles []string
+		if css, err := os.ReadFile(stylePath(path)); err == nil {
+			files["style.css"] = css
+			styles = []string{"style.css"}
+		}
 		files["app.js"] = []byte(compiled.Browser(base))
 		files["index.html"] = []byte(web.Page(web.PageOptions{
 			Title:   name,
 			Assets:  "assets/",
 			Scripts: []string{"dad-runtime.js", "app.js"},
 			Routing: "hash",
+			Styles:  styles,
 		}))
 		for _, a := range web.Assets() {
 			b, err := web.File(a)

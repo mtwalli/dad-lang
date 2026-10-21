@@ -4,6 +4,11 @@
 
 - Pages: `صفحة` is highlighted before an address, `انتقل` like the other built-ins, and
   hovers explain both. A `صفحة` snippet, and pages appear in the outline by their address.
+- The new elements (`قائمة_منسدلة`، `اختيار`، `منطقة_نص`، `جدول_عرض`، `قائمة_عناصر`، `ألسنة`،
+  `لسان`، `نافذة`، `تنبيه`، `أيقونة`) and `سمة` are highlighted and explained on hover.
+- Fixed: a check that took too long (the first run of a new `dad` on macOS, say) made every
+  later check ignore imports, so each `استورد` showed «الاستيراد يحتاج ملفاً محفوظاً» until
+  VS Code restarted.
 
 - Programs in several files: a saved file is checked together with the files it imports
   (`استورد`), and saving a file checks the files that import it again. Go to definition on

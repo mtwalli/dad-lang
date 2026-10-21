@@ -1,4 +1,9 @@
-/* The default look of a Ḍād app: right to left, Kufi type, lapis accent. */
+/* The default look of a Ḍād app: right to left, Kufi type, lapis accent.
+
+   «سمة(…)» in a program sets --theme-* variables (and data-mode on .dad-app);
+   everything below reads them, falling back to the defaults. A program's own
+   stylesheet, named like the program (app.css next to app.dad), comes after
+   this one, and its classes are given to elements with «صنف». */
 
 @font-face {
   font-family: "Dad Kufi";
@@ -14,34 +19,60 @@
 }
 
 :root {
+  --font-kufi: "Dad Kufi", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --font-naskh: "Noto Naskh Arabic", "Amiri", "Geeza Pro", "Traditional Arabic", "Times New Roman", serif;
+  --font-system: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --radius: var(--theme-radius, 8px);
+
   --paper: #fcfcfd;
   --surface: #f3f4f8;
   --ink: #1a1f36;
   --muted: #5b6178;
   --line: #d9dce8;
-  --lapis: #2a3f9d;
-  --lapis-deep: #1f2f7a;
-  --on-lapis: #ffffff;
-  --focus: rgba(42, 63, 157, 0.35);
+  --lapis: var(--theme-primary, #2a3f9d);
+  --on-lapis: var(--theme-on-primary, #ffffff);
   --danger: #b42318;
   --danger-bg: #fef3f2;
+  --success: #1e7b3a;
+  --warning: #a15c07;
   color-scheme: light;
 }
+
+/* Dark: the system's choice, unless the app says otherwise with «سمة(الوضع: …)». */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(:has(.dad-app[data-mode="light"])) {
     --paper: #12152a;
     --surface: #1b1f38;
     --ink: #e9ebf5;
     --muted: #a3a9c2;
     --line: #2e3352;
-    --lapis: #8ea2ff;
-    --lapis-deep: #b4c1ff;
-    --on-lapis: #10143a;
-    --focus: rgba(142, 162, 255, 0.4);
+    --lapis: var(--theme-primary, #8ea2ff);
+    --on-lapis: var(--theme-on-primary, #10143a);
     --danger: #ff8a7a;
     --danger-bg: #2c1618;
+    --success: #6fd28d;
+    --warning: #f2b45a;
     color-scheme: dark;
   }
+}
+:root:has(.dad-app[data-mode="dark"]) {
+  --paper: #12152a;
+  --surface: #1b1f38;
+  --ink: #e9ebf5;
+  --muted: #a3a9c2;
+  --line: #2e3352;
+  --lapis: var(--theme-primary, #8ea2ff);
+  --on-lapis: var(--theme-on-primary, #10143a);
+  --danger: #ff8a7a;
+  --danger-bg: #2c1618;
+  --success: #6fd28d;
+  --warning: #f2b45a;
+  color-scheme: dark;
+}
+
+:root {
+  --lapis-deep: color-mix(in srgb, var(--lapis) 80%, var(--ink));
+  --focus: color-mix(in srgb, var(--lapis) 40%, transparent);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -52,11 +83,11 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font: 500 17px/1.75 "Dad Kufi", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  font: 500 var(--theme-size, 17px)/1.75 var(--theme-font, var(--font-kufi));
 }
 
 #dad-root {
-  max-width: 42rem;
+  max-width: var(--theme-width, 42rem);
   margin: 0 auto;
   padding: 2.5rem 16px 4rem;
 }
@@ -69,11 +100,12 @@ body {
 [data-align="وسط"] { align-items: center; justify-content: center; text-align: center; }
 [data-align="بداية"] { align-items: flex-start; justify-content: flex-start; }
 [data-align="نهاية"] { align-items: flex-end; justify-content: flex-end; }
+.dad-col[style*="max-width"], .dad-row[style*="max-width"], .dad-card[style*="max-width"] { width: 100%; margin-inline: auto; }
 .dad-card {
   display: flex; flex-direction: column; gap: 0.75rem;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(var(--radius) * 1.5);
   padding: 1rem 1.25rem;
 }
 
@@ -81,54 +113,151 @@ body {
 h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 700; line-height: 1.4; }
 h1 { font-size: 1.9rem; }
 h1::after {
-  /* the one flourish: a short lapis stroke under the start of the page title */
+  /* the one flourish: a short stroke in the app's colour under the start of the page title */
   content: ""; display: block;
   width: 3rem; height: 4px; margin-top: 0.4rem;
   background: var(--lapis); border-radius: 2px;
 }
+h1[style*="text-align:center"]::after { margin-inline: auto; }
+h1[style*="text-align:end"]::after { margin-inline-start: auto; }
 h2 { font-size: 1.45rem; }
 h3 { font-size: 1.2rem; }
 h4, h5, h6 { font-size: 1rem; }
 p { margin: 0; max-width: 38em; }
+p.dad-small { font-size: 0.875em; }
+p.dad-large { font-size: 1.2em; }
 a { color: var(--lapis); text-underline-offset: 0.2em; }
 hr { width: 100%; border: 0; border-top: 1px solid var(--line); margin: 0.25rem 0; }
-img { max-width: 100%; height: auto; border-radius: 8px; }
+img { max-width: 100%; height: auto; border-radius: var(--radius); }
 
-/* Controls */
-button {
-  font: inherit; font-weight: 600;
+/* Icons */
+.dad-icon {
+  width: 1.15em; height: 1.15em; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  vertical-align: -0.2em;
+}
+.dad-icon.dad-small { width: 0.95em; height: 0.95em; }
+.dad-icon.dad-large { width: 1.75em; height: 1.75em; }
+
+/* Buttons, and links that look like them («نمط») */
+button, a.dad-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.45em;
+  font: inherit; font-weight: 600; line-height: 1.6;
   padding: 0.45rem 1.25rem;
-  border: 0; border-radius: 8px;
+  border: 1.5px solid var(--lapis); border-radius: var(--radius);
   background: var(--lapis); color: var(--on-lapis);
+  text-decoration: none;
   cursor: pointer;
 }
-button:hover { background: var(--lapis-deep); }
+button:hover, a.dad-button:hover { background: var(--lapis-deep); border-color: var(--lapis-deep); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
+.dad-secondary, a.dad-button.dad-secondary { background: transparent; color: var(--lapis); }
+.dad-secondary:hover, a.dad-button.dad-secondary:hover { background: color-mix(in srgb, var(--lapis) 10%, transparent); color: var(--lapis); }
+.dad-quiet, a.dad-button.dad-quiet { background: transparent; border-color: transparent; color: var(--lapis); }
+.dad-quiet:hover, a.dad-button.dad-quiet:hover { background: color-mix(in srgb, var(--lapis) 10%, transparent); border-color: transparent; }
+.dad-danger, a.dad-button.dad-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.dad-danger:hover, a.dad-button.dad-danger:hover { background: color-mix(in srgb, var(--danger) 85%, var(--ink)); border-color: transparent; }
+.dad-quiet.dad-danger { background: transparent; border-color: transparent; color: var(--danger); }
+button.dad-small, a.dad-button.dad-small { padding: 0.2rem 0.75rem; font-size: 0.875em; }
+button.dad-large, a.dad-button.dad-large { padding: 0.65rem 1.75rem; font-size: 1.1em; }
+.dad-fill { width: 100%; }
 
-input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+/* Fields */
+input[type="text"], input[type="email"], input[type="password"], input[type="number"],
+input[type="date"], input[type="time"], select, textarea {
   font: inherit;
   min-width: 0;
   padding: 0.45rem 0.85rem;
-  border: 1.5px solid var(--line); border-radius: 8px;
+  border: 1.5px solid var(--line); border-radius: var(--radius);
   background: var(--paper); color: var(--ink);
 }
-input::placeholder { color: var(--muted); opacity: 1; }
-input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus {
-  border-color: var(--lapis); outline: none;
-}
-input[type="checkbox"] {
+textarea { resize: vertical; line-height: 1.7; width: 100%; }
+select { cursor: pointer; padding-inline-end: 2rem; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+input:focus, select:focus, textarea:focus { border-color: var(--lapis); outline: none; }
+input[type="checkbox"], input[type="radio"] {
   width: 1.2em; height: 1.2em; margin: 0;
   accent-color: var(--lapis);
   cursor: pointer;
 }
 .dad-check { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.dad-choices { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
 
-button:focus-visible, input:focus-visible, a:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 3px solid var(--focus); outline-offset: 2px;
 }
 
+/* Lists and tables of records */
+.dad-list { margin: 0; padding-inline-start: 1.4rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.dad-list li::marker { color: var(--lapis); }
+.dad-empty {
+  color: var(--muted); text-align: center;
+  padding: 1.25rem 1rem;
+  border: 1.5px dashed var(--line); border-radius: var(--radius);
+}
+.dad-table { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.dad-table table { width: 100%; border-collapse: collapse; }
+.dad-table th, .dad-table td { padding: 0.55rem 0.9rem; text-align: start; vertical-align: middle; }
+.dad-table th { font-weight: 700; font-size: 0.9em; color: var(--muted); background: var(--surface); white-space: nowrap; }
+.dad-table td { border-top: 1px solid var(--line); min-width: 6.5rem; }
+.dad-table td.dad-actions { min-width: 0; }
+.dad-table tbody tr:hover { background: color-mix(in srgb, var(--lapis) 5%, transparent); }
+.dad-table .dad-actions { width: 1%; white-space: nowrap; }
+.dad-table .dad-actions > * + * { margin-inline-start: 0.4rem; }
+
+/* Tabs */
+.dad-tabs { display: flex; flex-direction: column; gap: 1rem; }
+.dad-tablist { display: flex; gap: 0.25rem; overflow-x: auto; border-bottom: 1.5px solid var(--line); }
+.dad-tablist button {
+  background: transparent; color: var(--muted);
+  border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  margin-bottom: -1.5px; padding: 0.5rem 0.9rem; white-space: nowrap;
+}
+.dad-tablist button:hover { background: transparent; color: var(--ink); }
+.dad-tablist button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--lapis); }
+.dad-tabpanel { display: flex; flex-direction: column; gap: 1rem; }
+
+/* Dialogs */
+.dad-backdrop {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(10, 12, 30, 0.45);
+}
+.dad-dialog {
+  width: min(32rem, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  display: flex; flex-direction: column; gap: 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: calc(var(--radius) * 1.5);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.45);
+}
+.dad-dialog:focus { outline: none; }
+.dad-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.dad-dialog-head h2 { font-size: 1.25rem; }
+.dad-close {
+  background: transparent; border-color: transparent; color: var(--muted);
+  padding: 0.3rem; margin-inline-start: auto;
+}
+.dad-close:hover { background: var(--surface); border-color: transparent; color: var(--ink); }
+
+/* Alerts */
+.dad-alert {
+  --tone: var(--lapis);
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--tone) 10%, var(--paper));
+  border: 1px solid color-mix(in srgb, var(--tone) 35%, transparent);
+  border-inline-start: 4px solid var(--tone);
+  border-radius: var(--radius);
+}
+.dad-alert .dad-icon { color: var(--tone); margin-top: 0.3em; }
+.dad-alert-success { --tone: var(--success); }
+.dad-alert-warning { --tone: var(--warning); }
+.dad-alert-error { --tone: var(--danger); }
+
 /* Pages: the link to the page on screen, as in a navigation bar */
-a[aria-current="page"] {
+a[aria-current="page"]:not(.dad-button) {
   color: var(--ink); font-weight: 700;
   text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--lapis);
 }
@@ -143,7 +272,7 @@ a[aria-current="page"] {
 
 /* Errors from the program */
 #dad-error {
-  position: fixed; inset-inline: 16px; bottom: 16px;
+  position: fixed; inset-inline: 16px; bottom: 16px; z-index: 20;
   max-width: 42rem; margin: 0 auto;
   padding: 0.75rem 1rem;
   background: var(--danger-bg); color: var(--danger);
@@ -153,5 +282,13 @@ a[aria-current="page"] {
 #dad-error[hidden] { display: none; }
 
 @media (prefers-reduced-motion: no-preference) {
-  button { transition: background-color 120ms ease; }
+  button, a.dad-button { transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease; }
+  .dad-dialog { animation: dad-rise 160ms ease-out; }
+  @keyframes dad-rise { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+}
+
+@media (max-width: 30rem) {
+  #dad-root { padding-top: 1.5rem; }
+  h1 { font-size: 1.6rem; }
+  .dad-dialog { padding: 1rem 1.1rem 1.25rem; }
 }

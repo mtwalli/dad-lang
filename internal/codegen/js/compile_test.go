@@ -242,7 +242,7 @@ func TestSnippets(t *testing.T) {
 // clicks and typing.
 func TestInterfaces(t *testing.T) {
 	nodePath := node(t)
-	for _, f := range []string{"../../../examples/05-todo.dad", "../../../examples/06-counter.dad"} {
+	for _, f := range []string{"../../../examples/05-todo.dad", "../../../examples/06-counter.dad", "../../../examples/09-library.dad", "testdata/elements.dad"} {
 		t.Run(filepath.Base(f), func(t *testing.T) {
 			src, err := os.ReadFile(f)
 			if err != nil {
@@ -265,8 +265,9 @@ func TestInterfaces(t *testing.T) {
 				Value any    `json:"value"`
 			}
 			var events []event
-			handler := regexp.MustCompile(`<[a-z]+ [^>]*data-(click|input|toggle)="(h\d+)"[^>]*>`)
-			for step := 0; step < 14; step++ {
+			handler := regexp.MustCompile(`<[a-z]+ [^>]*data-(click|input|toggle|choose)="(h\d+)"[^>]*>`)
+			kinds := map[string]bool{}
+			for step := 0; step < 30; step++ {
 				hs := handler.FindAllStringSubmatch(page, -1)
 				if len(hs) == 0 {
 					break
@@ -281,7 +282,10 @@ func TestInterfaces(t *testing.T) {
 					}
 				case "toggle":
 					v = step%2 == 0
+				case "choose":
+					v = float64(step % 2)
 				}
+				kinds[h[1]] = true
 				events = append(events, event{h[2], v})
 				if err := in.Event(sess, sess.Version, h[2], v); err != nil {
 					t.Fatal(err)
@@ -330,6 +334,7 @@ console.log(JSON.stringify(pages));
 			for _, p := range pages {
 				distinct[regexp.MustCompile(`h\d+`).ReplaceAllString(p, "")] = true
 			}
+			t.Logf("%d events of kinds %v, %d different pages", len(events), kinds, len(distinct))
 			if len(events) < 5 || len(distinct) < 3 {
 				t.Errorf("only %d events and %d different pages were tried", len(events), len(distinct))
 			}
@@ -519,5 +524,26 @@ func TestPrograms(t *testing.T) {
 				t.Errorf("--- interpreter\n%s\n--- compiled\n%s\n%s", want.String(), got, stderr.String())
 			}
 		})
+	}
+}
+
+// The runtime draws the same icons as the interpreter (both come from tools/icons/gen.py).
+func TestIconsMatchTheInterpreter(t *testing.T) {
+	line := regexp.MustCompile(`(?m)^    ("[^"]+"): ("(?:[^"\\]|\\.)*"),$`)
+	block := js.Runtime[strings.Index(js.Runtime, "// icons:begin"):strings.Index(js.Runtime, "// icons:end")]
+	got := map[string]string{}
+	for _, m := range line.FindAllStringSubmatch(block, -1) {
+		var k, v string
+		json.Unmarshal([]byte(m[1]), &k)
+		json.Unmarshal([]byte(m[2]), &v)
+		got[k] = v
+	}
+	if len(got) != len(interp.Icons) {
+		t.Fatalf("runtime has %d icons, the interpreter %d", len(got), len(interp.Icons))
+	}
+	for k, v := range interp.Icons {
+		if got[k] != v {
+			t.Errorf("icon %q differs", k)
+		}
 	}
 }

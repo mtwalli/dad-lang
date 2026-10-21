@@ -31,6 +31,7 @@ nav:
 - الدليل:
     - برنامج في عدة ملفات: modules.md
     - الواجهة: ui.md
+    - تخصيص المظهر: styling.md
     - الخادم والبيانات: server.md
     - البناء للويب: build.md
     - النشر على الإنترنت: deploy.md
@@ -151,6 +152,7 @@ plugins:
               - Guide:
                   - Programs in several files: modules.md
                   - Interface: ui.md
+                  - Customizing the look: styling.md
                   - Server and data: server.md
                   - Building for the web: build.md
                   - Putting a program online: deploy.md

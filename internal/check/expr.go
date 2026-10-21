@@ -362,9 +362,17 @@ func (c *checker) call(e *ast.Call, s *scope) *Type {
 				c.errorf(fn.Pos, "«%s» عنصر واجهة، ويُستخدم داخل مكون", fn.Name)
 			}
 			c.elementOptions(fn.Name, e)
+			if fn.Name == "أيقونة" && len(e.Args) > 0 && e.Args[0].Name == "" {
+				if text, ok := literalText(e.Args[0].Value); ok {
+					c.iconName("أيقونة", text, e.Args[0].Value)
+				}
+			}
 			return nil
 		case sBuiltin:
 			c.trailing(e, s, nil)
+			if fn.Name == "سمة" {
+				c.themeOptions(e)
+			}
 			return sym.result
 		case sEnum:
 			c.trailing(e, s, nil)
@@ -563,6 +571,7 @@ func (c *checker) elementOptions(name string, e *ast.Call) {
 			ok = ok || x == a.Name
 		}
 		if ok {
+			c.optionValue(name, a.Name, a.Value)
 			continue
 		}
 		if len(allowed) == 0 {
@@ -571,6 +580,86 @@ func (c *checker) elementOptions(name string, e *ast.Call) {
 			c.errorf(a.Value.P(), "«%s» لا يأخذ «%s»؛ يأخذ: %s%s", name, a.Name, strings.Join(allowed, "، "), didYouMean(a.Name, allowed))
 		}
 	}
+}
+
+// literalText is the text of a string literal without {…}, if e is one.
+func literalText(e ast.Expr) (string, bool) {
+	lit, ok := e.(*ast.StrLit)
+	if !ok {
+		return "", false
+	}
+	text := ""
+	for _, p := range lit.Parts {
+		if p.Expr != nil {
+			return "", false
+		}
+		text += p.Text
+	}
+	return text, true
+}
+
+// optionValue checks the words, colours and icons written in an element's options.
+func (c *checker) optionValue(element, opt string, v ast.Expr) {
+	text, ok := literalText(v)
+	if !ok {
+		return
+	}
+	switch {
+	case opt == "لون" || opt == "خلفية":
+		if !interp.IsColor(text) {
+			c.errorf(v.P(), "«%s» في «%s» يأخذ اسم لون مثل «أزرق» أو «فيروزي»، أو قيمة مثل «#1b2b6b»%s", opt, element, didYouMean(text, interp.ColorNames()))
+		}
+	case opt == "أيقونة":
+		c.iconName(element, text, v)
+	case interp.OptionWords(element, opt) != nil:
+		words := interp.OptionWords(element, opt)
+		if !has(words, text) {
+			c.errorf(v.P(), "«%s» في «%s» يكون %s%s", opt, element, quoteWords(words), didYouMean(text, words))
+		}
+	}
+}
+
+func (c *checker) iconName(element, name string, at ast.Expr) {
+	if _, ok := interp.Icons[name]; ok {
+		return
+	}
+	names := make([]string, 0, len(interp.Icons))
+	for n := range interp.Icons {
+		names = append(names, n)
+	}
+	c.errorf(at.P(), "لا توجد أيقونة باسم «%s» في «%s»%s", name, element, didYouMean(name, names))
+}
+
+// themeOptions checks «سمة(اللون: "فيروزي"، الخط: "نسخ")».
+func (c *checker) themeOptions(e *ast.Call) {
+	for _, a := range e.Args {
+		if a.Name == "" {
+			c.errorf(a.Value.P(), "«سمة» تأخذ معاملات مسماة، مثل: سمة(اللون: \"فيروزي\")")
+			continue
+		}
+		if !has(interp.ThemeOptions, a.Name) {
+			c.errorf(a.Value.P(), "«سمة» لا تأخذ «%s»؛ تأخذ: %s%s", a.Name, strings.Join(interp.ThemeOptions, "، "), didYouMean(a.Name, interp.ThemeOptions))
+			continue
+		}
+		text, ok := literalText(a.Value)
+		if !ok {
+			continue
+		}
+		if words := interp.ThemeValues[a.Name]; words != nil && !has(words, text) {
+			c.errorf(a.Value.P(), "«%s» في «سمة» يكون %s%s", a.Name, quoteWords(words), didYouMean(text, words))
+		}
+		if a.Name == "اللون" && (!interp.IsColor(text) || text == "أساسي" || text == "باهت") {
+			c.errorf(a.Value.P(), "«اللون» في «سمة» يأخذ لوناً بعينه، مثل «فيروزي» أو «#0e8f9a»%s", didYouMean(text, interp.ColorNames()))
+		}
+	}
+}
+
+func quoteWords(words []string) string {
+	q := make([]string, len(words))
+	for i, w := range words {
+		q[i] = "«" + w + "»"
+	}
+	return strings.Join(q, " أو ")
 }
 
 // ---------------------------------------------------------------- members

@@ -125,7 +125,7 @@ func Single(name, src string) *Program {
 		for _, s := range m.File.Stmts {
 			if im, ok := s.(*ast.Import); ok {
 				m.Diags = append(m.Diags, lexer.Diagnostic{Pos: im.Pos,
-					Msg: "الاستيراد يحتاج ملفاً محفوظاً؛ هنا ضع الكود في ملف واحد"})
+					Msg: "الاستيراد يقرأ ملفاً آخر بجانب هذا الملف، وهذا الكود ليس في ملف محفوظ: احفظه أولاً، أو ضع الكود كله في ملف واحد"})
 			}
 		}
 	}

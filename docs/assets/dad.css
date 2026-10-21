@@ -2115,3 +2115,70 @@ svg.lucide {
 .dad-play__output > [role="tabpanel"][hidden] {
   display: none !important;
 }
+
+/* ---------- The icon gallery and the colour swatches (docs/ui.md, docs/styling.md) ---------- */
+
+.md-typeset .dad-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 1em 0 1.6em;
+}
+
+.md-typeset .dad-icon-grid figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.85rem 0.4rem 0.6rem;
+  border-radius: var(--dad-radius);
+  background-color: var(--dad-surface);
+  box-shadow: inset 0 0 0 1px var(--dad-line);
+  transition: box-shadow 0.25s, transform 0.3s var(--dad-ease);
+}
+
+.md-typeset .dad-icon-grid figure:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(201, 160, 74, 0.55), var(--dad-shadow);
+}
+
+.md-typeset .dad-icon-grid svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--md-typeset-a-color);
+}
+
+.md-typeset .dad-icon-grid figcaption {
+  max-width: none;
+  margin: 0;
+  font-family: var(--md-code-font-family);
+  font-size: 0.68rem;
+  font-style: normal;
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset .dad-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+  margin: 1em 0 1.4em;
+}
+
+.md-typeset .dad-swatches span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.md-typeset .dad-swatches i {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--dad-line);
+}

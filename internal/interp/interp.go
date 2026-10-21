@@ -108,6 +108,7 @@ type Interp struct {
 	pages      []*Page
 	ui         *renderCtx // set while a page is being rendered
 	event      *UISession // set while a page's event runs, for «انتقل»
+	theme      *Theme     // set by «سمة»
 }
 
 const maxDepth = 2000
@@ -226,7 +227,7 @@ func (in *Interp) importNames(im *ast.Import, env *Env, m *module.Module) {
 		from = in.modEnvs[m.Deps[im]]
 	}
 	if from == nil {
-		in.fail(im.Pos, "الاستيراد يحتاج ملفاً محفوظاً؛ هنا ضع الكود في ملف واحد")
+		in.fail(im.Pos, "الاستيراد يقرأ ملفاً آخر بجانب هذا الملف، وهذا الكود ليس في ملف محفوظ: احفظه أولاً، أو ضع الكود كله في ملف واحد")
 	}
 	for _, name := range im.Names {
 		b, ok := from.vars[name]

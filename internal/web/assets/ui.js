@@ -73,6 +73,7 @@
     if (typeof reply.html === "string") {
       morph(root, reply.html);
       version = reply.version;
+      focusDialog();
     }
     if (reply.title) document.title = reply.title;
     if (typeof reply.path === "string" && reply.path !== shown) moved(reply.path);
@@ -123,6 +124,12 @@
       if (path !== shown) open(path, true);
       return;
     }
+    // a click outside an open dialog closes it, like its × button
+    if (e.target.classList && e.target.classList.contains("dad-backdrop")) {
+      var x = e.target.querySelector(".dad-close");
+      if (x) x.click();
+      return;
+    }
     var el = e.target.closest("[data-click]");
     if (!el || el.disabled) return;
     flushTyping();
@@ -154,20 +161,50 @@
 
   root.addEventListener("change", function (e) {
     var el = e.target;
-    if (!el.hasAttribute || !el.hasAttribute("data-toggle")) return;
-    flushTyping();
-    send(el, "data-toggle", el.checked);
+    if (!el.hasAttribute) return;
+    if (el.hasAttribute("data-toggle")) {
+      flushTyping();
+      send(el, "data-toggle", el.checked);
+    } else if (el.hasAttribute("data-choose")) {
+      // a drop-down list or a radio button: the number of the choice
+      flushTyping();
+      send(el, "data-choose", el.value);
+    }
   });
 
-  // Enter in a field presses the first button next to it, as in a form.
   root.addEventListener("keydown", function (e) {
     var el = e.target;
-    if (e.key !== "Enter" || el.tagName !== "INPUT" || el.type === "checkbox" || e.isComposing) return;
+    // Esc closes a dialog.
+    if (e.key === "Escape") {
+      var x = root.querySelector(".dad-dialog .dad-close");
+      if (x) { e.preventDefault(); x.click(); }
+      return;
+    }
+    // The arrow keys move between tabs; the page is right to left, so ← is the next one.
+    if (el.getAttribute && el.getAttribute("role") === "tab" && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      var tabs = Array.prototype.slice.call(el.parentElement.querySelectorAll('[role="tab"]'));
+      var step = (e.key === "ArrowLeft") === (getComputedStyle(el).direction === "rtl") ? 1 : -1;
+      var next = tabs[(tabs.indexOf(el) + step + tabs.length) % tabs.length];
+      e.preventDefault();
+      next.focus();
+      next.click();
+      return;
+    }
+    // Enter in a field presses the first button next to it, as in a form.
+    if (e.key !== "Enter" || el.tagName !== "INPUT" || el.type === "checkbox" || el.type === "radio" || e.isComposing) return;
     var button = el.parentElement && el.parentElement.querySelector("button[data-click]");
     if (!button) return;
     e.preventDefault();
     button.click();
   });
+
+  // A dialog that just opened takes the focus: its first field, or the dialog.
+  function focusDialog() {
+    var d = root.querySelector(".dad-dialog");
+    if (!d || d.contains(document.activeElement)) return;
+    var first = d.querySelector("input, select, textarea, button:not(.dad-close), a[href]");
+    (first || d).focus();
+  }
 
   // ---------- updating the page in place ----------
 
@@ -194,7 +231,11 @@
       } else if (x.nodeType === 1) {
         syncAttributes(x, y);
         if (x.tagName === "INPUT") syncInput(x, y);
-        else morphChildren(x, y);
+        else if (x.tagName === "TEXTAREA") syncText(x, y);
+        else {
+          morphChildren(x, y);
+          if (x.tagName === "SELECT") syncSelect(x, y);
+        }
       }
     }
     for (var j = olds.length - 1; j >= news.length; j--) a.removeChild(olds[j]);
@@ -212,8 +253,20 @@
     }
   }
 
+  function syncText(x, y) {
+    var v = y.value; // a <template>'s textarea holds its text as its value
+    if (pending.has(x)) return;
+    if (x.value !== v) x.value = v;
+  }
+
+  function syncSelect(x, y) {
+    var chosen = y.querySelector("option[selected]");
+    var v = chosen ? chosen.getAttribute("value") : "";
+    if (x.value !== v) x.value = v;
+  }
+
   function syncInput(x, y) {
-    if (x.type === "checkbox") {
+    if (x.type === "checkbox" || x.type === "radio") {
       x.checked = y.hasAttribute("checked");
       return;
     }

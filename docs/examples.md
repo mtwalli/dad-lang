@@ -99,3 +99,17 @@ icon: lucide/shapes
 ```dad
 --8<-- "examples/08-pages.dad"
 ```
+
+## 9. مكتبة: العناصر، وسمة { #9-a-library }
+
+ألسنة، ونموذج فيه قائمة منسدلة وأزرار اختيار وتاريخ ومنطقة نص، وجدول سجلات بزر في كل صف،
+ونافذة للتأكيد، وتنبيه، وأيقونات، وسمة بـ`سمة`، وملف تنسيق خاص. شغّله
+بـ`dad dev examples/09-library.dad`. وانظر [الواجهة](ui.md) و[تخصيص المظهر](styling.md).
+
+```dad
+--8<-- "examples/09-library.dad"
+```
+
+```css title="09-library.css"
+--8<-- "examples/09-library.css"
+```

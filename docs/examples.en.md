@@ -101,3 +101,18 @@ Run it with `dad dev examples/08-pages.dad`. See [Pages](ui.md#pages).
 ```dad
 --8<-- "examples/08-pages.dad"
 ```
+
+## 9. A library — the elements, and a theme
+
+Tabs, a form with a drop-down list, radio buttons, a date and a text area, a table of
+records with a button on each row, a dialog to confirm, an alert, icons, a theme with
+`سمة`, and a stylesheet of its own. Run it with `dad dev examples/09-library.dad`. See
+[Interface](ui.md) and [Customizing the look](styling.md).
+
+```dad
+--8<-- "examples/09-library.dad"
+```
+
+```css title="09-library.css"
+--8<-- "examples/09-library.css"
+```
