@@ -1,6 +1,7 @@
 package js
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -57,6 +58,8 @@ func (c *compiler) stmt(s ast.Stmt, t tail) {
 		c.extensionDecl(s)
 	case *ast.ComponentDecl:
 		c.componentDecl(s)
+	case *ast.PageDecl:
+		c.pageDecl(s)
 	case *ast.RouteDecl, *ast.ContractDecl, *ast.Unsupported:
 		// routes need a server; contracts are checked by the checker
 	default:
@@ -405,6 +408,37 @@ func (c *compiler) extensionDecl(d *ast.ExtensionDecl) {
 		c.line("$.extend(" + quote(key) + ", " + quote(m.Name) + ", " + c.function(m, fields, true) + ");")
 	}
 }
+
+// pageDecl compiles «صفحة "/مهمة/{رقم}" = …» to a page the runtime shows at that
+// address: a function of the address's values that lays the page out.
+func (c *compiler) pageDecl(d *ast.PageDecl) {
+	c.push()
+	type value struct{ name, js string }
+	var values []value
+	for _, m := range pathName.FindAllStringSubmatch(d.Path, -1) {
+		n := strings.TrimSpace(m[1])
+		values = append(values, value{n, c.declare(n, symConst)})
+	}
+	fr := &frame{kind: frameLambda}
+	c.frames = append(c.frames, fr)
+	body := c.sub(c.indent+1, func() {
+		for _, v := range values {
+			c.line("const " + v.js + " = $.pathValue($$v[" + quote(v.name) + "]);")
+		}
+		if blk, ok := d.Body.(*ast.Block); ok {
+			c.stmts(blk.Stmts, tailNone)
+		} else {
+			c.stmt(&ast.ExprStmt{At: ast.At{Pos: d.Body.P()}, X: d.Body}, tailNone)
+		}
+	})
+	c.frames = c.frames[:len(c.frames)-1]
+	c.pop()
+	c.line("$.page(" + quote(d.Path) + ", ($$v) => {")
+	c.out.WriteString(body)
+	c.line("});")
+}
+
+var pathName = regexp.MustCompile(`\{([^{}/]+)\}`)
 
 func (c *compiler) componentDecl(d *ast.ComponentDecl) {
 	js := c.declare(d.Name, symConst)

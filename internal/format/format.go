@@ -183,6 +183,12 @@ var declKeywords = map[token.Kind]bool{
 	token.TABLE: true, token.ROUTE: true, token.COMPONENT: true, token.SERVER: true, token.PRIVATE: true,
 }
 
+// isPage reports a «صفحة "/…"» declaration: «صفحة» is a keyword only there.
+func isPage(items []*item, start, end int) bool {
+	t := items[start].tok
+	return t.Kind == token.IDENT && t.Value == "صفحة" && start < end && items[start+1].tok.Kind == token.STRING
+}
+
 func layout(items []*item) {
 	// Match brackets, and find the «{» of each طابق.
 	var stack []int
@@ -342,7 +348,7 @@ func blankLinesAroundDeclarations(items []*item) {
 		stmts = append(stmts, stmt{lead, s, end})
 	}
 	multiDecl := func(st stmt) bool {
-		if !declKeywords[items[st.start].tok.Kind] {
+		if !declKeywords[items[st.start].tok.Kind] && !isPage(items, st.start, st.end) {
 			return false
 		}
 		for j := st.start + 1; j <= st.end; j++ {

@@ -129,8 +129,9 @@ dad dev todo.dad --port 3000
 ```
 
 Open <http://localhost:8080>. If the program has an [interface](ui.md), that's what you
-see; the developer page is at <http://localhost:8080/_dad>. The developer page lists your server functions, with a form to call
-each one, your tables and their rows, and your routes. It updates by itself.
+see, and each of its [pages](ui.md#pages) at its own address; the developer page is at
+<http://localhost:8080/_dad>. The developer page lists your pages, your server functions with
+a form to call each one, your tables and their rows, and your routes. It updates by itself.
 
 - Save the file and the program reloads. The data is kept.
 - If the file has an error, the last working version keeps running and the page shows

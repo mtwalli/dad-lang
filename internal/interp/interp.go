@@ -105,7 +105,9 @@ type Interp struct {
 	routes     []*Route
 	serverFns  []string
 	components []*Component
+	pages      []*Page
 	ui         *renderCtx // set while a page is being rendered
+	event      *UISession // set while a page's event runs, for «انتقل»
 }
 
 const maxDepth = 2000
@@ -284,6 +286,8 @@ func (in *Interp) declare(s ast.Stmt, env *Env) bool {
 		in.components = append(in.components, c)
 	case *ast.RouteDecl:
 		in.routes = append(in.routes, &Route{Method: d.Method, Path: d.Path, Pos: d.Pos, body: d.Body, env: env})
+	case *ast.PageDecl:
+		in.pages = append(in.pages, &Page{Path: d.Path, Pos: d.Pos, body: d.Body, env: env})
 	case *ast.TypeDecl:
 		st := &StructType{Name: d.Name, Fields: d.Fields, Methods: map[string]*ast.FuncDecl{}, Env: env}
 		for _, m := range d.Methods {

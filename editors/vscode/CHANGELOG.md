@@ -2,6 +2,9 @@
 
 ## Next release
 
+- Pages: `صفحة` is highlighted before an address, `انتقل` like the other built-ins, and
+  hovers explain both. A `صفحة` snippet, and pages appear in the outline by their address.
+
 - Programs in several files: a saved file is checked together with the files it imports
   (`استورد`), and saving a file checks the files that import it again. Go to definition on
   an imported name opens the file that declares it. With an older `dad`, files are checked

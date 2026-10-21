@@ -195,7 +195,7 @@ func cmdRun(path string) int {
 		fmt.Fprintf(os.Stderr, "ملاحظة: لم يُشغَّل %s.\n", strings.Join(in.Notices, "، "))
 	}
 	switch {
-	case in.RootComponent() != nil:
+	case len(in.Pages()) > 0:
 		fmt.Fprintf(os.Stderr, "ملاحظة: لهذا البرنامج واجهة؛ لعرضها شغّل «ضاد تطوير %s» وافتح الصفحة.\n", filepath.Base(path))
 	case len(in.Routes()) > 0 || len(in.ServerFunctions()) > 0:
 		fmt.Fprintf(os.Stderr, "ملاحظة: للمسارات ودوال الخادم شغّل «ضاد تطوير %s».\n", filepath.Base(path))

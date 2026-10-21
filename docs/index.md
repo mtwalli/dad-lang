@@ -77,7 +77,7 @@ hide:
 <ol class="dad-timeline">
   <li class="is-done"><span>المواصفات</span><small>الكلمات المحجوزة والقواعد النحوية، ومحلل نصوص يفهم العربية</small></li>
   <li class="is-done"><span>نواة اللغة</span><small><code>dad run</code>، والفاحص، و<a href="modules/">البرامج متعددة الملفات</a>، والترجمة إلى JavaScript</small></li>
-  <li class="is-next"><span>الواجهة</span><small><a href="ui/">المكونات والحالة والعناصر</a> في <code>dad dev</code> والملعب، و<a href="build/"><code>dad build</code></a> يصنع مواقع ثابتة. التالي: عناصر أكثر، وصفحات متعددة</small></li>
+  <li class="is-next"><span>الواجهة</span><small><a href="ui/">المكونات والحالة والعناصر</a> في <code>dad dev</code> والملعب، و<a href="build/"><code>dad build</code></a> يصنع مواقع ثابتة، و<a href="ui/#pages">صفحات متعددة</a>. التالي: عناصر أكثر، والنماذج</small></li>
   <li class="is-next"><span>الخادم والبيانات</span><small>جداول في SQLite، ودوال الخادم، والمسارات، و<a href="server/"><code>dad dev</code></a> و<a href="deploy/"><code>dad serve</code></a>. التالي: المستخدمون وتسجيل الدخول</small></li>
   <li class="is-done"><span>الأدوات</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">إضافة VS Code</a>، و<a href="playground/">الملعب</a>، و<code>dad fmt</code>، و<a href="editor/#the-language-server">خادم اللغة</a></small></li>
   <li class="is-done"><span>التثبيت</span><small><a href="install/">Homebrew وwinget و.deb و.rpm</a>، و<a href="tutorial/">دليل للمبتدئين</a> بالعربية والإنجليزية</small></li>

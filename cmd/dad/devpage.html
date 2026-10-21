@@ -57,6 +57,7 @@ footer { color: var(--muted); font-size: 13px; text-align: center; padding-botto
 </header>
 <main>
   <section id="error" class="error" hidden></section>
+  <section><h2>الصفحات</h2><div id="pages"></div></section>
   <section><h2>دوال الخادم</h2><div id="functions"></div></section>
   <section><h2>الجداول</h2><div id="tables"></div></section>
   <section><h2>المسارات</h2><div id="routes"></div></section>
@@ -157,6 +158,15 @@ function renderRoutes(routes) {
   })));
 }
 
+function renderPages(pages) {
+  const box = $("pages");
+  box.replaceChildren();
+  if (!pages.length) { box.append(el("p", { className: "empty", textContent: "لا توجد صفحات: البرنامج بلا واجهة." })); return; }
+  box.append(el("ul", { className: "routes" }, ...pages.map((p) => el("li", {}, p.path.includes("{")
+    ? el("span", { className: "mono path", textContent: ltrPath(p.path) })
+    : el("a", { href: p.path, className: "mono path", textContent: ltrPath(p.path) })))));
+}
+
 async function refresh(force) {
   try {
     const text = await (await fetch("/_dad/info")).text();
@@ -167,6 +177,7 @@ async function refresh(force) {
     document.title = `${info.file} — ضاد`;
     $("error").hidden = !info.error;
     $("error").textContent = info.error || "";
+    renderPages(info.pages || []);
     renderFunctions(info.functions);
     renderTables(info.tables);
     renderRoutes(info.routes);

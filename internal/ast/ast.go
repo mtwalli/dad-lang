@@ -338,6 +338,16 @@ type (
 		Body   Expr // *Block, or an expression for "= expr" bodies
 	}
 
+	// PageDecl is a page of the interface at an address of its own:
+	// «صفحة "/مهمة/{رقم}" = تفاصيل_المهمة(رقم)». {name} in the path binds a
+	// value; the body lays out the page, usually by calling a component.
+	PageDecl struct {
+		At
+		Path    string
+		PathPos token.Pos
+		Body    Expr // *Block, or an expression for "= expr" bodies
+	}
+
 	// ComponentDecl is a piece of interface: «مكون عداد(بداية: صحيح = 0) { … }».
 	// Its body declares state with «حالة» and lays out elements such as عمود and زر.
 	ComponentDecl struct {
@@ -394,6 +404,7 @@ func (*Import) stmtNode()        {}
 func (*Unsupported) stmtNode()   {}
 func (*TableDecl) stmtNode()     {}
 func (*RouteDecl) stmtNode()     {}
+func (*PageDecl) stmtNode()      {}
 func (*ComponentDecl) stmtNode() {}
 func (*StateDecl) stmtNode()     {}
 

@@ -27,7 +27,8 @@ computer:
 
 The site serves:
 
-- your [interface](ui.md) at `/`, when the program has one;
+- your [interface](ui.md): each [page](ui.md#pages) at its address, or the main component at
+  `/`;
 - your [routes](server.md#routes) (`مسار`);
 - your server functions at `POST /_dad/call/<name>`;
 - `/_dad/health`, which answers `{"ok": true}` for health checks.

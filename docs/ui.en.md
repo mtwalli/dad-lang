@@ -48,8 +48,8 @@ function, and use other components:
 }
 ```
 
-The page shows the component named `الرئيسية` (or `التطبيق`). If there is none, it shows the
-last component that needs no arguments.
+A program without [pages](#pages) shows the component named `الرئيسية` (or `التطبيق`). If
+there is none, it shows the last component that needs no arguments.
 
 Inside a component, ordinary code works as everywhere else: `إذا` shows elements only when
 something is true, and `لكل` repeats them.
@@ -69,6 +69,72 @@ Each copy of a component has its own state: the two counters above count separat
 State lasts as long as the page is open; to keep data for longer, save it in a
 [table](server.md#tables).
 
+## Pages — `صفحة` { #pages }
+
+A program with more than one screen gives each one an address with `صفحة` («page»):
+
+```dad
+صفحة "/" = قائمة_المهام()
+صفحة "/عن" = عن_التطبيق()
+صفحة "/مهمة/{رقم}" = صفحة_المهمة(رقم)
+```
+
+After the address comes what the page shows, usually a component. It can also be a block,
+written like a component's body and with its own `حالة`:
+
+```dad
+صفحة "/عن" {
+    الشريط()
+    عنوان("عن التطبيق")
+    فقرة("مثال على برنامج من عدة صفحات.")
+}
+```
+
+- **Values in the address.** `{رقم}` takes its value from the address: `/مهمة/3` shows
+  `صفحة_المهمة(3)`. Digits become a whole number (`صحيح`), anything else is text.
+- **Links.** A link to one of the pages, such as `رابط("عن التطبيق"، "/عن")`, opens it in
+  place, without reloading. The back and forward buttons work, and an address can be
+  bookmarked or shared.
+- **The current page.** The link to the page on screen is marked (bold and underlined in the
+  built-in style), so a row of links makes a navigation bar. Put it in a component and call
+  it at the top of each page:
+
+    ```dad
+    مكون الشريط() {
+        صف {
+            رابط("المهام"، "/")
+            رابط("عن التطبيق"، "/عن")
+        }
+        فاصل()
+    }
+    ```
+
+- **Moving from code.** `انتقل("/المهام")` («go to») moves to a page from a button's block,
+  after saving for example. `انتقل("https://…")` leaves for another site.
+
+    ```dad
+    زر("أضف") {
+        ثابت م = أضف(الجديدة)
+        انتقل("/مهمة/{م.رقم}")
+    }
+    ```
+
+- **The title.** The browser tab shows the page's first `عنوان`.
+- **No page there.** An address with no page shows a page that says so, with a link to the
+  home page. `dad serve` answers it with status 404.
+- **State.** Each page starts with fresh state when it opens. What has to last between pages
+  belongs in a [table](server.md#tables).
+
+Two pages can't share an address, and neither can a page and a `مسار جلب` route: the checker
+says so. `صفحة` has this meaning only before an address, so it can still be the name of a
+variable. A program without `صفحة` shows its main component at `/`, as before.
+
+Here is a whole program with pages, `examples/08-pages.dad`:
+
+```dad
+--8<-- "examples/08-pages.dad"
+```
+
 ## Elements
 
 | Element | What it shows | Example |
@@ -82,7 +148,7 @@ State lasts as long as the page is open; to keep data for longer, save it in a
 | `حقل` | A text field that edits a state | `حقل(اسم، تلميح: "اسمك")` |
 | `مربع_اختيار` | A check box | `مربع_اختيار(م.منجزة) { … }` |
 | `صورة` | An image | `صورة("شعار.png"، وصف: "الشعار")` |
-| `رابط` | A link | `رابط("الموقع"، "https://…")` |
+| `رابط` | A link; to one of the [pages](#pages), it opens in place | `رابط("الموقع"، "https://…")` |
 | `فاصل` | A line between sections | `فاصل()` |
 
 Options are named arguments:
@@ -138,9 +204,10 @@ page.
 With `dad dev` and `dad serve`, components run on the server. The page in the browser sends
 each click and change to the program, the program runs the block and lays out the page
 again, and the page updates in place, keeping focus and what you are typing. Phoenix
-LiveView and Blazor Server work this way. With [`dad build`](build.md), the same components
-are compiled to JavaScript and run in the browser, with no server. The program stays the same
-either way.
+LiveView and Blazor Server work this way. Links to pages work the same way: the program lays
+out the new page, and the browser shows its address. With [`dad build`](build.md), the same
+components are compiled to JavaScript and run in the browser, with no server, and pages have
+addresses such as `index.html#/عن`. The program stays the same either way.
 
 The look comes from a built-in stylesheet: right to left, Noto Kufi Arabic, light and dark
 themes that follow the system setting.

@@ -5,6 +5,12 @@
 // The page is <main id="dad-root" data-session="…" data-version="…">. A host can
 // set window.dadSend(event) → Promise<reply> to deliver events another way
 // (the web playground runs the interpreter in the browser).
+//
+// Pages: a link to one of the program's pages has data-nav, and opens the page in
+// place with a «nav» event. data-routing says how the address is kept:
+//   "history" (dad dev, dad serve): the real address, with the back button;
+//   "hash" (dad build): «#/المهام», so a static site works from any host or from disk;
+//   "none" (the playground): not kept.
 (function () {
   "use strict";
   var root = document.getElementById("dad-root");
@@ -14,6 +20,14 @@
   var errorBox = document.getElementById("dad-error");
   var queue = Promise.resolve();
   var pending = new Map(); // input element → timer for typing not sent yet
+  var routing = root.getAttribute("data-routing") || "history";
+  var shown = currentPath(); // the address of the page on screen
+
+  function currentPath() {
+    if (routing === "hash") return decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
+    if (routing === "history") return decodeURIComponent(location.pathname);
+    return "/";
+  }
 
   function post(event) {
     if (typeof window.dadSend === "function") return Promise.resolve(window.dadSend(event));
@@ -50,11 +64,44 @@
   function apply(reply) {
     if (!reply) return;
     if (reply.reload) { location.reload(); return; }
+    if (reply.location) {
+      if (routing === "none") window.open(reply.location, "_blank", "noopener"); // the playground's frame stays
+      else location.href = reply.location;
+      return;
+    }
     showError(reply.error || "");
     if (typeof reply.html === "string") {
       morph(root, reply.html);
       version = reply.version;
     }
+    if (reply.title) document.title = reply.title;
+    if (typeof reply.path === "string" && reply.path !== shown) moved(reply.path);
+  }
+
+  // moved records that another page is on screen: in the address bar, and at the top.
+  function moved(path) {
+    shown = path;
+    if (routing === "history") history.pushState(null, "", path);
+    else if (routing === "hash") location.hash = "#" + path;
+    window.scrollTo(0, 0);
+    // Screen readers start reading the new page from its top.
+    root.setAttribute("tabindex", "-1");
+    root.focus({ preventScroll: true });
+  }
+
+  // open shows the page at an address: a link to a page, or the back button.
+  function open(path, push) {
+    flushTyping();
+    queue = queue.then(function () {
+      return post({ s: session, v: version, nav: path }).then(function (reply) {
+        if (reply && reply.reload) { location.href = path; return; }
+        if (!push && reply) shown = reply.path; // already in the address bar
+        apply(reply);
+      }, function () {
+        location.href = path; // no connection: let the browser load it
+      });
+    });
+    return queue;
   }
 
   // Typing is sent shortly after the last key; anything else sends it at once first.
@@ -67,11 +114,33 @@
   }
 
   root.addEventListener("click", function (e) {
+    var link = e.target.closest("a[data-nav]");
+    if (link && routing !== "hash") {
+      // a click that opens a new tab or window, or downloads, stays the browser's
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      var path = decodeURIComponent(link.getAttribute("href"));
+      if (path !== shown) open(path, true);
+      return;
+    }
     var el = e.target.closest("[data-click]");
     if (!el || el.disabled) return;
     flushTyping();
     send(el, "data-click", null);
   });
+
+  // Back and forward show the page of that address again.
+  if (routing === "history") {
+    window.addEventListener("popstate", function () {
+      var path = currentPath();
+      if (path !== shown) { shown = path; open(path, false); }
+    });
+  } else if (routing === "hash") {
+    window.addEventListener("hashchange", function () {
+      var path = currentPath();
+      if (path !== shown) { shown = path; open(path, false); }
+    });
+  }
 
   root.addEventListener("input", function (e) {
     var el = e.target;

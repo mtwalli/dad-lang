@@ -119,7 +119,6 @@ type uiResult struct {
 var (
 	uiInterp *interp.Interp
 	uiSess   *interp.UISession
-	uiRoot   *interp.Component
 	uiOut    *bytes.Buffer
 )
 
@@ -141,23 +140,45 @@ func uiEvent(_ js.Value, args []js.Value) (ret any) {
 		Version int    `json:"v"`
 		ID      string `json:"id"`
 		Value   any    `json:"value"`
+		Nav     string `json:"nav"` // a link to one of the program's pages
 	}
 	json.Unmarshal([]byte(args[0].String()), &ev)
 	uiInterp.MaxSteps = 5_000_000
-	if err := uiInterp.Event(uiSess, ev.Version, ev.ID, ev.Value); err != nil && err != interp.ErrStale {
-		reply["error"] = err.Error()
+	if ev.Nav != "" {
+		uiInterp.Open(uiSess, ev.Nav)
+		reply["path"] = uiSess.Path
+	} else {
+		if err := uiInterp.Event(uiSess, ev.Version, ev.ID, ev.Value); err != nil && err != interp.ErrStale {
+			reply["error"] = err.Error()
+		}
+		if uiSess.Away != "" {
+			reply = map[string]any{"location": uiSess.Away}
+			return
+		}
+		if uiSess.Moved {
+			reply["path"] = uiSess.Path
+		}
 	}
-	html, err := uiInterp.Render(uiSess, uiRoot)
+	html, err := uiInterp.RenderPage(uiSess)
 	if err != nil {
 		reply["error"] = err.Error()
 	} else {
 		reply["html"], reply["version"] = html, uiSess.Version
 	}
+	reply["title"] = uiTitle(uiSess)
 	if uiOut.Len() > 0 {
 		reply["output"] = uiOut.String() // what اطبع printed while handling the event
 		uiOut.Reset()
 	}
 	return
+}
+
+// uiTitle is the title of the page showing: its first heading.
+func uiTitle(sess *interp.UISession) string {
+	if sess.Title != "" {
+		return sess.Title
+	}
+	return "ضاد"
 }
 
 // run executes a program with a step limit so a runaway loop cannot freeze the page.
@@ -184,19 +205,20 @@ func run(_ js.Value, args []js.Value) (ret any) {
 				res.Error = err.Error()
 			}
 			res.Output = out.String()
-			uiInterp, uiSess, uiRoot = nil, nil, nil
-			if root := in.RootComponent(); root != nil && res.Error == "" {
+			uiInterp, uiSess = nil, nil
+			if len(in.Pages()) > 0 && res.Error == "" {
 				out.Reset()
 				sess := interp.NewUISession()
-				html, err := in.Render(sess, root)
-				ui := &uiResult{Title: root.Name, HTML: html, Version: sess.Version}
+				in.Open(sess, "/")
+				html, err := in.RenderPage(sess)
+				ui := &uiResult{Title: uiTitle(sess), HTML: html, Version: sess.Version}
 				if err != nil {
 					ui.Error = err.Error()
 				}
 				res.UI = ui
 				res.Output += out.String()
 				out.Reset()
-				uiInterp, uiSess, uiRoot, uiOut = in, sess, root, &out
+				uiInterp, uiSess, uiOut = in, sess, &out
 			}
 			if len(in.Notices) > 0 {
 				res.Notices = append(res.Notices, "لم يُشغَّل "+strings.Join(in.Notices, "، ")+

@@ -39,6 +39,8 @@ class DadLexer(RegexLexer):
             (r'"', String, "dq"),
             (r"«", String, "guillemet"),
             (words(DECLARATIONS, prefix=_B, suffix=_E), Keyword.Declaration),
+            # «صفحة» is a keyword only before an address: صفحة "/المهام" = …
+            (rf'{_B}صفحة(?=[ \t]*")', Keyword.Declaration),
             (words(CONTROL, prefix=_B, suffix=_E), Keyword),
             (words(CONSTANTS, prefix=_B, suffix=_E), Keyword.Constant),
             (words(TYPES, prefix=_B, suffix=_E), Keyword.Type),

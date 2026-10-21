@@ -168,8 +168,8 @@ func (in *Info) Visible(line, col int) []*Def {
 	seen := map[string]bool{}
 	for i := len(in.Defs) - 1; i >= 0; i-- {
 		d := in.Defs[i]
-		if d.Parent != nil && !d.Global || seen[d.Name] {
-			continue // fields and methods are reached with «.»; cases of a تعداد are global names
+		if d.Parent != nil && !d.Global || seen[d.Name] || d.Kind == "page" {
+			continue // fields and methods are reached with «.»; cases of a تعداد are global names; a page has no name
 		}
 		if d.Global || (!before(d.Pos, start) && before(d.Pos, at)) {
 			seen[d.Name] = true

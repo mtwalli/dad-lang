@@ -40,6 +40,7 @@ type PageOptions struct {
 	Live    int      // dad dev: the program version shown; the page reloads when it changes (0: never)
 	Assets  string   // where ui.js and ui.css are; AssetsPath when empty
 	Scripts []string // scripts loaded before ui.js, such as a compiled program
+	Routing string   // how pages keep their address: "history" (default), "hash" or "none"; see ui.js
 }
 
 // Assets lists every asset by name: ui.js, ui.css and fonts/….
@@ -77,6 +78,9 @@ func Page(o PageOptions) string {
 	b.WriteString(`" data-version="` + strconv.Itoa(o.Version) + `"`)
 	if o.Live > 0 {
 		b.WriteString(` data-live="` + strconv.Itoa(o.Live) + `"`)
+	}
+	if o.Routing != "" {
+		b.WriteString(` data-routing="` + html.EscapeString(o.Routing) + `"`)
 	}
 	b.WriteString(">")
 	b.WriteString(o.Body)

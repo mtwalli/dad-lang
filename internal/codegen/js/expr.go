@@ -8,7 +8,7 @@ import (
 	"github.com/mtwalli/dad-lang/internal/token"
 )
 
-var builtins = map[string]bool{"اطبع": true, "مشكلة": true, "جذر": true, "مطلق": true, "أدنى": true, "أقصى": true}
+var builtins = map[string]bool{"اطبع": true, "مشكلة": true, "جذر": true, "مطلق": true, "أدنى": true, "أقصى": true, "انتقل": true}
 
 var elements = map[string]bool{"عمود": true, "صف": true, "بطاقة": true, "عنوان": true, "فقرة": true, "زر": true,
 	"حقل": true, "مربع_اختيار": true, "صورة": true, "رابط": true, "فاصل": true}

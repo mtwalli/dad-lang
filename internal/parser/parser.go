@@ -226,6 +226,12 @@ func (p *parser) parseStmt() ast.Stmt {
 		return &ast.Continue{At: ast.At{Pos: t.Pos}}
 	}
 
+	// «صفحة» is a word with a meaning only here, before an address: a program
+	// may still use it as a name.
+	if t.Kind == token.IDENT && t.Value == "صفحة" && p.peek(1).Kind == token.STRING {
+		return p.parsePage()
+	}
+
 	x := p.parseExpr()
 	switch p.cur().Kind {
 	case token.ASSIGN, token.PLUS_EQ, token.MINUS_EQ, token.STAR_EQ, token.SLASH_EQ:
@@ -449,6 +455,26 @@ func (p *parser) parseRoute() ast.Stmt {
 		d.Body = p.parseBlock()
 	default:
 		p.failf(p.cur().Pos, "توقعت «=» أو «{» بعد المسار")
+	}
+	return d
+}
+
+// parsePage reads «صفحة "/المهام" = قائمة_المهام()» or «صفحة "/" { … }».
+func (p *parser) parsePage() ast.Stmt {
+	t := p.next()
+	d := &ast.PageDecl{At: ast.At{Pos: t.Pos}}
+	pt := p.next()
+	d.Path, d.PathPos = pt.Value, pt.Pos
+	if !strings.HasPrefix(d.Path, "/") {
+		p.failf(pt.Pos, "عنوان الصفحة يبدأ بـ «/»، مثل: \"/المهام\"")
+	}
+	switch {
+	case p.accept(token.ASSIGN):
+		d.Body = p.parseExpr()
+	case p.at(token.LBRACE):
+		d.Body = p.parseBlock()
+	default:
+		p.failf(p.cur().Pos, "توقعت «=» أو «{» بعد عنوان الصفحة")
 	}
 	return d
 }

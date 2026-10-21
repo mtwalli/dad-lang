@@ -38,7 +38,8 @@ const KEYWORDS = {
   "ك": ["as", "Converts a value to a type: `عدد ك عشري`. `(7 / 2) ك صحيح` gives 3"],
   "هذا": ["this", "The current value inside a type's method or an extension"],
   "خادم": ["server", "Marks a function the browser may call. `dad dev` serves it at `/_dad/call/<name>`"],
-  "مكون": ["component", "Declares a piece of interface: `مكون عداد() { حالة ع = 0؛ زر(\"{ع}\") { ع += 1 } }`. `dad dev` shows the main one (named الرئيسية, or the last one without parameters)"],
+  "مكون": ["component", "Declares a piece of interface: `مكون عداد() { حالة ع = 0؛ زر(\"{ع}\") { ع += 1 } }`. Give it an address with `صفحة`; a program without pages shows its main one (named الرئيسية, or the last one without parameters)"],
+  "صفحة": ["page", "Gives a part of the interface an address: `صفحة \"/مهمة/{رقم}\" = تفاصيل(رقم)`. `{رقم}` in the address becomes a value. A word with this meaning only before an address"],
   "حالة": ["state", "State inside a component: `حالة ع = 0`. It keeps its value between renders, and changing it updates the page"],
   "جدول": ["table", "Declares a table of records saved in SQLite with a hidden id `رقم`: `مهمة.أنشئ(…)`, `.الكل()`, `.حيث { … }`, `.بالرقم(1)`, `م.احفظ()`, `م.احذف()`"],
   "مسار": ["route", "Declares a public web route: `مسار جلب \"/api/مهام/{رقم}\" = مهمة.بالرقم(رقم)`. Methods: جلب, أرسل, عدل, احذف"],
@@ -51,6 +52,7 @@ const BUILTINS = {
   "مطلق": ["abs", "Absolute value"],
   "أدنى": ["min", "The smallest of its arguments"],
   "أقصى": ["max", "The largest of its arguments"],
+  "انتقل": ["navigate", "After a click or other event, moves to another page: `انتقل(\"/المهام\")`. An address on another site (`https://…`) leaves for it"],
   "صحيح": ["Int", "Whole-number type"],
   "عشري": ["Float", "Decimal-number type"],
   "نص": ["String", "Text type"],
@@ -67,7 +69,7 @@ const BUILTINS = {
   "حقل": ["text field", "A text field bound to a state: `حقل(اسم، تلميح: \"اسمك\")`. A number state gives a number field. Options: `تلميح`, `صيغة` (نص، رقم، كلمة_سر، بريد), `معطل`"],
   "مربع_اختيار": ["check box", "A check box: `مربع_اختيار(م.منجزة) { … }` runs its block with the new value. Options: `نص`, `معطل`"],
   "صورة": ["image", "An image: `صورة(\"شعار.png\"، وصف: \"الشعار\")`. Option: `عرض`"],
-  "رابط": ["link", "A link: `رابط(\"الموقع\"، \"https://…\")`"],
+  "رابط": ["link", "A link: `رابط(\"الموقع\"، \"https://…\")`. A link to one of the program's pages (`\"/المهام\"`) opens it in place, and is marked when that page is showing"],
   "فاصل": ["divider", "A horizontal line between sections: `فاصل()`"],
 };
 

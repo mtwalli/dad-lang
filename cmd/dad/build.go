@@ -14,7 +14,8 @@ import (
 //
 // A program with an interface becomes a static site (index.html, the compiled
 // program, the runtime and the page assets) that works from any web host with
-// no server: tables are kept in the browser's storage. Any other program
+// no server: tables are kept in the browser's storage, and pages have addresses
+// like «index.html#/المهام». Any other program
 // becomes app.js, run with Node.
 func cmdBuild(args []string) int {
 	var path, out string
@@ -52,12 +53,13 @@ func cmdBuild(args []string) int {
 	base := filepath.Base(path)
 
 	files := map[string][]byte{"dad-runtime.js": []byte(js.Runtime)}
-	if compiled.Root != "" {
+	if compiled.Site() {
 		files["app.js"] = []byte(compiled.Browser(base))
 		files["index.html"] = []byte(web.Page(web.PageOptions{
 			Title:   name,
 			Assets:  "assets/",
 			Scripts: []string{"dad-runtime.js", "app.js"},
+			Routing: "hash",
 		}))
 		for _, a := range web.Assets() {
 			b, err := web.File(a)
@@ -82,7 +84,7 @@ func cmdBuild(args []string) int {
 		}
 	}
 
-	if compiled.Root != "" {
+	if compiled.Site() {
 		fmt.Printf("✓ بُني «%s» في %s — افتح index.html أو انشر المجلد على أي استضافة ثابتة\n", base, out)
 		if compiled.ServerFuncs > 0 {
 			fmt.Fprintln(os.Stderr, "ملاحظة: دوال الخادم تعمل في الصفحة نفسها، والجداول تُحفظ في متصفح كل زائر.")

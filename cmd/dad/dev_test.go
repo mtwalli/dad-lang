@@ -245,3 +245,110 @@ func TestDevWatchesImports(t *testing.T) {
 	}
 	t.Error("the change to the imported file was not picked up")
 }
+
+const pagesSrc = `جدول مهمة {
+    العنوان: نص
+}
+
+صفحة "/" = الرئيسية()
+صفحة "/مهمة/{رقم}" = تفاصيل(رقم)
+
+مكون الرئيسية() {
+    عمود {
+        عنوان("المهام")
+        رابط("عن"، "/مهمة/1")
+        زر("أضف") {
+            ثابت م = مهمة.أنشئ(العنوان: "خبز")
+            انتقل("/مهمة/{م.رقم}")
+        }
+    }
+}
+
+مكون تفاصيل(رقم: صحيح) {
+    عنوان(مهمة.بالرقم(رقم)؟.العنوان ؟؟ "لا توجد مهمة {رقم}")
+}
+
+مسار جلب "/api/مهام" = مهمة.الكل()
+`
+
+func getPage(t *testing.T, u string, html bool) (int, string) {
+	t.Helper()
+	req, _ := http.NewRequest("GET", u, nil)
+	if html {
+		req.Header.Set("Accept", "text/html,application/xhtml+xml")
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	b, _ := io.ReadAll(res.Body)
+	return res.StatusCode, string(b)
+}
+
+func TestDevServesPages(t *testing.T) {
+	s, ts, _ := startDev(t, pagesSrc)
+	code, html := getPage(t, ts.URL+"/", true)
+	if code != 200 || !strings.Contains(html, "<title>المهام</title>") || !strings.Contains(html, `<a href="/مهمة/1" data-nav>`) {
+		t.Fatalf("/: %d\n%s", code, html)
+	}
+	session := between(html, `data-session="`, `"`)
+	button := between(html, `data-click="`, `"`)
+
+	// a page with a value in its address, asked for directly
+	code, html = getPage(t, ts.URL+"/"+url.PathEscape("مهمة")+"/7", true)
+	if code != 200 || !strings.Contains(html, "<h1>لا توجد مهمة 7</h1>") {
+		t.Fatalf("/مهمة/7: %d\n%s", code, html)
+	}
+	// an address with no page: a page that says so, for a browser; a plain 404 otherwise
+	code, html = getPage(t, ts.URL+"/لا-شيء", true)
+	if code != 404 || !strings.Contains(html, "الصفحة غير موجودة") || !strings.Contains(html, `data-session="`) {
+		t.Errorf("not found: %d\n%s", code, html)
+	}
+	sessions := len(s.sessions)
+	if code, _ = getPage(t, ts.URL+"/favicon.ico", false); code != 404 || len(s.sessions) != sessions {
+		t.Errorf("favicon: %d, sessions %d → %d", code, sessions, len(s.sessions))
+	}
+	// routes still answer with JSON
+	if code, _, list := do(t, "GET", ts.URL+"/api/مهام", ""); code != 200 || list == nil {
+		t.Errorf("route: %d", code)
+	}
+
+	event := func(ev map[string]any) map[string]any {
+		ev["s"] = session
+		body, _ := json.Marshal(ev)
+		_, obj, _ := do(t, "POST", ts.URL+"/_dad/ui/event", string(body))
+		return obj
+	}
+	// «انتقل» after a click: the reply says where the page is now
+	r := event(map[string]any{"v": 1, "id": button})
+	if r["path"] != "/مهمة/1" || r["title"] != "خبز" || !strings.Contains(r["html"].(string), "<h1>خبز</h1>") {
+		t.Fatalf("after أضف: %v", r)
+	}
+	// a link or the back button opens a page in the same session
+	r = event(map[string]any{"v": 2, "nav": "/"})
+	if r["path"] != "/" || r["title"] != "المهام" || !strings.Contains(r["html"].(string), "<h1>المهام</h1>") {
+		t.Errorf("nav to /: %v", r)
+	}
+	r = event(map[string]any{"v": 3, "nav": "/لا-شيء"})
+	if r["path"] != "/لا-شيء" || r["title"] != "الصفحة غير موجودة" {
+		t.Errorf("nav to nowhere: %v", r)
+	}
+
+	// the developer page lists the pages
+	_, info, _ := do(t, "GET", ts.URL+"/_dad/info", "")
+	if pages := info["pages"].([]any); len(pages) != 2 || pages[1].(map[string]any)["path"] != "/مهمة/{رقم}" {
+		t.Errorf("info pages: %v", info["pages"])
+	}
+}
+
+// «dad serve» serves pages the same way.
+func TestServeServesPages(t *testing.T) {
+	ts := startServe(t, pagesSrc)
+	if code, html := getPage(t, ts.URL+"/مهمة/2", true); code != 200 || !strings.Contains(html, "لا توجد مهمة 2") || strings.Contains(html, "data-live") {
+		t.Errorf("page: %d\n%s", code, html)
+	}
+	if code, html := getPage(t, ts.URL+"/لا-شيء", true); code != 404 || !strings.Contains(html, "الصفحة غير موجودة") {
+		t.Errorf("not found: %d\n%s", code, html)
+	}
+}

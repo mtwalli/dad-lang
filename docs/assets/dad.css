@@ -337,13 +337,17 @@ svg.lucide {
 }
 
 /* Page icons in the navigation take the gold of the current page. */
-.md-nav__link .md-icon {
+.md-nav__link > svg.lucide {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-inline-end: 0.45rem;
   color: var(--md-default-fg-color--light);
   transition: color 0.2s;
 }
 
-.md-nav__link--active .md-icon,
-.md-nav__link:hover .md-icon {
+.md-nav__link--active > svg.lucide,
+.md-nav__link:hover > svg.lucide {
   color: var(--dad-gold);
 }
 
@@ -525,7 +529,7 @@ svg.lucide {
   }
 
   /* The current page is marked with a gold nuqta. */
-  .md-sidebar--primary .md-nav__link--active:not(:has(.md-icon)) > .md-ellipsis::before {
+  .md-sidebar--primary .md-nav__link--active:not(:has(svg)) > .md-ellipsis::before {
     content: "";
     display: inline-block;
     vertical-align: 0.12em;

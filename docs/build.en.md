@@ -8,7 +8,7 @@ icon: lucide/package
 
 | The program has… | `dad build` makes | Run it with |
 |---|---|---|
-| an interface (`مكون`) | a folder with `index.html`: a static site | open `index.html`, or put the folder on any static host |
+| an interface (`مكون`, `صفحة`) | a folder with `index.html`: a static site | open `index.html`, or put the folder on any static host |
 | no interface | `app.js` | `node app.js` |
 
 ```sh
@@ -38,6 +38,9 @@ without asking a server.
 - **Tables** (`جدول`) are saved in the browser's storage (`localStorage`). Each visitor has
   their own records. They are kept after closing the page, but other visitors don't see
   them.
+- **Pages** (`صفحة`) have addresses after `#`: the page `"/عن"` is `index.html#/عن`. That
+  way any static host serves every page from the one `index.html`, and the site works from
+  your disk too. Links, `انتقل` and the back button work as with `dad dev`.
 - **Server functions** (`خادم دالة`) run in the page, like any function.
 - **Routes** (`مسار`) need a server, so they are left out. `dad build` says so. Serve them
   with `dad dev` or `dad serve`.

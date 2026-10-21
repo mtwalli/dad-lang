@@ -132,7 +132,8 @@ error, the message suggests the fix: `هل تقصد «و ب»؟`.
 | `مسار` | — | explicit HTTP route (public APIs) |
 
 **Contextual words** (only special in one position, usable as names elsewhere): HTTP verbs
-`جلب` (GET), `أرسل` (POST), `عدل` (PUT), `احذف` (DELETE).
+`جلب` (GET), `أرسل` (POST), `عدل` (PUT), `احذف` (DELETE) after `مسار`, and `صفحة` (page)
+at the start of a statement, before an address in quotes (see 5.5).
 
 ## 4. Language tour
 
@@ -339,14 +340,42 @@ is called. Elements with a block (`عمود`, `صف`, `بطاقة`) put the elem
 inside them. `حالة` is only allowed in a component: its initial value is evaluated on the
 first render, and each instance of a component (by its place in the page) has its own state.
 An element given a state variable as its first argument (`حقل(اسم)`, `مربع_اختيار(مفعل)`)
-receives the variable itself and changes it. The page shows the component named `الرئيسية`
-or `التطبيق`, otherwise the last one that needs no arguments.
+receives the variable itself and changes it. A program without pages (5.5) shows the
+component named `الرئيسية` or `التطبيق`, otherwise the last one that needs no arguments, at
+`/`.
 
 *Implemented:* in `dad dev` and `dad serve`, components run in the interpreter on the server;
 the page sends events and updates in place, LiveView style. After `dad build`, the same
 components are compiled to JavaScript and run in the browser. Elements: `عمود`، `صف`، `بطاقة`،
 `عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل` (see the
 [interface guide](ui.md)). *Planned:* a reactive runtime that updates only what changed.
+
+### 5.5 Pages — `صفحة`
+```dad
+صفحة "/" = قائمة_المهام()
+صفحة "/مهمة/{رقم}" = صفحة_المهمة(رقم)
+
+صفحة "/عن" {
+    عنوان("عن التطبيق")
+}
+```
+A page gives part of the interface an address. The address starts with `/`; a segment
+`{name}` binds a value, as in routes (digits become `صحيح`, anything else `نص`). The body is
+an expression, usually a component call, or a block laid out like a component's body, where
+`حالة` is allowed; a page's state belongs to its address and starts again when the page is
+opened. Pages are declared at the top level of any file of the program. Two pages, or a page
+and a `مسار جلب` route, may not have the same address (`/مهمة/{رقم}` and `/مهمة/{ر}/` are the
+same).
+
+A `رابط` whose address matches a page opens it in place and is marked as current
+(`aria-current="page"`) while that page shows. The built-in `انتقل(عنوان)` moves to another
+page after the event that called it; an `https://` address leaves the program. Calling it
+while a page is being laid out is an error. A page's title is its first heading. An address
+with no page shows a built-in page that says so, with status 404 from the server.
+
+*Implemented:* in `dad dev` and `dad serve` the address is the real path and the history
+works; after `dad build` addresses follow `#` (`index.html#/عن`), so a static site works on
+any host and from disk; the playground follows links inside its preview.
 
 ## 6. Open questions (please decide)
 1. ~~`هو` doing double duty~~ Decided: `هو` only means "it" in lambdas; the type test is

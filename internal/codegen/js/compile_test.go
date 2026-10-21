@@ -337,6 +337,113 @@ console.log(JSON.stringify(pages));
 	}
 }
 
+// Pages must match too: following links and «انتقل» shows the same page, at the
+// same address, with the same title.
+func TestPages(t *testing.T) {
+	nodePath := node(t)
+	src, err := os.ReadFile("../../../examples/08-pages.dad")
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, diags := check.Source(string(src))
+	if file == nil {
+		t.Fatal(diags)
+	}
+	in := interp.New(io.Discard)
+	if err := in.Run(file); err != nil {
+		t.Fatal(err)
+	}
+	type step struct {
+		Nav   string `json:"nav,omitempty"`
+		ID    string `json:"id,omitempty"`
+		Value any    `json:"value,omitempty"`
+	}
+	type shown struct{ HTML, Path, Title string }
+	sess := interp.NewUISession()
+	in.Open(sess, "/")
+	page, err := in.RenderPage(sess)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []shown{{page, sess.Path, sess.Title}}
+	var steps []step
+	handler := regexp.MustCompile(`<[a-z]+ [^>]*data-(click|input|toggle)="(h\d+)"[^>]*>`)
+	link := regexp.MustCompile(`<a href="([^"]+)" data-nav`)
+	for i := 0; i < 24; i++ {
+		var s step
+		hs := handler.FindAllStringSubmatch(page, -1)
+		if ls := link.FindAllStringSubmatch(page, -1); i%4 == 3 || len(hs) == 0 {
+			s.Nav = "/مهمة/99"
+			if len(ls) > 0 {
+				s.Nav = ls[i%len(ls)][1]
+			}
+			if i == 7 {
+				s.Nav = "/لا/شيء" // no page here
+			}
+			in.Open(sess, s.Nav)
+		} else {
+			h := hs[(i*3)%len(hs)]
+			s.ID = h[2]
+			switch h[1] {
+			case "input":
+				s.Value = []string{"اشترِ خبزاً", "من المخبز"}[i%2]
+			case "toggle":
+				s.Value = i%2 == 0
+			}
+			if err := in.Event(sess, sess.Version, s.ID, s.Value); err != nil {
+				t.Fatal(err)
+			}
+		}
+		steps = append(steps, s)
+		if page, err = in.RenderPage(sess); err != nil {
+			t.Fatal(err)
+		}
+		want = append(want, shown{page, sess.Path, sess.Title})
+	}
+
+	stepsJSON, _ := json.Marshal(steps)
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "dad-runtime.js"), js.Runtime)
+	write(t, filepath.Join(dir, "pages.js"), `"use strict";
+const $ = require("./dad-runtime.js");
+const root = $.main(() => {
+`+js.Compile(file).Body+`}, "app.dad");
+const sess = $.newSession();
+$.open(sess, "/", root);
+const shown = [{HTML: $.renderPage(sess), Path: sess.path, Title: sess.title}];
+for (const s of `+string(stepsJSON)+`) {
+  if (s.nav) $.open(sess, s.nav);
+  else $.event(sess, sess.version, s.id, s.value);
+  shown.push({HTML: $.renderPage(sess), Path: sess.path, Title: sess.title});
+}
+console.log(JSON.stringify(shown));
+`)
+	cmd := exec.Command(nodePath, "pages.js")
+	cmd.Dir = dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("%v\n%s", err, out)
+	}
+	var got []shown
+	if err := json.Unmarshal(out, &got); err != nil {
+		t.Fatalf("%v\n%s", err, out)
+	}
+	if len(got) != len(want) {
+		t.Fatalf("%d pages, want %d", len(got), len(want))
+	}
+	paths := map[string]bool{}
+	for i := range want {
+		paths[want[i].Path] = true
+		if got[i] != want[i] {
+			t.Fatalf("after %d steps (%v):\n--- interpreter\n%+v\n--- compiled\n%+v", i, steps[max(i-1, 0)], want[i], got[i])
+		}
+	}
+	if len(paths) < 3 {
+		t.Errorf("only %d addresses were visited: %v", len(paths), paths)
+	}
+	t.Logf("visited %v", paths)
+}
+
 // Programs of several files: each file compiles to a module of its own.
 func TestPrograms(t *testing.T) {
 	nodePath := node(t)

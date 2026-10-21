@@ -90,3 +90,12 @@ icon: lucide/shapes
 ``` { .text .dad-out }
 --8<-- "examples/output/07-modules.txt"
 ```
+
+## 8. برنامج من عدة صفحات { #8-a-program-with-pages }
+
+ثلاث صفحات لكل منها عنوانها، وشريط تنقّل، و`انتقل` بعد الإضافة والحفظ. شغّله
+بـ`dad dev examples/08-pages.dad`. وانظر [الصفحات](ui.md#pages).
+
+```dad
+--8<-- "examples/08-pages.dad"
+```

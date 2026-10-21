@@ -2,6 +2,22 @@
 
 Each release on GitHub uses its section from this file as its notes.
 
+## Unreleased
+
+### New
+
+- **Several pages.** `صفحة "/مهمة/{رقم}" = تفاصيل(رقم)` gives part of the interface an address
+  of its own; `{رقم}` in the address becomes a value. Links to pages open them in place, the
+  link to the page on screen is marked for navigation bars, and `انتقل("/…")` moves to a page
+  after a click. The back button and bookmarks work, the browser tab shows the page's first
+  heading, and an address with no page shows a page that says so (404 from `dad serve`).
+  It works the same in `dad dev`, `dad serve`, the playground and `dad build`, where pages
+  have addresses such as `index.html#/عن`. `صفحة` is a keyword only before an address, so
+  existing programs keep working. See `examples/08-pages.dad`.
+- The checker finds two pages, or a page and a `مسار جلب` route, at the same address, and
+  mistakes in an address's `{names}`.
+- `dad dev`'s developer page lists the pages; editors show them in the outline.
+
 ## 0.2.0
 
 The first public release of Ḍād (ضاد): a programming language with Arabic keywords for

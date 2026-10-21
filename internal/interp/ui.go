@@ -46,9 +46,16 @@ func (n *Node) attr(k, v string) { n.Attrs = append(n.Attrs, [2]string{k, v}) }
 // UISession is one open page: the state of its components and the handlers of
 // its last render.
 type UISession struct {
-	Version  int // increases with every render
+	Version  int    // increases with every render
+	Path     string // the address of the page shown, such as "/مهمة/3"
+	Title    string // the page's first heading, for the browser tab
+	NotFound bool   // no page has this address
+	Moved    bool   // an event moved to another page («انتقل»); the browser should show Path
+	Away     string // an event asked to leave for another site («انتقل("https://…")»)
 	states   map[string][]*binding
 	handlers map[string]uiHandler
+	page     *Page
+	params   map[string]string
 }
 
 // NewUISession starts the state of a new page.
@@ -65,6 +72,7 @@ type uiHandler struct {
 // renderCtx is the work in progress of one render.
 type renderCtx struct {
 	sess     *UISession
+	path     string  // the address shown: a link to it is the current page
 	stack    []*Node // the open containers; elements go into the last one
 	frames   []*frame
 	handlers map[string]uiHandler
@@ -111,17 +119,23 @@ func needsArgs(params []*ast.Param) bool {
 
 // Render renders a component for a page and returns its HTML.
 func (in *Interp) Render(sess *UISession, c *Component) (string, error) {
+	return in.render(sess, func() { in.callValue(c, &callInfo{pos: c.Pos, name: c.Name}) })
+}
+
+// render lays out a page with draw and returns its HTML.
+func (in *Interp) render(sess *UISession, draw func()) (string, error) {
 	root := &Node{Tag: "div", Attrs: [][2]string{{"class", "dad-app"}}}
-	ctx := &renderCtx{sess: sess, stack: []*Node{root}, handlers: map[string]uiHandler{}, seen: map[string]bool{}}
+	ctx := &renderCtx{sess: sess, path: sess.Path, stack: []*Node{root}, handlers: map[string]uiHandler{}, seen: map[string]bool{}}
 	ctx.frames = []*frame{{key: "", counts: map[string]int{}}}
 	err := in.safely(func() {
 		in.ui = ctx
 		defer func() { in.ui = nil }()
-		in.callValue(c, &callInfo{pos: c.Pos, name: c.Name})
+		draw()
 	})
 	if err != nil {
 		return "", err
 	}
+	sess.Title = firstHeading(root)
 	for k := range sess.states {
 		if !ctx.seen[k] {
 			delete(sess.states, k) // a component that is no longer shown forgets its state
@@ -144,6 +158,9 @@ func (in *Interp) Event(sess *UISession, version int, id string, value any) erro
 	if !ok {
 		return ErrStale
 	}
+	sess.Moved, sess.Away = false, ""
+	in.event = sess
+	defer func() { in.event = nil }()
 	return in.safely(func() {
 		switch h.kind {
 		case "click":
@@ -401,10 +418,22 @@ func (in *Interp) installElements(env *Env) {
 			in.fail(ci.pos, "«رابط» يأخذ النص والعنوان، مثل: رابط(\"الموقع\"، \"https://…\")")
 		}
 		n := &Node{Tag: "a", Text: textOf(ci.args[0])}
-		n.attr("href", in.optText(ci.args[1], ci.pos, "رابط", "العنوان"))
+		href := in.optText(ci.args[1], ci.pos, "رابط", "العنوان")
+		n.attr("href", href)
+		// A link to one of the program's pages opens it in place; the link to the
+		// page being shown is marked, for navigation bars.
+		if isPageLink(href) && in.hasPage(href) {
+			n.attr("data-nav", "")
+			if samePath(href, in.ui.path) {
+				n.attr("aria-current", "page")
+			}
+		}
 		in.emit(n)
 		return nil
 	})
+	// «انتقل("/المهام")» moves to another page after an event.
+	env.define("انتقل", &Builtin{Name: "انتقل", Fn: (*Interp).navigate}, false)
+
 	def("فاصل", false, func(in *Interp, ci *callInfo) Value {
 		in.uiOptions(ci, "فاصل")
 		in.emit(&Node{Tag: "hr"})

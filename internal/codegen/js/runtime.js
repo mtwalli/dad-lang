@@ -1069,7 +1069,16 @@
   element("رابط", false, (args, named, pos) => {
     options("رابط", named, pos);
     if (args.length !== 2) fail(pos, "«رابط» يأخذ النص والعنوان، مثل: رابط(\"الموقع\"، \"https://…\")");
-    emit(node("a", [["href", optText(args[1], pos, "رابط", "العنوان")]], textOf(args[0])));
+    const href = optText(args[1], pos, "رابط", "العنوان");
+    const n = node("a", [["href", href]], textOf(args[0]));
+    // A link to one of the program's pages opens it in place; the link to the
+    // page being shown is marked, for navigation bars.
+    if (isPageLink(href) && matchPage(href)) {
+      if (routing === "hash") n.attrs[0][1] = "#" + href;
+      n.attrs.push(["data-nav", ""]);
+      if (cleanPath(href) === cleanPath(ui.path)) n.attrs.push(["aria-current", "page"]);
+    }
+    emit(n);
     return null;
   });
   element("فاصل", false, (args, named, pos) => { options("فاصل", named, pos); emit(node("hr")); return null; });
@@ -1084,17 +1093,135 @@
     return s + esc(n.text) + n.kids.map(html).join("") + "</" + n.tag + ">";
   }
 
-  function newSession() { return { version: 0, states: {}, handlers: {} }; }
+  function newSession() {
+    return { version: 0, path: "", title: "", notFound: false, moved: false, away: "", states: {}, handlers: {}, page: null, params: {} };
+  }
 
   function render(sess, root) {
+    appRoot = root;
+    return draw(sess, () => call(root, [], [], [0, 0], root.name));
+  }
+
+  function draw(sess, layout) {
     const top = node("div", [["class", "dad-app"]]);
-    ui = { sess, stack: [top], frames: [{ key: "", counts: {} }], handlers: {}, nextID: 0, seen: {} };
-    try { call(root, [], [], [0, 0], root.name); } finally { var done = ui; ui = null; }
+    ui = { sess, path: sess.path, stack: [top], frames: [{ key: "", counts: {} }], handlers: {}, nextID: 0, seen: {} };
+    try { layout(); } finally { var done = ui; ui = null; }
     for (const k of Object.keys(sess.states)) if (!done.seen[k]) delete sess.states[k];
     sess.handlers = done.handlers;
     sess.version++;
+    sess.title = firstHeading(top);
     return html(top);
   }
+
+  // ---------------------------------------------------------------- pages
+
+  // «صفحة "/المهام" = …» registers a page; a program without pages shows its
+  // main component at "/". Addresses match as in the interpreter.
+  const pages = [];
+  let appRoot = null;
+  let routing = "history"; // "hash" in a static site: links are «#/المهام»
+  function page(path, fn) { pages.push({ path, fn, comp: null }); }
+  const allPages = () => (pages.length ? pages : appRoot ? [{ path: "/", fn: null, comp: appRoot }] : []);
+
+  function cleanPath(path) {
+    path = String(path || "");
+    const i = path.search(/[?#]/);
+    if (i >= 0) path = path.slice(0, i);
+    try { path = decodeURIComponent(path); } catch (e) {}
+    if (path.length > 1) path = path.replace(/\/+$/, "");
+    return path || "/";
+  }
+  const isPageLink = (href) => href.startsWith("/") && !href.startsWith("//");
+  const trimSlashes = (s) => s.replace(/^\/+|\/+$/g, "");
+  function matchPath(pattern, path) {
+    const ps = trimSlashes(pattern).split("/"), xs = trimSlashes(path).split("/");
+    if (ps.length !== xs.length) return null;
+    const params = {};
+    for (let i = 0; i < ps.length; i++) {
+      const m = /^\{([^{}/]+)\}$/.exec(ps[i]);
+      if (m) { params[m[1].trim()] = xs[i]; continue; }
+      if (ps[i] !== xs[i]) return null;
+    }
+    return params;
+  }
+  function matchPage(path) {
+    path = cleanPath(path);
+    for (const p of allPages()) {
+      const params = matchPath(p.path, path);
+      if (params) return { page: p, params };
+    }
+    return null;
+  }
+  // pathValue is a value from an address: a whole number when it is one.
+  function pathValue(v) {
+    if (/^[+-]?\d+$/.test(v)) {
+      const n = BigInt(v);
+      if (BigInt.asIntN(64, n) === n) return n;
+    }
+    return v;
+  }
+
+  // open points a session at an address; it reports whether a page is there.
+  function open(sess, path, root) {
+    if (root !== undefined) appRoot = root;
+    sess.path = cleanPath(path);
+    const m = matchPage(sess.path);
+    sess.page = m ? m.page : null;
+    sess.params = m ? m.params : {};
+    sess.notFound = !m;
+    return !!m;
+  }
+
+  function renderPage(sess) {
+    const p = sess.page;
+    if (!p) {
+      const out = draw(sess, () => notFound(sess.path));
+      sess.title = "الصفحة غير موجودة";
+      return out;
+    }
+    if (p.comp) return draw(sess, () => call(p.comp, [], [], [0, 0], p.comp.name));
+    return draw(sess, () => {
+      // laid out like a component of its own, with its state kept by address
+      const key = "@" + sess.path;
+      ui.frames.push({ key, state: 0, counts: {} });
+      ui.seen[key] = true;
+      try {
+        try { p.fn(sess.params); } catch (e) { if (!(e instanceof ReturnSig)) throw e; }
+      } finally { ui.frames.pop(); }
+    });
+  }
+
+  function notFound(path) {
+    const col = node("div", [["class", "dad-col dad-notfound"]], "", [
+      node("h1", [], "الصفحة غير موجودة"),
+      node("p", [], "لا توجد صفحة بالعنوان «" + path + "»."),
+    ]);
+    if (matchPage("/")) col.kids.push(node("a", [["href", routing === "hash" ? "#/" : "/"], ["data-nav", ""]], "إلى الصفحة الرئيسية"));
+    emit(col);
+  }
+
+  function firstHeading(n) {
+    if (/^h[1-6]$/.test(n.tag)) return n.text;
+    for (const k of n.kids) { const t = firstHeading(k); if (t) return t; }
+    return "";
+  }
+
+  // «انتقل("/المهام")»: after the event, the page moves to that address.
+  let eventSess = null;
+  def("انتقل", (args, named, pos) => {
+    if (args.length !== 1 || (named && named.length)) fail(pos, "«انتقل» يأخذ عنوان الصفحة، مثل: انتقل(\"/المهام\")");
+    const to = args[0];
+    if (typeof to !== "string") fail(pos, `«انتقل» يأخذ عنواناً نصياً، مثل: انتقل("/المهام")، لكن وجدت «${typeName(to)}»`);
+    const sess = eventSess;
+    if (!sess) {
+      if (ui) fail(pos, "«انتقل» تُستخدم عند حدث، مثل الضغط على زر، لا أثناء عرض الصفحة");
+      fail(pos, "«انتقل» تُستخدم في صفحة ويب، عند حدث مثل الضغط على زر");
+    }
+    if (to.startsWith("https://") || to.startsWith("http://")) sess.away = to;
+    else if (to.startsWith("/")) { open(sess, to); sess.moved = true; }
+    else fail(pos, "عنوان الصفحة في «انتقل» يبدأ بـ «/»، مثل: انتقل(\"/المهام\")");
+    return null;
+  });
 
   function fieldValue(old, s) {
     if (isInt(old)) { const t = s.trim(); if (/^[+-]?\d+$/.test(t)) return BigInt(t); }
@@ -1106,6 +1233,13 @@
     if (version !== sess.version) return;
     const h = sess.handlers[id];
     if (!h) return;
+    sess.moved = false;
+    sess.away = "";
+    eventSess = sess;
+    try { handle(h, value); } finally { eventSess = null; }
+  }
+
+  function handle(h, value) {
     if (h.kind === "click") { if (h.fn) call(h.fn, [], [], [0, 0], "زر"); }
     else if (h.kind === "input") {
       let v = String(value);
@@ -1117,26 +1251,47 @@
     }
   }
 
-  // mount shows the main component in #dad-root and handles its events in the page.
+  // mount shows the program in #dad-root and handles its events in the page.
+  // A static site keeps the address of its pages after «#», like «#/المهام», so
+  // it works from any host, and from the disk.
   function mount(root) {
     if (typeof localStorage !== "undefined") {
       const key = "dad:" + (document.title || "app");
       try { const saved = JSON.parse(localStorage.getItem(key)); if (saved && saved.tables) store.tables = saved.tables; } catch (e) {}
       store.persist = () => { try { localStorage.setItem(key, JSON.stringify({ tables: store.tables })); } catch (e) {} };
     }
+    routing = "hash";
     const el = document.getElementById("dad-root");
+    el.setAttribute("data-routing", "hash");
+    const name = document.title;
     const sess = newSession();
+    const here = () => { try { return decodeURIComponent(location.hash.replace(/^#/, "")) || "/"; } catch (e) { return "/"; } };
     const show = (fn) => {
-      try { return { html: fn(), version: sess.version }; }
+      try { return { html: fn(), version: sess.version, title: sess.title || name }; }
       catch (e) { return { error: e instanceof Thrown ? "مشكلة لم تُعالَج: " + problemMessage(e.val) : e.message }; }
     };
-    const first = show(() => render(sess, root));
+    open(sess, here(), root || null);
+    const first = show(() => renderPage(sess));
     el.innerHTML = first.html || "";
     el.setAttribute("data-version", String(sess.version));
+    if (first.title) document.title = first.title;
     if (first.error) { const box = document.getElementById("dad-error"); box.textContent = first.error; box.hidden = false; }
     root$ = root;
     window.dadSend = (e) => {
-      const r = show(() => { event(sess, e.v, e.id, e.value); return render(sess, root); });
+      if (e.nav !== undefined) {
+        open(sess, e.nav);
+        const r = show(() => renderPage(sess));
+        r.path = sess.path;
+        return r;
+      }
+      let away = "";
+      const r = show(() => {
+        event(sess, e.v, e.id, e.value);
+        away = sess.away;
+        return away ? "" : renderPage(sess);
+      });
+      if (away) return { location: away };
+      if (sess.moved) r.path = sess.path;
       return r;
     };
   }
@@ -1175,6 +1330,7 @@
     E: Object.freeze([]), doThrow, undef, variant, extend,
     str, index, setIndex, keepFloat, map, range, iter, throwValue, caught, noMatch, patternFields,
     state, render, newSession, event, mount, main, store,
+    page, pages, pathValue, open, renderPage,
     setOutput(f) { out = f; },
   };
   if (typeof module !== "undefined" && module.exports) module.exports = $;

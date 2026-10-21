@@ -268,3 +268,31 @@ func TestImports(t *testing.T) {
 		t.Errorf("definition range: %v", def)
 	}
 }
+
+// Pages show in the outline by their address, and an address is not offered as a name.
+func TestPagesInTheOutline(t *testing.T) {
+	c := start(t)
+	text := "صفحة \"/\" = الرئيسية()\nصفحة \"/مهمة/{رقم}\" {\n    عنوان(\"{رقم}\")\n}\nمكون الرئيسية() {\n    عنوان(\"أ\")\n}\n"
+	c.notify("textDocument/didOpen", map[string]any{"textDocument": map[string]any{"uri": uri, "languageId": "dad", "version": 1, "text": text}})
+	syms := c.request("textDocument/documentSymbol", map[string]any{"textDocument": map[string]any{"uri": uri}}).([]any)
+	var outline []string
+	for _, s := range syms {
+		m := s.(map[string]any)
+		outline = append(outline, m["name"].(string))
+		if m["name"] == "/مهمة/{رقم}" {
+			r := m["range"].(map[string]any)
+			if r["start"].(map[string]any)["character"] != 5.0 || r["end"].(map[string]any)["character"] != 18.0 {
+				t.Errorf("range of the page: %v", r)
+			}
+		}
+	}
+	if strings.Join(outline, " ") != "/ /مهمة/{رقم} الرئيسية" {
+		t.Errorf("outline: %v", outline)
+	}
+	items := c.request("textDocument/completion", at(5, 4)).([]any)
+	for _, it := range items {
+		if l := it.(map[string]any)["label"].(string); strings.HasPrefix(l, "/") {
+			t.Errorf("completion offers the address %q", l)
+		}
+	}
+}

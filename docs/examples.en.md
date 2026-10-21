@@ -92,3 +92,12 @@ Output:
 ``` { .text .dad-out }
 --8<-- "examples/output/07-modules.txt"
 ```
+
+## 8. A program with pages
+
+Three pages with their own addresses, a navigation bar, and `انتقل` after adding and saving.
+Run it with `dad dev examples/08-pages.dad`. See [Pages](ui.md#pages).
+
+```dad
+--8<-- "examples/08-pages.dad"
+```

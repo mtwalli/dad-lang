@@ -127,6 +127,15 @@ test("keywords and declarations", () => {
   assert.match(scopeOf(t, "رشح"), /entity\.name\.function\.call/);
 });
 
+test("pages: «صفحة» before an address, and «انتقل»", () => {
+  const t = tokenize(ex("08-pages.dad"));
+  assert.match(scopeOf(t, "صفحة"), /storage\.type\.dad/);
+  assert.match(scopeOf(t, "انتقل"), /support\.function\.builtin/);
+  // as an ordinary name, صفحة is not a keyword
+  const u = tokenize("ثابت صفحة = 3\nاطبع(صفحة)\n");
+  assert.doesNotMatch(scopeOf(u, "صفحة"), /storage\.type/);
+});
+
 test("short words are not found inside longer names", () => {
   const t = tokenize("ثابت وصف = ليسا\nدالة كتب() = هوية");
   for (const tok of t) {

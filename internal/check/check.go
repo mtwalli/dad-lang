@@ -11,7 +11,9 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/mtwalli/dad-lang/internal/ast"
 	"github.com/mtwalli/dad-lang/internal/interp"
@@ -129,6 +131,7 @@ type checker struct {
 	scopes   map[*module.Module]*scope  // each checked file's top-level names
 	imported map[*scope]map[string]bool // names a file imported rather than declared
 	owners   map[string]*module.Module  // file that declares each type, table, enum, case and server function
+	addrs    map[string]addrUse         // the addresses of pages and «جلب» routes, to find two at one address
 
 	// for editors (Analyze): definitions of functions, members and parameters
 	info       *Info
@@ -155,6 +158,7 @@ func newChecker() *checker {
 		scopes:     map[*module.Module]*scope{},
 		imported:   map[*scope]map[string]bool{},
 		owners:     map[string]*module.Module{},
+		addrs:      map[string]addrUse{},
 	}
 	// Built-ins live in a scope around the program's own, like in the interpreter.
 	prelude := &scope{names: map[string]*symbol{}}
@@ -437,6 +441,8 @@ func (c *checker) topLevel(s ast.Stmt) {
 		c.componentDecl(d)
 	case *ast.RouteDecl:
 		c.routeDecl(d)
+	case *ast.PageDecl:
+		c.pageDecl(d)
 	case *ast.Import:
 	default:
 		c.stmt(s, g)
@@ -525,7 +531,84 @@ func (c *checker) componentDecl(d *ast.ComponentDecl) {
 
 var pathParam = regexp.MustCompile(`\{([^{}/]+)\}`)
 
+// addrUse is a page or a «جلب» route at an address.
+type addrUse struct {
+	what string // "الصفحة" or "المسار"
+	mod  *module.Module
+	line int
+}
+
+// address checks a path's {names} and records it, so that two pages, or a page and a
+// «جلب» route, can't answer at the same address. «/مهمة/{رقم}» and «/مهمة/{ر}/» are
+// the same address.
+func (c *checker) address(path string, pos token.Pos, what string) []string {
+	var names []string
+	seen := map[string]bool{}
+	segs := strings.Split(strings.Trim(path, "/"), "/")
+	for i, seg := range segs {
+		m := pathParam.FindStringSubmatch(seg)
+		if m == nil {
+			if strings.ContainsAny(seg, "{}") {
+				c.errorf(pos, "في العنوان «%s» جزء غير صحيح: «%s»؛ المتغير يُكتب وحده بين جزأين، مثل: \"/مهمة/{رقم}\"", path, seg)
+			}
+			continue
+		}
+		name := strings.TrimSpace(m[1])
+		if m[0] != seg || !isName(name) {
+			c.errorf(pos, "في العنوان «%s» جزء غير صحيح: «%s»؛ المتغير يُكتب وحده بين جزأين، مثل: \"/مهمة/{رقم}\"", path, seg)
+			continue
+		}
+		if seen[name] {
+			c.errorf(pos, "المتغير «%s» مكرر في العنوان «%s»", name, path)
+		}
+		seen[name] = true
+		names = append(names, name)
+		segs[i] = "{}"
+	}
+	key := "/" + strings.Join(segs, "/")
+	if prev, ok := c.addrs[key]; ok {
+		where := "السطر " + strconv.Itoa(prev.line)
+		if prev.mod != nil && prev.mod != c.mod {
+			where = "«" + prev.mod.Name() + "»، " + where
+		}
+		c.errorf(pos, "%s «%s» بالعنوان نفسه لـ%s في %s", what, path, prev.what, where)
+	} else {
+		c.addrs[key] = addrUse{what: what, mod: c.mod, line: pos.Line}
+	}
+	return names
+}
+
+// isName reports whether s can be a variable name.
+func isName(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i, r := range s {
+		if !(unicode.IsLetter(r) || r == '_' || (i > 0 && unicode.IsDigit(r)) || unicode.Is(unicode.Mn, r)) {
+			return false
+		}
+	}
+	return true
+}
+
+// pageDecl checks «صفحة "/…" = …»: the body lays out the page like a component's,
+// with the address's {names} as values.
+func (c *checker) pageDecl(d *ast.PageDecl) {
+	names := c.address(d.Path, d.PathPos, "الصفحة")
+	c.def(d.Path, d.PathPos, "page", "صفحة "+d.Path, nil, nil) // for the outline of editors
+	c.deferred = append(c.deferred, func() {
+		s := c.global.child()
+		for _, n := range names {
+			s.names[n] = &symbol{kind: sVar, what: "«" + n + "»"}
+		}
+		c.withFrame(&frame{name: "صفحة " + d.Path, component: true}, func() { c.body(d.Body, s) })
+	})
+}
+
 func (c *checker) routeDecl(d *ast.RouteDecl) {
+	if d.Method == "GET" {
+		c.address(d.Path, d.Pos, "المسار")
+	}
 	c.deferred = append(c.deferred, func() {
 		s := c.global.child()
 		for _, m := range pathParam.FindAllStringSubmatch(d.Path, -1) {
@@ -699,6 +782,8 @@ func (c *checker) stmt(st ast.Stmt, s *scope) *Type {
 		c.funcDeclNow(d, s)
 	case *ast.Import:
 		c.errorf(d.Pos, "«استورد» تُكتب في أعلى الملف، لا داخل كتلة")
+	case *ast.PageDecl:
+		c.errorf(d.Pos, "«صفحة» تُعرَّف في أعلى الملف، لا داخل دالة أو مكون")
 	default:
 		// other declarations inside a block are handled like top-level ones
 		c.collect(st)

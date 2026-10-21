@@ -555,7 +555,7 @@ func (s *Server) completion(params json.RawMessage) any {
 
 var symbolKinds = map[string]int{
 	"function": 12, "method": 6, "type": 23, "table": 23, "enum": 10, "case": 22, "component": 5,
-	"field": 8, "constant": 14, "variable": 13, "state": 13,
+	"field": 8, "constant": 14, "variable": 13, "state": 13, "page": 1,
 }
 
 func (s *Server) symbols(params json.RawMessage) any {
@@ -579,10 +579,19 @@ func (s *Server) symbols(params json.RawMessage) any {
 		}
 		return sym
 	}
+	var defs []*check.Def
 	for _, def := range d.info.Defs {
 		if def.Global && def.Parent == nil && def.Kind != "parameter" {
-			out = append(out, symbol(def))
+			defs = append(defs, def)
 		}
+	}
+	// in the order they are written
+	sort.SliceStable(defs, func(i, j int) bool {
+		a, b := defs[i].Pos, defs[j].Pos
+		return a.Line < b.Line || a.Line == b.Line && a.Col < b.Col
+	})
+	for _, def := range defs {
+		out = append(out, symbol(def))
 	}
 	return out
 }

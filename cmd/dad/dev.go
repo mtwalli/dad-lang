@@ -245,15 +245,16 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	route, params := s.in.MatchRoute(r.Method, path)
 	if route == nil {
-		if path == "/" && r.Method == http.MethodGet {
-			if root := s.in.RootComponent(); root != nil {
-				s.appPage(w, root)
+		if r.Method == http.MethodGet && len(s.in.Pages()) > 0 {
+			// A page, or, for a browser asking for a page, the one that says there's none.
+			if p, _ := s.in.MatchPage(path); p != nil || strings.Contains(r.Header.Get("Accept"), "text/html") {
+				s.appPage(w, path)
 				return
 			}
-			if !s.production {
-				s.page(w)
-				return
-			}
+		}
+		if path == "/" && r.Method == http.MethodGet && !s.production {
+			s.page(w)
+			return
 		}
 		writeError(w, 404, fmt.Sprintf("لا يوجد مسار «%s %s»", r.Method, path))
 		return
@@ -275,11 +276,12 @@ func (s *devServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, result)
 }
 
-// appPage shows the program's main component as a live page.
-func (s *devServer) appPage(w http.ResponseWriter, root *interp.Component) {
+// appPage shows the program's page at an address as a live page.
+func (s *devServer) appPage(w http.ResponseWriter, path string) {
 	id := newSessionID()
 	sess := interp.NewUISession()
-	body, err := s.in.Render(sess, root)
+	found := s.in.Open(sess, path)
+	body, err := s.in.RenderPage(sess)
 	msg := ""
 	if err != nil {
 		msg = err.Error()
@@ -292,9 +294,20 @@ func (s *devServer) appPage(w http.ResponseWriter, root *interp.Component) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
+	if !found {
+		w.WriteHeader(http.StatusNotFound)
+	}
 	io.WriteString(w, web.Page(web.PageOptions{
-		Title: root.Name, Body: body, Session: id, Version: sess.Version, Error: msg, Live: live,
+		Title: s.title(sess), Body: body, Session: id, Version: sess.Version, Error: msg, Live: live,
 	}))
+}
+
+// title is what the browser tab shows: the page's first heading, or the program's name.
+func (s *devServer) title(sess *interp.UISession) string {
+	if sess.Title != "" {
+		return sess.Title
+	}
+	return strings.TrimSuffix(filepath.Base(s.path), filepath.Ext(s.path))
 }
 
 // Open pages keep their state on the server. «dad dev» keeps the last 200;
@@ -337,7 +350,8 @@ func newSessionID() string {
 	return hex.EncodeToString(b)
 }
 
-// uiEvent runs a click or typing from a page and sends back the new render.
+// uiEvent runs a click or typing from a page, or opens another page («nav»: a
+// link to a page, or the back button), and sends back the new render.
 func (s *devServer) uiEvent(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeError(w, 405, "الأحداث تُرسل بطلب POST")
@@ -348,32 +362,47 @@ func (s *devServer) uiEvent(w http.ResponseWriter, r *http.Request) {
 		Version int    `json:"v"`
 		ID      string `json:"id"`
 		Value   any    `json:"value"`
+		Nav     string `json:"nav"`
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&ev); err != nil {
 		writeError(w, 400, "حدث غير مفهوم")
 		return
 	}
 	sess := s.sessions[ev.Session]
-	root := (*interp.Component)(nil)
-	if s.in != nil {
-		root = s.in.RootComponent()
-	}
-	if sess == nil || root == nil {
+	if sess == nil || s.in == nil || len(s.in.Pages()) == 0 {
 		writeJSON(w, 200, map[string]any{"reload": true}) // the program was reloaded
 		return
 	}
 	s.lastUsed[ev.Session] = time.Now()
+	writeJSON(w, 200, uiReply(s.in, sess, ev.Version, ev.ID, ev.Value, ev.Nav, s.title))
+}
+
+// uiReply runs an event or opens a page, and describes the page to show next:
+// its HTML and render version, its title, and the address to show when it moved.
+func uiReply(in *interp.Interp, sess *interp.UISession, version int, id string, value any, nav string, title func(*interp.UISession) string) map[string]any {
 	reply := map[string]any{}
-	if err := s.in.Event(sess, ev.Version, ev.ID, ev.Value); err != nil && !errors.Is(err, interp.ErrStale) {
-		reply["error"] = err.Error()
+	if nav != "" {
+		in.Open(sess, nav)
+		reply["path"] = sess.Path
+	} else {
+		if err := in.Event(sess, version, id, value); err != nil && !errors.Is(err, interp.ErrStale) {
+			reply["error"] = err.Error()
+		}
+		if sess.Away != "" {
+			return map[string]any{"location": sess.Away}
+		}
+		if sess.Moved {
+			reply["path"] = sess.Path
+		}
 	}
-	html, err := s.in.Render(sess, root)
+	html, err := in.RenderPage(sess)
 	if err != nil {
 		reply["error"] = err.Error()
 	} else {
 		reply["html"], reply["version"] = html, sess.Version
 	}
-	writeJSON(w, 200, reply)
+	reply["title"] = title(sess)
+	return reply
 }
 
 func (s *devServer) page(w http.ResponseWriter) {
@@ -394,6 +423,7 @@ func (s *devServer) info(w http.ResponseWriter) {
 		"version":   s.version,
 		"error":     s.err,
 		"routes":    []routeInfo{},
+		"pages":     []routeInfo{},
 		"functions": []interp.ServerFunc{},
 		"tables":    []interp.TableInfo{},
 	}
@@ -406,6 +436,11 @@ func (s *devServer) info(w http.ResponseWriter) {
 			routes = append(routes, routeInfo{r.Method, r.Path, r.Pos.Line})
 		}
 		out["routes"] = routes
+		pages := []routeInfo{}
+		for _, p := range s.in.Pages() {
+			pages = append(pages, routeInfo{"GET", p.Path, p.Pos.Line})
+		}
+		out["pages"] = pages
 		if fns := s.in.ServerFunctions(); fns != nil {
 			out["functions"] = fns
 		}

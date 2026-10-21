@@ -37,7 +37,7 @@ This page shows how it is built, what is done, and what comes next.
 |---|---|---|
 | **0. Specification** | [The specification](SPEC.md), [the grammar](grammar.md), sample programs, the lexer | ✅ Done |
 | **1. Core language** | Parser, checker, interpreter, programs in several files, JavaScript compiler, Arabic errors | ✅ Done. Next: smart casts for optional values, generic types, unused-variable warnings |
-| **2. Interface** | `مكون`, `حالة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`. Next: more elements, several pages, updating only what changed |
+| **2. Interface** | `مكون`, `حالة`, `صفحة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`, with several pages. Next (0.3): more elements, forms, styling |
 | **3. Server and data** | `خادم` functions, `جدول` in SQLite, `مسار`, `dad dev`, `dad serve` | ✅ Done. Next: users and sign-in, permissions, requests in parallel |
 | **4. Tooling** | VS Code extension, `dad fmt`, the playground, the `dad lsp` language server | ✅ Done |
 | **5. Distribution** | Homebrew, winget, `.deb` and `.rpm`, install scripts, the tutorial in English and Arabic | ✅ Done in 0.2 |
@@ -46,11 +46,13 @@ This page shows how it is built, what is done, and what comes next.
 
 These are the next steps, roughly in order:
 
-1. **Users and sign-in**, and permissions on server functions and routes, so that programs
-   with private data can go online.
-2. **Requests in parallel** in `dad serve`, for busier sites.
-3. **More elements:** lists, selects, text areas and dialogs. Also **several pages** in one
-   program, each with its own address.
+1. **The interface, for 0.3:** ✅ several pages, each with its own address; then more
+   elements (selects, text areas, number and date fields, tables of records, tabs, dialogs,
+   icons), forms that check their fields, and styling without CSS.
+2. **Users and sign-in, for 0.4,** and permissions on server functions and routes, so that
+   programs with private data can go online. Their sign-in pages are made of ordinary pages
+   and forms.
+3. **Requests in parallel** in `dad serve`, for busier sites.
 4. **Updating only what changed** on a page (signals), instead of laying out the whole
    component again.
 5. **A sharper checker:** smart casts after `إذا ن != عدم`, generic types, warnings for unused
@@ -80,6 +82,8 @@ These are the next steps, roughly in order:
 3. ✅ The playground shows the interface (in WebAssembly, tables in memory)
 4. ✅ Static sites from `dad build`: components render in the browser, and tables live in its
    storage
+5. ✅ [Several pages](ui.md#pages) (`صفحة`): each at its own address, with links that open in
+   place, `انتقل`, the back button and a page for addresses with none
 
 ### Phase 3: server and data
 

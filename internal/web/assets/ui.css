@@ -127,6 +127,17 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   outline: 3px solid var(--focus); outline-offset: 2px;
 }
 
+/* Pages: the link to the page on screen, as in a navigation bar */
+a[aria-current="page"] {
+  color: var(--ink); font-weight: 700;
+  text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--lapis);
+}
+#dad-root:focus { outline: none; }
+
+/* The page shown at an address with no page */
+.dad-notfound { padding-block: 3rem; }
+.dad-notfound h1 { margin-bottom: 0; }
+
 /* A ticked box crosses out the text next to it */
 .dad-row > input[type="checkbox"]:checked + p { color: var(--muted); text-decoration: line-through; }
 

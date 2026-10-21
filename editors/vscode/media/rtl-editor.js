@@ -25,7 +25,7 @@
   kw("op", "و أو ليس هو ك");
   kw("this", "هذا");
   kw("type", "صحيح عشري نص منطقي قائمة قاموس");
-  const BUILTINS = new Set(["اطبع", "مشكلة", "جذر", "مطلق", "أدنى", "أقصى"]);
+  const BUILTINS = new Set(["اطبع", "مشكلة", "جذر", "مطلق", "أدنى", "أقصى", "انتقل"]);
   const NAMES_TYPE = new Set(["نوع", "تعداد", "عقد", "امتداد", "مكون", "جدول"]);
   const WORD = /[\p{L}\p{Mn}_][\p{L}\p{Mn}0-9_]*/uy;
   const NUM = /[0-9](?:[0-9_]*[0-9])?(?:\.[0-9](?:[0-9_]*[0-9])?)?/y;
@@ -52,6 +52,8 @@
         const w = sticky(WORD, text, i);
         if (w) {
           let cls = KW[w];
+          // «صفحة» is a keyword only before an address: صفحة "/المهام" = …
+          if (!cls && w === "صفحة" && /^[ \t]*"/.test(text.slice(i + w.length, i + w.length + 8))) cls = "decl";
           if (!cls) {
             if (prev === "دالة") cls = "fn";
             else if (NAMES_TYPE.has(prev)) cls = "type";

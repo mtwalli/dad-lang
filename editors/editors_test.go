@@ -43,6 +43,26 @@ func TestVSCodeKnowsEveryKeyword(t *testing.T) {
 	}
 }
 
+// Words the compiler knows outside token.Keywords: «صفحة» (a keyword only before an
+// address) and the built-in «انتقل» are highlighted and explained everywhere.
+func TestEditorsKnowPages(t *testing.T) {
+	for _, f := range []string{"vscode/keywords.js", "vscode/syntaxes/dad.tmLanguage.json", "vscode/media/rtl-editor.js",
+		"../docs/assets/playground.js", "../tools/pygments-dad/dad_lexer.py"} {
+		b, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, w := range []string{"صفحة", "انتقل"} {
+			if f == "../tools/pygments-dad/dad_lexer.py" && w == "انتقل" {
+				continue // Pygments colours every call alike
+			}
+			if !strings.Contains(string(b), w) {
+				t.Errorf("%q is missing from %s", w, f)
+			}
+		}
+	}
+}
+
 // The interface elements are highlighted and explained like the other built-ins.
 func TestEditorsKnowEveryElement(t *testing.T) {
 	files := map[string]string{}

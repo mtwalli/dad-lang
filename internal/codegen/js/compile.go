@@ -32,10 +32,15 @@ type Program struct {
 	Body string
 	// Root is the name of the component a page shows, or "" without an interface.
 	Root string
+	// Pages counts the pages (صفحة); a program with pages or a Root is a site.
+	Pages int
 	// Routes and ServerFuncs count what a static build cannot serve:
 	// routes (مسار) are left out; server functions (خادم) run in the page.
 	Routes, ServerFuncs int
 }
+
+// Site reports whether the program has an interface, which «dad build» makes a site.
+func (p *Program) Site() bool { return p.Root != "" || p.Pages > 0 }
 
 // Node is the program as a script for Node: it loads ./dad-runtime.js and runs.
 // file names the program in error messages.
@@ -49,7 +54,7 @@ func (p *Program) Node(file string) string {
 func (p *Program) Browser(file string) string {
 	return "\"use strict\";\n// Compiled from " + file + " by «dad build».\n(function ($) {\n" +
 		"  const root = $.main(() => {\n" + p.Body + "}, " + quote(file) + ");\n" +
-		"  if (root) $.mount(root);\n})($dad);\n"
+		"  if (root || $.pages.length) $.mount(root);\n})($dad);\n"
 }
 
 // Compile compiles a parsed, checked file that imports nothing.
@@ -168,6 +173,8 @@ func (c *compiler) file(m *module.Module, vars map[*module.Module]string, p *Pro
 		switch d := s.(type) {
 		case *ast.RouteDecl:
 			p.Routes++
+		case *ast.PageDecl:
+			p.Pages++
 		case *ast.FuncDecl:
 			if d.Server {
 				p.ServerFuncs++
@@ -210,7 +217,7 @@ func rootComponent(f *ast.File) string {
 
 func isDecl(s ast.Stmt) bool {
 	switch s.(type) {
-	case *ast.FuncDecl, *ast.TableDecl, *ast.ComponentDecl, *ast.RouteDecl, *ast.TypeDecl,
+	case *ast.FuncDecl, *ast.TableDecl, *ast.ComponentDecl, *ast.RouteDecl, *ast.PageDecl, *ast.TypeDecl,
 		*ast.EnumDecl, *ast.ExtensionDecl, *ast.ContractDecl, *ast.Unsupported:
 		return true
 	}
