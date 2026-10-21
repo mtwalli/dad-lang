@@ -44,12 +44,18 @@ class Uri {
     this.fsPath = fsPath;
     this.scheme = scheme;
   }
+  // As VS Code writes them: file:///C:/… on Windows, with forward slashes.
   toString() {
-    return this.scheme + "://" + this.fsPath;
+    if (this.scheme !== "file") return this.scheme + "://" + this.fsPath;
+    const p = this.fsPath.replace(/\\/g, "/");
+    return "file://" + (p.startsWith("/") ? "" : "/") + p;
   }
   static parse(s) {
     const m = /^file:\/\/(.*)$/.exec(s);
-    return m ? new Uri(decodeURIComponent(m[1])) : new Uri(s, "https");
+    if (!m) return new Uri(s, "https");
+    let p = decodeURIComponent(m[1]);
+    if (/^\/[A-Za-z]:/.test(p)) p = p.slice(1); // /C:/… → C:/…
+    return new Uri(path.normalize(p));
   }
   static joinPath(base, ...parts) {
     return new Uri(path.join(base.fsPath, ...parts), base.scheme);
