@@ -116,3 +116,14 @@ records with a button on each row, a dialog to confirm, an alert, icons, a theme
 ```css title="09-library.css"
 --8<-- "examples/09-library.css"
 ```
+
+## 10. Signing up — a form that checks its fields
+
+A `نموذج` whose fields have rules: required fields, an email, a length, a password typed
+twice, a country to choose, terms to accept, and an email that must not be taken (a server
+function). The button runs only when every field is right. Run it with
+`dad dev examples/10-signup.dad`. See [Forms](ui.md#forms).
+
+```dad
+--8<-- "examples/10-signup.dad"
+```

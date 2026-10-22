@@ -926,12 +926,15 @@
   const elementOptions = {
     "عمود": boxOptions, "صف": boxOptions, "بطاقة": boxOptions,
     "عنوان": ["مستوى", "لون", "محاذاة", "صنف"], "فقرة": ["لون", "محاذاة", "حجم", "صنف"],
-    "زر": ["معطل", "نمط", "حجم", "ملء", "أيقونة", "صنف"], "حقل": ["تلميح", "صيغة", "معطل", "أدنى", "أقصى", "صنف"],
-    "مربع_اختيار": ["نص", "معطل", "صنف"], "صورة": ["وصف", "عرض", "صنف"], "رابط": ["نمط", "حجم", "أيقونة", "صنف"],
-    "فاصل": ["صنف"], "قائمة_منسدلة": ["تلميح", "معطل", "صنف"], "اختيار": ["معطل", "صنف"],
-    "منطقة_نص": ["تلميح", "أسطر", "معطل", "صنف"], "جدول_عرض": ["أعمدة", "فارغ", "صنف"],
+    "زر": ["معطل", "نمط", "حجم", "ملء", "أيقونة", "إرسال", "صنف"],
+    "حقل": ["تسمية", "تلميح", "صيغة", "معطل", "أدنى", "أقصى", "مطلوب", "أدنى_طول", "أقصى_طول", "تحقق", "صنف"],
+    "مربع_اختيار": ["نص", "تسمية", "معطل", "مطلوب", "تحقق", "صنف"], "صورة": ["وصف", "عرض", "صنف"], "رابط": ["نمط", "حجم", "أيقونة", "صنف"],
+    "فاصل": ["صنف"], "قائمة_منسدلة": ["تسمية", "تلميح", "معطل", "مطلوب", "تحقق", "صنف"],
+    "اختيار": ["تسمية", "معطل", "مطلوب", "تحقق", "صنف"],
+    "منطقة_نص": ["تسمية", "تلميح", "أسطر", "معطل", "مطلوب", "أدنى_طول", "أقصى_طول", "تحقق", "صنف"], "جدول_عرض": ["أعمدة", "فارغ", "صنف"],
     "قائمة_عناصر": ["مرقمة", "فارغ", "صنف"], "ألسنة": ["صنف"], "لسان": ["أيقونة", "صنف"],
     "نافذة": ["عنوان", "صنف"], "تنبيه": ["نمط", "صنف"], "أيقونة": ["وصف", "حجم", "لون", "صنف"],
+    "نموذج": boxOptions,
   };
   const optionValues = {
     "نمط": ["أساسي", "ثانوي", "خفيف", "خطر"], "حجم": ["صغير", "عادي", "كبير"],
@@ -1083,7 +1086,7 @@
   const variantClass = { "ثانوي": "dad-secondary", "خفيف": "dad-quiet", "خطر": "dad-danger" };
   const sizeClass = { "صغير": "dad-small", "كبير": "dad-large" };
   const textAlign = { "بداية": "start", "وسط": "center", "نهاية": "end" };
-  const isBox = (name) => name === "عمود" || name === "صف" || name === "بطاقة";
+  const isBox = (name) => name === "عمود" || name === "صف" || name === "بطاقة" || name === "نموذج";
 
   function look(n, o, pos, name) {
     const classes = [], styles = [];
@@ -1223,7 +1226,16 @@
     look(n, o, pos, "زر");
     if (flag(o, "معطل", pos)) n.attrs.push(["disabled", ""]);
     const f = lambdaAfter(args, 1, "زر", pos);
-    if (f) n.attrs.push(["data-click", handler({ kind: "click", fn: f })]);
+    // a button of a form checks the form's fields first, unless «إرسال: خطأ»
+    let submits = ui.form !== null;
+    if ("إرسال" in o) {
+      if (!ui.form) fail(pos, "«إرسال» في «زر» لزر داخل «نموذج»");
+      submits = flag(o, "إرسال", pos);
+    }
+    if (submits) {
+      n.attrs.find((a) => a[0] === "type")[1] = "submit";
+      n.attrs.push(["data-click", handler({ kind: "submit", fn: f, form: ui.form })]);
+    } else if (f) n.attrs.push(["data-click", handler({ kind: "click", fn: f })]);
     emit(n);
     return null;
   });
@@ -1242,7 +1254,9 @@
     look(n, o, pos, "حقل");
     if (flag(o, "معطل", pos)) n.attrs.push(["disabled", ""]);
     if (h.cell || h.fn) n.attrs.push(["data-input", handler(h)]);
-    emit(n);
+    const value = args[0] instanceof StateRef ? args[0].cell.val : args[0];
+    const builtin = kind === "email" || kind === "number" || "أدنى" in o || "أقصى" in o;
+    field("حقل", o, pos, n, n, builtin, () => checkText("حقل", o, pos, kind, value));
     return null;
   });
   element("مربع_اختيار", true, (args, named, pos) => {
@@ -1255,14 +1269,12 @@
     if (on) box.attrs.push(["checked", ""]);
     if (flag(o, "معطل", pos)) box.attrs.push(["disabled", ""]);
     if (h.cell || h.fn) box.attrs.push(["data-toggle", handler(h)]);
-    if ("نص" in o) {
-      const l = node("label", [["class", "dad-check"]], "", [box, node("span", [], optText(o["نص"], pos, "مربع_اختيار", "نص"))]);
-      look(l, o, pos, "مربع_اختيار");
-      emit(l);
-    } else {
-      look(box, o, pos, "مربع_اختيار");
-      emit(box);
-    }
+    const control = "نص" in o ? node("label", [["class", "dad-check"]], "", [box, node("span", [], optText(o["نص"], pos, "مربع_اختيار", "نص"))]) : box;
+    look(control, o, pos, "مربع_اختيار");
+    field("مربع_اختيار", o, pos, control, box, false, () => {
+      if (!on && flag(o, "مطلوب", pos)) return "حدّد هذا المربع للمتابعة";
+      return custom(o, pos, "مربع_اختيار", on);
+    });
     return null;
   });
   element("صورة", false, (args, named, pos) => {
@@ -1324,7 +1336,7 @@
         if (i === selected) op.attrs.push(["selected", ""]);
         n.kids.push(op);
       });
-      emit(n);
+      field(name, o, pos, n, n, false, () => checkChoice(name, o, pos, selected, current));
       return null;
     }
     const group = node("div", [["class", "dad-choices"], ["role", "radiogroup"]]);
@@ -1336,7 +1348,7 @@
       if (id) box.attrs.push(["data-choose", id]);
       group.kids.push(node("label", [["class", "dad-check"]], "", [box, node("span", [], label(v))]));
     });
-    emit(group);
+    field(name, o, pos, group, group, false, () => checkChoice(name, o, pos, selected, current));
     return null;
   });
   choose("قائمة_منسدلة", false);
@@ -1356,9 +1368,137 @@
     look(n, o, pos, "منطقة_نص");
     if (flag(o, "معطل", pos)) n.attrs.push(["disabled", ""]);
     if (h.cell || h.fn) n.attrs.push(["data-input", handler(h)]);
-    emit(n);
+    const value = args[0] instanceof StateRef ? args[0].cell.val : args[0];
+    field("منطقة_نص", o, pos, n, n, false, () => checkText("منطقة_نص", o, pos, "text", value));
     return null;
   });
+
+  // نموذج { حقل(…، مطلوب: صح) … زر("أرسل") { … } }: a form. Its buttons check
+  // its fields before they run, and the fields show their mistakes.
+  element("نموذج", false, (args, named, pos) => {
+    const o = options("نموذج", named, pos);
+    if (ui.form) fail(pos, "لا يوضع «نموذج» داخل «نموذج» آخر");
+    const n = node("form", [["class", "dad-form"], ["novalidate", ""]]);
+    if ("محاذاة" in o) n.attrs.push(["data-align", choice(o["محاذاة"], pos, "نموذج", "محاذاة")]);
+    look(n, o, pos, "نموذج");
+    const cell = anonState(pos, "نموذج", { attempted: false, touched: {} });
+    ui.form = { state: cell.val, invalid: 0, next: 0 };
+    try {
+      emit(n);
+      const f = lambdaAfter(args, 0, "نموذج", pos);
+      if (f) {
+        ui.stack.push(n);
+        try { call(f, [], [], pos, "نموذج"); } finally { ui.stack.pop(); }
+      }
+    } finally { ui.form = null; }
+    return null;
+  });
+
+  // ---------- forms
+
+  // The options that give a field rules, which only a field in a form can have.
+  const ruleOptions = ["مطلوب", "أدنى_طول", "أقصى_طول", "تحقق"];
+
+  // field lays out a field: with its label (تسمية), and inside a form with the
+  // mistake its rules find, once the field was left or the form's button
+  // pressed. control is what is laid out; focus is what takes the focus.
+  function field(name, o, pos, control, focus, builtin, check) {
+    let explicit = false;
+    for (const r of ruleOptions) {
+      if (r in o) {
+        if (!ui.form) fail(pos, `«${r}» في «${name}» لحقل داخل «نموذج»، مثل: نموذج { ${name}(…، ${r}: …) زر("أرسل") { … } }`);
+        explicit = true;
+      }
+    }
+    const form = ui.form;
+    const rules = form !== null && (explicit || builtin);
+    const hasLabel = "تسمية" in o;
+    if (!hasLabel && !rules) { emit(control); return; }
+    const id = "f" + ++ui.fieldID;
+    const wrap = node("div", [["class", "dad-field"]]);
+    focus.attrs.push(["id", id]);
+    if (hasLabel) {
+      let lbl;
+      if (focus.tag === "div") {
+        // a group of choices is named by its label
+        lbl = node("span", [["class", "dad-label"], ["id", id + "-l"]]);
+        focus.attrs.push(["aria-labelledby", id + "-l"]);
+      } else lbl = node("label", [["class", "dad-label"], ["for", id]]);
+      lbl.text = optText(o["تسمية"], pos, name, "تسمية");
+      if (form && flag(o, "مطلوب", pos)) lbl.kids = [node("span", [["class", "dad-req"], ["aria-hidden", "true"]], " *")];
+      wrap.kids.push(lbl);
+    }
+    wrap.kids.push(control);
+    if (rules) {
+      const index = form.next++;
+      const msg = check();
+      if (msg !== "") form.invalid++;
+      const shown = form.state.attempted || !!form.state.touched[index];
+      if (!shown) focus.attrs.push(["data-blur", handler({ kind: "touch", form, index })]);
+      if (shown && msg !== "") {
+        focus.attrs.push(["aria-invalid", "true"], ["aria-describedby", id + "-e"]);
+        wrap.kids.push(node("p", [["class", "dad-error"], ["id", id + "-e"]], msg));
+      }
+    }
+    emit(wrap);
+  }
+
+  const emailPattern = /^[^ \t\n\r\f@]+@[^ \t\n\r\f@]+\.[^ \t\n\r\f@]+$/;
+  const numberText = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+  const textValue = (v) => (typeof v === "string" ? v : format(v));
+
+  // checkText finds the first mistake in a text or number field: required,
+  // the email or number its kind asks for, its length, its limits, its own check.
+  function checkText(name, o, pos, kind, v) {
+    const s = textValue(v).trim();
+    if (s === "" && flag(o, "مطلوب", pos)) return "هذا الحقل مطلوب";
+    if (s !== "") {
+      const num = numberOf(v);
+      // a field with number limits takes numbers, even after something else was typed
+      let numeric = kind === "number";
+      for (const k of ["أدنى", "أقصى"]) if (k in o && kind !== "date" && kind !== "time" && numberText.test(limit(o[k], pos, k))) numeric = true;
+      if (kind === "email" && !emailPattern.test(s)) return "أدخل بريداً إلكترونياً صحيحاً، مثل name@example.com";
+      if (numeric && num === null) return "أدخل رقماً";
+      const runes = BigInt([...s].length);
+      if ("أدنى_طول" in o) { const n = intValue(o["أدنى_طول"], pos, "أدنى_طول"); if (runes < n) return "عدد الأحرف " + n + " على الأقل"; }
+      if ("أقصى_طول" in o) { const n = intValue(o["أقصى_طول"], pos, "أقصى_طول"); if (runes > n) return "عدد الأحرف " + n + " على الأكثر"; }
+      for (const [k, text] of [["أدنى", "أقل قيمة مسموحة "], ["أقصى", "أكبر قيمة مسموحة "]]) {
+        if (!(k in o)) continue;
+        const lim = limit(o[k], pos, k);
+        let out = false;
+        if (numberText.test(lim) && num !== null) out = k === "أدنى" ? num < Number(lim) : num > Number(lim);
+        else if (kind === "date" || kind === "time") out = k === "أدنى" ? s < lim : s > lim;
+        if (out) return text + lim;
+      }
+    }
+    return custom(o, pos, name, v);
+  }
+
+  // checkChoice finds the mistake in a list of choices: one must be chosen.
+  function checkChoice(name, o, pos, selected, v) {
+    if (selected < 0 && flag(o, "مطلوب", pos)) return "اختر واحداً";
+    return custom(o, pos, name, v);
+  }
+
+  // custom runs a field's own check, «تحقق»: a function of the value that gives
+  // the mistake as text, or عدم (or صح) when there is none.
+  function custom(o, pos, name, v) {
+    if (!("تحقق" in o)) return "";
+    if (!isFunc(o["تحقق"])) fail(pos, `«تحقق» في «${name}» يأخذ دالة تُرجع نص الخطأ أو عدم، مثل: تحقق: { إذا هو.طول > 2 { عدم } وإلا { "قصير" } }`);
+    const r = call(o["تحقق"], [v], [], pos, "تحقق");
+    if (r === null) return "";
+    if (typeof r === "string") return r;
+    if (typeof r === "boolean") return r ? "" : "القيمة غير صحيحة";
+    fail(pos, `«تحقق» في «${name}» تُرجع نص الخطأ أو عدم، لكنها أرجعت «${typeName(r)}»`);
+  }
+
+  // numberOf is a field's value as a number, when it is one or is text that reads as one.
+  function numberOf(v) {
+    if (isInt(v)) return Number(v);
+    if (isFloat(v)) return v;
+    if (typeof v === "string") return parseNumber(v.trim());
+    return null;
+  }
 
   function emptyMessage(o, pos, name) {
     emit(node("p", [["class", "dad-empty"]], "فارغ" in o ? optText(o["فارغ"], pos, name, "فارغ") : "لا شيء لعرضه بعد."));
@@ -1585,7 +1725,7 @@
 
   function draw(sess, layout) {
     const top = node("div", [["class", "dad-app"]]);
-    ui = { sess, path: sess.path, stack: [top], frames: [{ key: "", counts: {} }], handlers: {}, nextID: 0, seen: {} };
+    ui = { sess, path: sess.path, stack: [top], frames: [{ key: "", counts: {} }], handlers: {}, nextID: 0, seen: {}, form: null, fieldID: 0 };
     try { layout(); } finally { var done = ui; ui = null; }
     for (const k of Object.keys(sess.states)) if (!done.seen[k]) delete sess.states[k];
     sess.handlers = done.handlers;
@@ -1738,6 +1878,15 @@
       if (h.fn) call(h.fn, [v], [], [0, 0], "اختيار");
     } else if (h.kind === "set") {
       h.cell.val = h.value;
+    } else if (h.kind === "touch") {
+      h.form.state.touched[h.index] = true;
+    } else if (h.kind === "submit") {
+      // a form with mistakes shows them all, and its button does nothing yet
+      const st = h.form.state;
+      if (h.form.invalid > 0) { st.attempted = true; return; }
+      st.attempted = false;
+      st.touched = {};
+      if (h.fn) call(h.fn, [], [], [0, 0], "زر");
     }
   }
 

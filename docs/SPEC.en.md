@@ -348,8 +348,9 @@ component named `الرئيسية` or `التطبيق`, otherwise the last one t
 the page sends events and updates in place, LiveView style. After `dad build`, the same
 components are compiled to JavaScript and run in the browser. Elements: `عمود`، `صف`، `بطاقة`،
 `عنوان`، `فقرة`، `زر`، `حقل`، `مربع_اختيار`، `صورة`، `رابط`، `فاصل`، `قائمة_منسدلة`، `اختيار`،
-`منطقة_نص`، `جدول_عرض`، `قائمة_عناصر`، `ألسنة`، `لسان`، `نافذة`، `تنبيه`، `أيقونة` (see the
-[interface guide](ui.md)). Every element takes `صنف`; options such as `نمط`، `حجم`، `لون` and
+`منطقة_نص`، `جدول_عرض`، `قائمة_عناصر`، `ألسنة`، `لسان`، `نافذة`، `تنبيه`، `أيقونة`، `نموذج` (see
+the [interface guide](ui.md)). In a `نموذج`, fields take rules (`مطلوب`، `أدنى_طول`، `أقصى_طول`،
+`تحقق`) and its buttons run only when every field is right. Every element takes `صنف`; options such as `نمط`، `حجم`، `لون` and
 `خلفية` change its look, and the built-in `سمة(…)`, called at the top level, sets a theme for
 the whole app (see [Customizing the look](styling.md)). The checker knows each element's
 options, the words some of them take, the colour names and the icon names. *Planned:* a

@@ -2,6 +2,7 @@
 
 ## Next release
 
+- `نموذج` is highlighted and explained on hover, with the rules fields take in a form.
 - Git changes in the right-to-left editor's gutter, as in the text editor: new, changed and
   removed lines compared with git's copy. A click shows the old lines, with **↩ تراجع** to
   undo the change and **الفرق** for the diff; Alt+F5 / Shift+Alt+F5 go from change to change,

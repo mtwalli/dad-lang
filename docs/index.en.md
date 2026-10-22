@@ -77,7 +77,7 @@ hide:
 <ol class="dad-timeline">
   <li class="is-done"><span>Specification</span><small>Keywords, grammar and the Arabic-aware lexer</small></li>
   <li class="is-done"><span>Core language</span><small><code>dad run</code>, the checker, <a href="modules/">programs in several files</a>, and compiling to JavaScript</small></li>
-  <li class="is-next"><span>Interface</span><small><a href="ui/">Components, state and elements</a> in <code>dad dev</code> and the playground; <a href="build/"><code>dad build</code></a> makes static sites; <a href="ui/#pages">several pages</a>, 21 elements and <a href="styling/">themes</a>. Next: forms that check their fields</small></li>
+  <li class="is-done"><span>Interface</span><small><a href="ui/">Components, state and elements</a> in <code>dad dev</code> and the playground; <a href="build/"><code>dad build</code></a> makes static sites; <a href="ui/#pages">several pages</a>, 22 elements, <a href="styling/">themes</a> and <a href="ui/#forms">forms that check their fields</a></small></li>
   <li class="is-next"><span>Server and data</span><small>Tables in SQLite, server functions, routes, <a href="server/"><code>dad dev</code></a> and <a href="deploy/"><code>dad serve</code></a>. Next: users and sign-in</small></li>
   <li class="is-done"><span>Tooling</span><small><a href="https://marketplace.visualstudio.com/items?itemName=mtwalli.dad-lang">VS Code extension</a>, <a href="playground/">web playground</a>, <code>dad fmt</code> and the <a href="editor/#the-language-server">language server</a></small></li>
   <li class="is-done"><span>Installers</span><small><a href="install/">Homebrew, winget, .deb, .rpm</a> and a <a href="tutorial/">tutorial</a> in English and Arabic</small></li>

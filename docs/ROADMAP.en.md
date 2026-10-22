@@ -37,9 +37,9 @@ This page shows how it is built, what is done, and what comes next.
 |---|---|---|
 | **0. Specification** | [The specification](SPEC.md), [the grammar](grammar.md), sample programs, the lexer | ✅ Done |
 | **1. Core language** | Parser, checker, interpreter, programs in several files, JavaScript compiler, Arabic errors | ✅ Done. Next: smart casts for optional values, generic types, unused-variable warnings |
-| **2. Interface** | `مكون`, `حالة`, `صفحة`, the elements, right to left by default | ✅ In `dad dev`, the playground and `dad build`, with several pages, 21 elements and themes. Next (0.3): forms that check their fields |
+| **2. Interface** | `مكون`, `حالة`, `صفحة`, the elements, right to left by default | ✅ Done for 0.3: in `dad dev`, the playground and `dad build`, with several pages, 22 elements, themes and forms that check their fields. Next: updating only what changed |
 | **3. Server and data** | `خادم` functions, `جدول` in SQLite, `مسار`, `dad dev`, `dad serve` | ✅ Done. Next: users and sign-in, permissions, requests in parallel |
-| **4. Tooling** | VS Code extension, `dad fmt`, the playground, the `dad lsp` language server | ✅ Done |
+| **4. Tooling** | VS Code extension, `dad fmt`, the playground, the `dad lsp` language server | ✅ Done, and in 0.3: moving across the files of a program, a live preview of the interface, and git's changes in the right-to-left editor |
 | **5. Distribution** | Homebrew, winget, `.deb` and `.rpm`, install scripts, the tutorial in English and Arabic | ✅ Done in 0.2 |
 
 ## What comes next
@@ -48,7 +48,7 @@ These are the next steps, roughly in order:
 
 1. **The interface, for 0.3:** ✅ several pages, each with its own address; ✅ more elements
    (drop-down lists, radio buttons, text areas, dates and times, tables of records, lists,
-   tabs, dialogs, alerts, icons); ✅ customizing the look without CSS, and with it; then forms
+   tabs, dialogs, alerts, icons); ✅ customizing the look without CSS, and with it; ✅ forms
    that check their fields.
 2. **Users and sign-in, for 0.4,** and permissions on server functions and routes, so that
    programs with private data can go online. Their sign-in pages are made of ordinary pages
@@ -89,6 +89,9 @@ These are the next steps, roughly in order:
    `ألسنة`، `نافذة`، `تنبيه`، `أيقونة`، and dates and times in `حقل`
 7. ✅ [Customizing the look](styling.md): options on elements, a theme with `سمة`, and the
    program's own stylesheet with `صنف`
+8. ✅ [Forms](ui.md#forms) (`نموذج`): labels, rules on fields (`مطلوب`, lengths, limits, emails,
+   numbers, `تحقق`), mistakes in Arabic under each field, and buttons that run only when every
+   field is right
 
 ### Phase 3: server and data
 
@@ -104,11 +107,14 @@ These are the next steps, roughly in order:
 1. ✅ The VS Code extension, with a right-to-left editor, and the Ḍād Mono font
 2. ✅ `dad fmt`, in the Kotlin style
 3. ✅ `dad lsp`, for definitions, references, rename, hover, completion and the outline in
-   any editor
+   any editor, across the files of a program, with the workspace's symbols
 4. ✅ Release builds for macOS, Windows and Linux on Intel and ARM: Homebrew, winget, `.deb`,
    `.rpm` and install scripts
 5. ✅ The [tutorial](tutorial/index.md) in English and Arabic, and this site in both
    languages
+6. ✅ In VS Code: a [live preview](editor.md#preview-the-interface) of the interface beside
+   the code (`dad preview`), and in the right-to-left editor go to definition, references,
+   rename, a right-click menu and git's changes in the gutter
 
 ## Costs to know about
 

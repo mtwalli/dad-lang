@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/mtwalli/dad-lang/internal/token"
 )
@@ -105,7 +106,7 @@ func (in *Interp) look(n *Node, opts map[string]Value, ci *callInfo, name string
 			classes = append(classes, w)
 		}
 	}
-	box := name == "عمود" || name == "صف" || name == "بطاقة"
+	box := name == "عمود" || name == "صف" || name == "بطاقة" || name == "نموذج"
 	if v, ok := opts["مسافة"]; ok && box {
 		styles = append(styles, "gap:"+strconv.FormatInt(in.intValue(v, ci.pos, "مسافة"), 10)+"px")
 	}
@@ -325,7 +326,7 @@ func (in *Interp) installMoreElements(def func(string, bool, func(*Interp, *call
 					}
 					n.Kids = append(n.Kids, o)
 				}
-				in.emit(n)
+				in.field(name, opts, ci, n, n, false, func() string { return in.checkChoice(name, opts, ci, selected, current) })
 				return nil
 			}
 			group := &Node{Tag: "div", Attrs: [][2]string{{"class", "dad-choices"}}}
@@ -347,7 +348,7 @@ func (in *Interp) installMoreElements(def func(string, bool, func(*Interp, *call
 				}
 				group.Kids = append(group.Kids, &Node{Tag: "label", Attrs: [][2]string{{"class", "dad-check"}}, Kids: []*Node{box, {Tag: "span", Text: label(v)}}})
 			}
-			in.emit(group)
+			in.field(name, opts, ci, group, group, false, func() string { return in.checkChoice(name, opts, ci, selected, current) })
 			return nil
 		})
 	}
@@ -383,7 +384,27 @@ func (in *Interp) installMoreElements(def func(string, bool, func(*Interp, *call
 		if h.cell != nil || h.fn != nil {
 			n.attr("data-input", in.handler(h))
 		}
-		in.emit(n)
+		value := textOrRef(ci.args[0])
+		in.field("منطقة_نص", opts, ci, n, n, false, func() string { return in.checkText("منطقة_نص", opts, ci, "text", value) })
+		return nil
+	})
+
+	// نموذج { حقل(…، مطلوب: صح) … زر("أرسل") { … } }: a form. Its buttons check
+	// its fields before they run, and the fields show their mistakes.
+	def("نموذج", false, func(in *Interp, ci *callInfo) Value {
+		opts := in.uiOptions(ci, "نموذج")
+		if in.ui.form != nil {
+			in.fail(ci.pos, "لا يوضع «نموذج» داخل «نموذج» آخر")
+		}
+		n := &Node{Tag: "form", Attrs: [][2]string{{"class", "dad-form"}, {"novalidate", ""}}}
+		if a, ok := opts["محاذاة"]; ok {
+			n.attr("data-align", in.choice(a, ci.pos, "نموذج", "محاذاة"))
+		}
+		in.look(n, opts, ci, "نموذج")
+		cell := in.anonState(ci.pos, "نموذج", &formState{touched: map[int]bool{}})
+		in.ui.form = &formCtx{state: cell.val.(*formState)}
+		defer func() { in.ui.form = nil }()
+		in.withChildren(n, ci, "نموذج")
 		return nil
 	})
 
@@ -803,4 +824,196 @@ func (in *Interp) themed(root *Node) {
 	if len(t.Vars) > 0 {
 		root.Kids = append([]*Node{{Tag: "style", Raw: ":root{" + strings.Join(t.Vars, ";") + "}"}}, root.Kids...)
 	}
+}
+
+// ---------------------------------------------------------------- forms
+
+// formState is what a form remembers between renders: whether its button was
+// pressed while a field had a mistake, and which fields were left.
+type formState struct {
+	attempted bool
+	touched   map[int]bool
+}
+
+// formCtx is a form being laid out: the fields with a mistake so far.
+type formCtx struct {
+	state   *formState
+	invalid int
+	next    int // the next field with rules
+}
+
+// The options that give a field rules, which only a field in a form can have.
+var ruleOptions = []string{"مطلوب", "أدنى_طول", "أقصى_طول", "تحقق"}
+
+// field lays out a field: with its label (تسمية), and inside a form with the
+// mistake its rules find, once the field was left or the form's button
+// pressed. control is what is laid out; focus is what takes the focus.
+// builtin says whether the field has rules of its own, such as an email.
+func (in *Interp) field(name string, opts map[string]Value, ci *callInfo, control, focus *Node, builtin bool, check func() string) {
+	explicit := false
+	for _, r := range ruleOptions {
+		if _, ok := opts[r]; ok {
+			if in.ui.form == nil {
+				in.fail(ci.pos, "«%s» في «%s» لحقل داخل «نموذج»، مثل: نموذج { %s(…، %s: …) زر(\"أرسل\") { … } }", r, name, name, r)
+			}
+			explicit = true
+		}
+	}
+	form := in.ui.form
+	rules := form != nil && (explicit || builtin)
+	labelText, hasLabel := opts["تسمية"]
+	if !hasLabel && !rules {
+		in.emit(control)
+		return
+	}
+	in.ui.fieldID++
+	id := "f" + strconv.Itoa(in.ui.fieldID)
+	wrap := &Node{Tag: "div", Attrs: [][2]string{{"class", "dad-field"}}}
+	focus.attr("id", id)
+	if hasLabel {
+		var lbl *Node
+		if focus.Tag == "div" {
+			// a group of choices is named by its label
+			lbl = &Node{Tag: "span", Attrs: [][2]string{{"class", "dad-label"}, {"id", id + "-l"}}}
+			focus.attr("aria-labelledby", id+"-l")
+		} else {
+			lbl = &Node{Tag: "label", Attrs: [][2]string{{"class", "dad-label"}, {"for", id}}}
+		}
+		lbl.Text = in.optText(labelText, ci.pos, name, "تسمية")
+		if form != nil && in.flag(opts, "مطلوب", ci.pos) {
+			lbl.Kids = []*Node{{Tag: "span", Attrs: [][2]string{{"class", "dad-req"}, {"aria-hidden", "true"}}, Text: " *"}}
+		}
+		wrap.Kids = append(wrap.Kids, lbl)
+	}
+	wrap.Kids = append(wrap.Kids, control)
+	if rules {
+		index := form.next
+		form.next++
+		msg := check()
+		if msg != "" {
+			form.invalid++
+		}
+		shown := form.state.attempted || form.state.touched[index]
+		if !shown {
+			focus.attr("data-blur", in.handler(uiHandler{kind: "touch", form: form, index: index}))
+		}
+		if shown && msg != "" {
+			focus.attr("aria-invalid", "true")
+			focus.attr("aria-describedby", id+"-e")
+			wrap.Kids = append(wrap.Kids, &Node{Tag: "p", Attrs: [][2]string{{"class", "dad-error"}, {"id", id + "-e"}}, Text: msg})
+		}
+	}
+	in.emit(wrap)
+}
+
+var emailPattern = regexp.MustCompile(`^[^ \t\n\r\f@]+@[^ \t\n\r\f@]+\.[^ \t\n\r\f@]+$`)
+
+// checkText finds the first mistake in a text or number field: required,
+// the email or number its kind asks for, its length, its limits, its own check.
+func (in *Interp) checkText(name string, opts map[string]Value, ci *callInfo, kind string, v Value) string {
+	s := strings.TrimSpace(textOf(v))
+	if s == "" && in.flag(opts, "مطلوب", ci.pos) {
+		return "هذا الحقل مطلوب"
+	}
+	if s != "" {
+		num, isNum := numberOf(v)
+		// a field with number limits takes numbers, even after something else was typed
+		numeric := kind == "number"
+		for _, o := range []string{"أدنى", "أقصى"} {
+			if lv, ok := opts[o]; ok && kind != "date" && kind != "time" {
+				if _, err := strconv.ParseFloat(in.limit(lv, ci.pos, o), 64); err == nil {
+					numeric = true
+				}
+			}
+		}
+		switch {
+		case kind == "email" && !emailPattern.MatchString(s):
+			return "أدخل بريداً إلكترونياً صحيحاً، مثل name@example.com"
+		case numeric && !isNum:
+			return "أدخل رقماً"
+		}
+		runes := int64(utf8.RuneCountInString(s))
+		if l, ok := opts["أدنى_طول"]; ok {
+			if n := in.intValue(l, ci.pos, "أدنى_طول"); runes < n {
+				return "عدد الأحرف " + formatInt(n) + " على الأقل"
+			}
+		}
+		if l, ok := opts["أقصى_طول"]; ok {
+			if n := in.intValue(l, ci.pos, "أقصى_طول"); runes > n {
+				return "عدد الأحرف " + formatInt(n) + " على الأكثر"
+			}
+		}
+		for _, o := range [][2]string{{"أدنى", "أقل قيمة مسموحة "}, {"أقصى", "أكبر قيمة مسموحة "}} {
+			lv, ok := opts[o[0]]
+			if !ok {
+				continue
+			}
+			lim := in.limit(lv, ci.pos, o[0])
+			var below bool
+			if f, err := strconv.ParseFloat(lim, 64); err == nil && isNum {
+				below = num < f
+				if o[0] == "أقصى" {
+					below = num > f
+				}
+			} else if kind == "date" || kind == "time" {
+				below = s < lim
+				if o[0] == "أقصى" {
+					below = s > lim
+				}
+			}
+			if below {
+				return o[1] + lim
+			}
+		}
+	}
+	return in.custom(opts, ci, name, v)
+}
+
+// checkChoice finds the mistake in a list of choices: one must be chosen.
+func (in *Interp) checkChoice(name string, opts map[string]Value, ci *callInfo, selected int, v Value) string {
+	if selected < 0 && in.flag(opts, "مطلوب", ci.pos) {
+		return "اختر واحداً"
+	}
+	return in.custom(opts, ci, name, v)
+}
+
+// custom runs a field's own check, «تحقق»: a function of the value that gives
+// the mistake as text, or عدم (or صح) when there is none.
+func (in *Interp) custom(opts map[string]Value, ci *callInfo, name string, v Value) string {
+	fn, ok := opts["تحقق"]
+	if !ok {
+		return ""
+	}
+	switch fn.(type) {
+	case *Func, *Builtin:
+	default:
+		in.fail(ci.pos, "«تحقق» في «%s» يأخذ دالة تُرجع نص الخطأ أو عدم، مثل: تحقق: { إذا هو.طول > 2 { عدم } وإلا { \"قصير\" } }", name)
+	}
+	switch r := in.callValue(fn, &callInfo{pos: ci.pos, name: "تحقق", args: []Value{v}}).(type) {
+	case nil:
+		return ""
+	case string:
+		return r
+	case bool:
+		if r {
+			return ""
+		}
+		return "القيمة غير صحيحة"
+	default:
+		in.fail(ci.pos, "«تحقق» في «%s» تُرجع نص الخطأ أو عدم، لكنها أرجعت «%s»", name, typeName(r))
+	}
+	return ""
+}
+
+// numberOf is a field's value as a number, when it is one or is text that reads as one.
+func numberOf(v Value) (float64, bool) {
+	switch x := v.(type) {
+	case int64:
+		return float64(x), true
+	case float64:
+		return x, true
+	case string:
+		return parseNumber(strings.TrimSpace(x))
+	}
+	return 0, false
 }

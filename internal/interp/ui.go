@@ -65,11 +65,14 @@ func NewUISession() *UISession {
 }
 
 type uiHandler struct {
-	kind    string // "click", "input", "toggle", "choose" (one of options) or "set" (cell = value)
-	fn      Value  // the lambda to run, if any
+	kind string // "click", "input", "toggle", "choose" (one of options), "set" (cell = value),
+	// "submit" (a button of a form: fn runs if the form's fields are right) or "touch" (a field was left)
+	fn      Value // the lambda to run, if any
 	cell    *binding
-	options []Value // choose: what each choice stands for
-	value   Value   // set: the value to put in cell
+	options []Value  // choose: what each choice stands for
+	value   Value    // set: the value to put in cell
+	form    *formCtx // submit, touch: the form
+	index   int      // touch: which of the form's fields
 }
 
 // renderCtx is the work in progress of one render.
@@ -82,6 +85,8 @@ type renderCtx struct {
 	nextID   int
 	seen     map[string]bool // component instances in this render
 	tabs     *[]tabSpec      // inside «ألسنة»: the tabs found so far
+	form     *formCtx        // inside «نموذج»: the form
+	fieldID  int             // the fields with a label or rules so far, for their ids
 }
 
 // frame is one component instance being rendered.
@@ -204,6 +209,19 @@ func (in *Interp) Event(sess *UISession, version int, id string, value any) erro
 			}
 		case "set":
 			h.cell.val = h.value
+		case "touch":
+			h.form.state.touched[h.index] = true
+		case "submit":
+			// a form with mistakes shows them all, and its button does nothing yet
+			st := h.form.state
+			if h.form.invalid > 0 {
+				st.attempted = true
+				return
+			}
+			st.attempted, st.touched = false, map[int]bool{}
+			if h.fn != nil {
+				in.callValue(h.fn, &callInfo{name: "زر"})
+			}
 		}
 	})
 }
@@ -274,7 +292,7 @@ func (in *Interp) declareState(s *ast.StateDecl, env *Env) {
 
 // Elements are the names of the interface elements, for editors and docs.
 var Elements = []string{"عمود", "صف", "بطاقة", "عنوان", "فقرة", "زر", "حقل", "مربع_اختيار", "صورة", "رابط", "فاصل",
-	"قائمة_منسدلة", "اختيار", "منطقة_نص", "جدول_عرض", "قائمة_عناصر", "ألسنة", "لسان", "نافذة", "تنبيه", "أيقونة"}
+	"قائمة_منسدلة", "اختيار", "منطقة_نص", "جدول_عرض", "قائمة_عناصر", "ألسنة", "لسان", "نافذة", "تنبيه", "أيقونة", "نموذج"}
 
 // ElementOptions are the named arguments each element takes. Every element also
 // takes «صنف», a class for a program's own stylesheet.
@@ -282,15 +300,15 @@ var ElementOptions = map[string][]string{
 	"عمود": boxOptions, "صف": boxOptions, "بطاقة": boxOptions,
 	"عنوان":        {"مستوى", "لون", "محاذاة", "صنف"},
 	"فقرة":         {"لون", "محاذاة", "حجم", "صنف"},
-	"زر":           {"معطل", "نمط", "حجم", "ملء", "أيقونة", "صنف"},
-	"حقل":          {"تلميح", "صيغة", "معطل", "أدنى", "أقصى", "صنف"},
-	"مربع_اختيار":  {"نص", "معطل", "صنف"},
+	"زر":           {"معطل", "نمط", "حجم", "ملء", "أيقونة", "إرسال", "صنف"},
+	"حقل":          {"تسمية", "تلميح", "صيغة", "معطل", "أدنى", "أقصى", "مطلوب", "أدنى_طول", "أقصى_طول", "تحقق", "صنف"},
+	"مربع_اختيار":  {"نص", "تسمية", "معطل", "مطلوب", "تحقق", "صنف"},
 	"صورة":         {"وصف", "عرض", "صنف"},
 	"رابط":         {"نمط", "حجم", "أيقونة", "صنف"},
 	"فاصل":         {"صنف"},
-	"قائمة_منسدلة": {"تلميح", "معطل", "صنف"},
-	"اختيار":       {"معطل", "صنف"},
-	"منطقة_نص":     {"تلميح", "أسطر", "معطل", "صنف"},
+	"قائمة_منسدلة": {"تسمية", "تلميح", "معطل", "مطلوب", "تحقق", "صنف"},
+	"اختيار":       {"تسمية", "معطل", "مطلوب", "تحقق", "صنف"},
+	"منطقة_نص":     {"تسمية", "تلميح", "أسطر", "معطل", "مطلوب", "أدنى_طول", "أقصى_طول", "تحقق", "صنف"},
 	"جدول_عرض":     {"أعمدة", "فارغ", "صنف"},
 	"قائمة_عناصر":  {"مرقمة", "فارغ", "صنف"},
 	"ألسنة":        {"صنف"},
@@ -298,6 +316,7 @@ var ElementOptions = map[string][]string{
 	"نافذة":        {"عنوان", "صنف"},
 	"تنبيه":        {"نمط", "صنف"},
 	"أيقونة":       {"وصف", "حجم", "لون", "صنف"},
+	"نموذج":        boxOptions,
 }
 
 var boxOptions = []string{"محاذاة", "مسافة", "حشو", "خلفية", "عرض", "صنف"}
@@ -373,7 +392,19 @@ func (in *Interp) installElements(env *Env) {
 		if in.flag(opts, "معطل", ci.pos) {
 			n.attr("disabled", "")
 		}
-		if fn := in.lambdaAfter(ci, 1, "زر"); fn != nil {
+		fn := in.lambdaAfter(ci, 1, "زر")
+		// a button of a form checks the form's fields first, unless «إرسال: خطأ»
+		submits := in.ui.form != nil
+		if _, ok := opts["إرسال"]; ok {
+			if in.ui.form == nil {
+				in.fail(ci.pos, "«إرسال» في «زر» لزر داخل «نموذج»")
+			}
+			submits = in.flag(opts, "إرسال", ci.pos)
+		}
+		if submits {
+			n.Attrs[indexOfAttr(n, "type")][1] = "submit"
+			n.attr("data-click", in.handler(uiHandler{kind: "submit", fn: fn, form: in.ui.form}))
+		} else if fn != nil {
 			n.attr("data-click", in.handler(uiHandler{kind: "click", fn: fn}))
 		}
 		in.emit(n)
@@ -417,7 +448,9 @@ func (in *Interp) installElements(env *Env) {
 		if h.cell != nil || h.fn != nil {
 			n.attr("data-input", in.handler(h))
 		}
-		in.emit(n)
+		value := textOrRef(ci.args[0])
+		builtin := kind == "email" || kind == "number" || opts["أدنى"] != nil || opts["أقصى"] != nil
+		in.field("حقل", opts, ci, n, n, builtin, func() string { return in.checkText("حقل", opts, ci, kind, value) })
 		return nil
 	})
 	def("مربع_اختيار", true, func(in *Interp, ci *callInfo) Value {
@@ -447,14 +480,17 @@ func (in *Interp) installElements(env *Env) {
 		if h.cell != nil || h.fn != nil {
 			box.attr("data-toggle", in.handler(h))
 		}
+		control := box
 		if t, ok := opts["نص"]; ok {
-			label := &Node{Tag: "label", Attrs: [][2]string{{"class", "dad-check"}}, Kids: []*Node{box, {Tag: "span", Text: in.optText(t, ci.pos, "مربع_اختيار", "نص")}}}
-			in.look(label, opts, ci, "مربع_اختيار")
-			in.emit(label)
-		} else {
-			in.look(box, opts, ci, "مربع_اختيار")
-			in.emit(box)
+			control = &Node{Tag: "label", Attrs: [][2]string{{"class", "dad-check"}}, Kids: []*Node{box, {Tag: "span", Text: in.optText(t, ci.pos, "مربع_اختيار", "نص")}}}
 		}
+		in.look(control, opts, ci, "مربع_اختيار")
+		in.field("مربع_اختيار", opts, ci, control, box, false, func() string {
+			if !on && in.flag(opts, "مطلوب", ci.pos) {
+				return "حدّد هذا المربع للمتابعة"
+			}
+			return in.custom(opts, ci, "مربع_اختيار", on)
+		})
 		return nil
 	})
 	def("صورة", false, func(in *Interp, ci *callInfo) Value {
@@ -606,6 +642,15 @@ func textOf(v Value) string {
 		return s
 	}
 	return Format(v)
+}
+
+func indexOfAttr(n *Node, k string) int {
+	for i, a := range n.Attrs {
+		if a[0] == k {
+			return i
+		}
+	}
+	return -1
 }
 
 func (in *Interp) handler(h uiHandler) string {

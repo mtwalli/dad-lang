@@ -23,6 +23,7 @@ hide:
       <option value="counter">واجهة: عدّادات</option>
       <option value="pages">واجهة: عدة صفحات</option>
       <option value="library">واجهة: العناصر والسمة</option>
+      <option value="signup">واجهة: نموذج يفحص حقوله</option>
       <option value="todo">تطبيق مهام بجدول</option>
       <option value="mistakes">ملف فيه أخطاء</option>
     </select>

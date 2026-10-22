@@ -159,6 +159,7 @@ Here is a whole program with pages, `examples/08-pages.dad`:
 | `نافذة` | A dialog over the page | `نافذة(مفتوحة) { … }` |
 | `تنبيه` | A message that stands out | `تنبيه("تم الحفظ"، نمط: "نجاح")` |
 | `أيقونة` | An icon | `أيقونة("بحث")` |
+| `نموذج` | A form: its buttons check its fields first | `نموذج { … }` |
 
 Options are named arguments:
 
@@ -166,12 +167,13 @@ Options are named arguments:
 |---|---|
 | `عمود`, `صف`, `بطاقة` | `محاذاة: "وسط"` (or `"بداية"`, `"نهاية"`), `مسافة: 24` (pixels) |
 | `عنوان` | `مستوى: 1` to `6` |
-| `زر` | `معطل: صح`, `أيقونة: "حفظ"` |
-| `حقل` | `تلميح: "…"`, `صيغة: "رقم"` (or `"نص"`, `"كلمة_سر"`, `"بريد"`, `"تاريخ"`, `"وقت"`), `أدنى` and `أقصى` (for numbers and dates), `معطل: صح` |
-| `مربع_اختيار` | `نص: "…"` (a label next to it), `معطل: صح` |
-| `قائمة_منسدلة` | `تلميح: "…"` (shown before a choice is made), `معطل: صح` |
-| `اختيار` | `معطل: صح` |
-| `منطقة_نص` | `تلميح: "…"`, `أسطر: 6`, `معطل: صح` |
+| `زر` | `معطل: صح`, `أيقونة: "حفظ"`, `إرسال: خطأ` (in a form: don't check the fields) |
+| `حقل` | `تسمية: "…"` (a label above it), `تلميح: "…"`, `صيغة: "رقم"` (or `"نص"`, `"كلمة_سر"`, `"بريد"`, `"تاريخ"`, `"وقت"`), `أدنى` and `أقصى` (for numbers and dates), `معطل: صح`; in a form, [its rules](#forms) |
+| `مربع_اختيار` | `نص: "…"` (a label next to it), `تسمية`, `معطل: صح` |
+| `قائمة_منسدلة` | `تسمية`, `تلميح: "…"` (shown before a choice is made), `معطل: صح` |
+| `اختيار` | `تسمية`, `معطل: صح` |
+| `منطقة_نص` | `تسمية`, `تلميح: "…"`, `أسطر: 6`, `معطل: صح` |
+| `نموذج` | as for `عمود` |
 | `جدول_عرض` | `أعمدة: ["…"]`, `فارغ: "…"` (shown when there are no rows) |
 | `قائمة_عناصر` | `مرقمة: صح`, `فارغ: "…"` |
 | `لسان` | `أيقونة: "…"` |
@@ -197,7 +199,7 @@ state changes the field.
 
 A field for a number state (`حالة خطوة = 1`) is a number field, and its state stays a
 number. A block after the field runs on each change, with the new text as `هو`.
-Pressing <kbd>Enter</kbd> in a field presses the button next to it.
+Pressing <kbd>Enter</kbd> in a field presses the button next to it, or its [form's](#forms) button.
 
 ### Check boxes
 
@@ -252,6 +254,56 @@ value as text, such as `"2026-10-21"` or `"09:30"`.
 منطقة_نص(الملاحظات، أسطر: 5، تلميح: "ملاحظات…")
 حقل(الموعد، صيغة: "تاريخ"، أدنى: "2026-01-01")
 ```
+
+## Forms — `نموذج` { #forms }
+
+Put fields in a `نموذج` and give them rules. The form's button checks every field before
+its block runs: while a field is wrong, the button shows what is wrong under each field
+and does nothing else. When every field is right, the block runs and the form starts over.
+
+```dad
+حالة الاسم = ""
+حالة البريد = ""
+حالة كلمة_السر = ""
+حالة التأكيد = ""
+
+نموذج {
+    حقل(الاسم، تسمية: "الاسم"، مطلوب: صح، أدنى_طول: 2)
+    حقل(البريد، تسمية: "البريد"، صيغة: "بريد"، مطلوب: صح)
+    حقل(كلمة_السر، تسمية: "كلمة السر"، صيغة: "كلمة_سر"، أدنى_طول: 8)
+    حقل(
+        التأكيد،
+        تسمية: "أعد كلمة السر"،
+        صيغة: "كلمة_سر"،
+        تحقق: { إذا هو == كلمة_السر { عدم } وإلا { "لا تطابق كلمة السر" } }
+    )
+    زر("أنشئ الحساب") { سجّل(الاسم، البريد) }
+}
+```
+
+| Rule | Fields | The field is wrong when |
+|---|---|---|
+| `مطلوب: صح` | all | it is empty; a list has no choice; a check box is not checked |
+| `أدنى_طول: 8`, `أقصى_طول: 200` | `حقل`, `منطقة_نص` | it has fewer or more letters |
+| `أدنى`, `أقصى` | `حقل` | a number or date is below or above |
+| `صيغة: "بريد"` | `حقل` | it is not an email address |
+| `صيغة: "رقم"` | `حقل` | it is not a number |
+| `تحقق: { … }` | all | the block, given the value as `هو`, gives text: that text is the mistake. It gives `عدم` when the value is right |
+
+An empty field that isn't `مطلوب` is right, except for its `تحقق`. The mistakes are in
+Arabic, such as «هذا الحقل مطلوب» and «عدد الأحرف 8 على الأقل».
+
+A field shows its mistake once you leave it, or once the form's button is pressed; not
+while you are still typing in a field you haven't left yet. After the button, the cursor
+goes to the first wrong field. <kbd>Enter</kbd> in a field presses the form's button.
+
+- `تسمية: "…"` puts a label above a field, marked with * when it is `مطلوب`. It works
+  outside forms too.
+- Every button in a form checks it. A button that shouldn't, such as «إلغاء», takes
+  `إرسال: خطأ`.
+- The rules work only in a `نموذج`. A field elsewhere with `مطلوب` is an error.
+- `تحقق` can use other states (as with the password above) and server functions, such as
+  one that checks whether an email is taken. See `examples/10-signup.dad`.
 
 ## Tables and lists
 

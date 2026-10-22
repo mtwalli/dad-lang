@@ -25,6 +25,14 @@ Each release on GitHub uses its section from this file as its notes.
   `خلفية`، `حشو`، `عرض`، `محاذاة`), a theme for the whole app with `سمة(اللون: …، الخط: …،
   الزوايا: …، الوضع: "داكن")`, and the program's own stylesheet, `app.css` next to `app.dad`,
   whose classes elements take with `صنف`. See `examples/09-library.dad`.
+- **Forms that check their fields.** `نموذج { … }` holds fields with rules: `مطلوب`,
+  `أدنى_طول` and `أقصى_طول`, `أدنى` and `أقصى`, emails and numbers by their `صيغة`, and
+  `تحقق: { … }` for anything else (it gives the mistake as text, or `عدم`). The form's
+  buttons run only when every field is right; until then each field shows its mistake in
+  Arabic under it, once it was left or the button pressed, and the cursor goes to the first
+  one. `تسمية` puts a label above any field, and `إرسال: خطأ` makes a button skip the check.
+  The same in `dad dev`, `dad serve`, the playground, `dad build` and the preview. See
+  `examples/10-signup.dad`; the library example's form uses it too.
 - The checker finds two pages, or a page and a `مسار جلب` route, at the same address, and
   mistakes in an address's `{names}`. It also knows the words options take, the colour names
   and the icon names, and suggests the closest one.

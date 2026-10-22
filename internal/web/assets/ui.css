@@ -181,6 +181,20 @@ input[type="checkbox"], input[type="radio"] {
   cursor: pointer;
 }
 .dad-check { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+/* Forms: a label above each field, and its mistake under it */
+.dad-form { display: flex; flex-direction: column; gap: 1rem; }
+.dad-form[style*="max-width"] { width: 100%; margin-inline: auto; }
+.dad-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.dad-row > .dad-field { flex: 1 1 12rem; }
+.dad-label { font-weight: 600; font-size: 0.92em; }
+.dad-req { color: var(--danger); }
+.dad-error { margin: 0; color: var(--danger); font-size: 0.875em; line-height: 1.5; }
+.dad-error::before { content: "⚠ "; }
+[aria-invalid="true"]:is(input, select, textarea) { border-color: var(--danger); }
+[aria-invalid="true"]:is(input, select, textarea):focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent); }
+.dad-choices[aria-invalid="true"], .dad-check:has(> [aria-invalid="true"]) { color: var(--danger); }
+.dad-form > button[type="submit"], .dad-form > .dad-row { align-self: flex-start; }
 .dad-choices { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
 
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {

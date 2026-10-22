@@ -242,7 +242,7 @@ func TestSnippets(t *testing.T) {
 // clicks and typing.
 func TestInterfaces(t *testing.T) {
 	nodePath := node(t)
-	for _, f := range []string{"../../../examples/05-todo.dad", "../../../examples/06-counter.dad", "../../../examples/09-library.dad", "testdata/elements.dad"} {
+	for _, f := range []string{"../../../examples/05-todo.dad", "../../../examples/06-counter.dad", "../../../examples/09-library.dad", "../../../examples/10-signup.dad", "testdata/elements.dad", "testdata/forms.dad"} {
 		t.Run(filepath.Base(f), func(t *testing.T) {
 			src, err := os.ReadFile(f)
 			if err != nil {
@@ -265,7 +265,7 @@ func TestInterfaces(t *testing.T) {
 				Value any    `json:"value"`
 			}
 			var events []event
-			handler := regexp.MustCompile(`<[a-z]+ [^>]*data-(click|input|toggle|choose)="(h\d+)"[^>]*>`)
+			handler := regexp.MustCompile(`<[a-z]+ [^>]*data-(click|input|toggle|choose|blur)="(h\d+)"[^>]*>`)
 			kinds := map[string]bool{}
 			for step := 0; step < 30; step++ {
 				hs := handler.FindAllStringSubmatch(page, -1)
@@ -335,6 +335,9 @@ console.log(JSON.stringify(pages));
 				distinct[regexp.MustCompile(`h\d+`).ReplaceAllString(p, "")] = true
 			}
 			t.Logf("%d events of kinds %v, %d different pages", len(events), kinds, len(distinct))
+			if strings.HasSuffix(f, "forms.dad") && !strings.Contains(strings.Join(pages, ""), `class="dad-error"`) {
+				t.Errorf("no page showed a mistake")
+			}
 			if len(events) < 5 || len(distinct) < 3 {
 				t.Errorf("only %d events and %d different pages were tried", len(events), len(distinct))
 			}

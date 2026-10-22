@@ -133,7 +133,26 @@
     var el = e.target.closest("[data-click]");
     if (!el || el.disabled) return;
     flushTyping();
-    send(el, "data-click", null);
+    var sent = send(el, "data-click", null);
+    // a form's button: if a field is wrong, the page shows why; go to the first one
+    var form = el.type === "submit" && el.closest("form");
+    if (form) {
+      sent.then(function () {
+        var bad = form.isConnected && form.querySelector('[aria-invalid="true"]');
+        if (bad) (bad.matches("input, select, textarea") ? bad : bad.querySelector("input") || bad).focus();
+      });
+    }
+  });
+
+  // A form never goes anywhere: its buttons send their clicks like any other.
+  root.addEventListener("submit", function (e) { e.preventDefault(); });
+
+  // Leaving a field of a form shows its mistake, if it has one.
+  root.addEventListener("focusout", function (e) {
+    var el = e.target.closest && e.target.closest("[data-blur]");
+    if (!el || (e.relatedTarget && el.contains(e.relatedTarget))) return;
+    flushTyping();
+    send(el, "data-blur", null);
   });
 
   // Back and forward show the page of that address again.
@@ -190,9 +209,10 @@
       next.click();
       return;
     }
-    // Enter in a field presses the first button next to it, as in a form.
+    // Enter in a field presses the first button next to it, or its form's button.
     if (e.key !== "Enter" || el.tagName !== "INPUT" || el.type === "checkbox" || el.type === "radio" || e.isComposing) return;
-    var button = el.parentElement && el.parentElement.querySelector("button[data-click]");
+    var form = el.closest("form");
+    var button = form ? form.querySelector('button[type="submit"]') : el.parentElement && el.parentElement.querySelector("button[data-click]");
     if (!button) return;
     e.preventDefault();
     button.click();
