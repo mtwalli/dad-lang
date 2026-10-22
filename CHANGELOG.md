@@ -29,6 +29,9 @@ Each release on GitHub uses its section from this file as its notes.
   mistakes in an address's `{names}`. It also knows the words options take, the colour names
   and the icon names, and suggests the closest one.
 - `dad dev`'s developer page lists the pages; editors show them in the outline.
+- **`dad preview`** makes the page of a program's interface for an editor, and VS Code shows
+  it beside the code as you write: **Preview Interface**, live, clickable, with a phone-width
+  view and the errors linked to the code.
 - **Moving around a program of several files** in editors: go to definition reaches the
   fields and methods of imported types, references and rename cover every file that names
   the name, the file in `استورد … من "./ملف"` is a link, and `dad lsp` answers

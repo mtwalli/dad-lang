@@ -2,6 +2,11 @@
 
 ## Next release
 
+- **Preview Interface**: the program's interface in a panel beside the code, before running
+  it (title bar, **معاينة** in the right-to-left editor, the right-click menu, or Cmd/Ctrl+K V).
+  It follows the code as you type and when imported files or the stylesheet are saved, keeps
+  the page you were on, runs buttons, pages and server functions, lists errors (a click goes
+  to the code) while showing the last version that worked, and has a phone-width view.
 - Across files: go to definition opens the file that declares an imported name, and the
   fields and methods of an imported type; the file in `استورد … من "./ملف"` is a link;
   references and rename cover every file that imports the name; **Go to Symbol in Workspace**

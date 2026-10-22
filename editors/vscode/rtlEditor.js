@@ -29,7 +29,7 @@ class RtlEditorProvider {
     const provider = new RtlEditorProvider(context, runFile, formatDocument, lsp);
     if (lsp) lsp.onJump = (uri, range) => provider.expect(uri, range);
     const command = (id, fn) => vscode.commands.registerCommand(id, () => provider.active && fn.call(provider, provider.active));
-    return vscode.Disposable.from(
+    const disposable = vscode.Disposable.from(
       vscode.window.registerCustomEditorProvider(VIEW_TYPE, provider, {
         webviewOptions: { retainContextWhenHidden: true },
         supportsMultipleEditorsPerDocument: true,
@@ -41,6 +41,14 @@ class RtlEditorProvider {
       command("dad.rtl.workspaceSymbol", provider.goToWorkspaceSymbol),
       vscode.commands.registerCommand("dad.rtl.back", () => provider.back())
     );
+    disposable.provider = provider;
+    return disposable;
+  }
+
+  /** Whether a file is open in a right-to-left editor. */
+  has(uri) {
+    for (const e of this.editors) if (e.document.uri.toString() === uri.toString()) return true;
+    return false;
   }
 
   resolveCustomTextEditor(document, panel) {
@@ -118,6 +126,9 @@ class RtlEditorProvider {
       case "undo":
       case "redo":
         await vscode.commands.executeCommand(msg.type);
+        break;
+      case "preview":
+        await vscode.commands.executeCommand("dad.preview", document.uri);
         break;
       case "openText":
         await vscode.commands.executeCommand("vscode.openWith", document.uri, "default", panel.viewColumn);
@@ -307,6 +318,7 @@ class RtlEditorProvider {
 </div>
 <footer>
   <span id="status" role="status"></span>
+  <button id="preview" type="button" title="Preview the interface beside the code">معاينة</button>
   <button id="run" type="button" title="Run this file (Ctrl/Cmd+Enter)">▶ شغّل</button>
   <button id="to-text" type="button" title="Open in VS Code's left-to-right text editor">Open as text</button>
 </footer>

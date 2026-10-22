@@ -177,6 +177,7 @@ For highlighting, errors as you type and a Run button, install the [Ḍād exten
 | `dad serve <file>` | `ضاد انشر <ملف>` | Run the program as a production server: no developer page, no reloading, every network interface, `$PORT` (`--port`, `--host`, `--data`). See [Putting a program online](deploy.md) |
 | `dad build <file>` | `ضاد ابن <ملف>` | Compile to JavaScript: a static site for a program with an interface, otherwise `app.js` for Node (`--out` to choose the folder). See [Building for the web](build.md) |
 | `dad check <file>` | `ضاد فحص <ملف>` | Check a file without running it: syntax, names, arguments, types and `طابق` cases (`--json` for tools) |
+| `dad preview <file>` | `ضاد معاينة <ملف>` | The page of the program's interface, as JSON, for an editor's preview. See [Preview the interface](editor.md#preview-the-interface) |
 | `dad tokens <file>` | `ضاد رموز <ملف>` | Print every token with its line and column |
 | `dad version` | `ضاد إصدار` | Print the installed version |
 | `dad help` | `ضاد مساعدة` | List the commands |

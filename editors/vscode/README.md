@@ -15,6 +15,10 @@ Support for [Ḍād](https://mtwalli.github.io/dad-lang/), a programming languag
   follows the code as you type in the right-to-left editor.
 - **Run** the current file, with the output shown right to left in the **Ḍād** panel until the next run. Use the ▶ button in the editor title, or
   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> on a Mac).
+- **Preview the interface** beside the code before running it (**Preview Interface** in the
+  title bar, or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>V</kbd>): it follows the code as you
+  type, buttons and pages work, errors are listed with a link to the code, and **📱** shows it
+  at phone width.
 - **Keyword help**: hover a keyword to see what it means in English.
 - **Go to definition, references, rename and the outline**, from Ḍād's language server, across
   the files of a program: imported names and the fields of imported types lead to their file,

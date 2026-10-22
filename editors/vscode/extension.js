@@ -13,6 +13,7 @@ const { RtlEditorProvider, VIEW_TYPE } = require("./rtlEditor");
 const { OutputView } = require("./outputView");
 const formatter = require("./formatter");
 const languageServer = require("./languageServer");
+const { Preview } = require("./preview");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -348,13 +349,24 @@ function activate(context) {
   const fmt = formatter.register(context, dadPath, activeDadUri);
   const lsp = languageServer.register(context, dadPath);
 
+  const rtl = RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc), lsp);
+  // Shows a place in a file: in its right-to-left editor when one is open, or
+  // the editor VS Code opens it in.
+  const reveal = async (uri, range) => {
+    if (rtl.provider.has(uri)) return rtl.provider.show(uri, range, null);
+    rtl.provider.expect(uri, range); // in case it opens right to left
+    const open = vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === uri.toString());
+    await vscode.commands.executeCommand("vscode.open", uri, { selection: range, viewColumn: open ? open.viewColumn : vscode.ViewColumn.One });
+  };
+  Preview.register(context, dadPath, activeDadUri, reveal);
+
   context.subscriptions.push(
     diagnostics,
     vscode.commands.registerCommand("dad.run", run),
     vscode.commands.registerCommand("dad.check", runCheckCommand),
     vscode.commands.registerCommand("dad.showVersion", showVersion),
     vscode.commands.registerCommand("dad.installFont", () => font.installCommand(context)),
-    RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc), lsp),
+    rtl,
     vscode.commands.registerCommand("dad.openRightToLeft", (uri) => reopen(uri, VIEW_TYPE)),
     vscode.commands.registerCommand("dad.openAsText", (uri) => reopen(uri, "default")),
     vscode.languages.registerHoverProvider(selector, hoverProvider),

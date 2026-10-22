@@ -476,6 +476,7 @@
 
   document.getElementById("to-text").addEventListener("click", () => { flush(); vscode.postMessage({ type: "openText" }); });
   document.getElementById("run").addEventListener("click", () => { flush(); vscode.postMessage({ type: "run" }); });
+  document.getElementById("preview").addEventListener("click", () => { flush(); vscode.postMessage({ type: "preview" }); });
 
   window.addEventListener("message", (event) => {
     const msg = event.data;

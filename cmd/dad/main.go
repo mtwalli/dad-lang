@@ -33,6 +33,7 @@ const usage = `ضاد — لغة برمجة عربية
                          على كل الواجهات (--port أو $PORT، --host، --data لمسار قاعدة البيانات)
   ضاد ابن <ملف.dad>      حوّل البرنامج إلى JavaScript: موقع ثابت لبرامج الواجهات،
                          أو app.js يعمل بـ node (--out لاختيار المجلد)
+  ضاد معاينة <ملف.dad>   صفحة الواجهة للمحرر، ليراها قبل التشغيل (JSON)
   ضاد رموز <ملف.dad>     اعرض الرموز (tokens) الناتجة عن الملف
   ضاد إصدار              اعرض رقم الإصدار
   ضاد مساعدة             اعرض هذه الرسالة
@@ -50,6 +51,8 @@ Usage (ASCII aliases):
                            no reloading (--port or $PORT, --host, --data for the database)
   dad build <file.dad>     compile to JavaScript: a static site for programs with
                            an interface, otherwise app.js for node (--out dir)
+  dad preview <file.dad>   the interface's page for an editor's preview, as JSON
+                           (--path, --base, --nonce, --csp; --assets DIR writes its assets)
   dad tokens <file.dad>    print the tokens in a file
   dad version
   dad help
@@ -91,6 +94,8 @@ func main() {
 		os.Exit(cmdServe(os.Args[2:]))
 	case "ابن", "build":
 		os.Exit(cmdBuild(os.Args[2:]))
+	case "معاينة", "preview":
+		os.Exit(cmdPreview(os.Args[2:]))
 	case "رموز", "tokens":
 		os.Exit(withFile("رموز", cmdTokens))
 	case "إصدار", "version", "--version":

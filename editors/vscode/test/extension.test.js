@@ -57,6 +57,9 @@ class Uri {
     if (/^\/[A-Za-z]:/.test(p)) p = p.slice(1); // /C:/… → C:/…
     return new Uri(path.normalize(p));
   }
+  static file(p) {
+    return new Uri(p);
+  }
   static joinPath(base, ...parts) {
     return new Uri(path.join(base.fsPath, ...parts), base.scheme);
   }
@@ -134,12 +137,14 @@ function makeDoc(text, file = "/tmp/test.dad") {
   };
 }
 
+const webviewPanels = []; // panels the extension created, such as the preview
 const quickPicks = []; // what the extension offered to choose from, answered by pickAnswers
 const pickAnswers = [];
 const inputAnswers = [];
 const vscode = {
   Position,
   Range,
+  ViewColumn: { Active: -1, Beside: -2, One: 1, Two: 2 },
   Disposable: { from: (...ds) => ({ dispose: () => ds.forEach((d) => d && d.dispose && d.dispose()) }) },
   DocumentLink: class {
     constructor(range, target) {
@@ -259,6 +264,17 @@ const vscode = {
     onDidCloseTerminal: on("closeTerminal"),
     registerWebviewViewProvider: (id, provider) => ((viewProvider = provider), { dispose() {} }),
     registerCustomEditorProvider: (viewType, provider) => ((customProvider = { viewType, provider }), { dispose() {} }),
+    visibleTextEditors: [],
+    createWebviewPanel: (viewType, title, column, options) => {
+      const panel = fakePanel();
+      Object.assign(panel, { viewType, title, column, options, revealed: 0, disposeFns: [] });
+      panel.webview.options = options;
+      panel.reveal = () => panel.revealed++;
+      panel.onDidDispose = (fn) => (panel.disposeFns.push(fn), { dispose() {} });
+      panel.dispose = () => panel.disposeFns.forEach((fn) => fn());
+      webviewPanels.push(panel);
+      return panel;
+    },
     setStatusBarMessage: (m) => (statusMessages.push(m), { dispose() {} }),
     showQuickPick: async (items, opts) => {
       quickPicks.push({ items, opts });
@@ -278,6 +294,7 @@ const vscode = {
     onWillSaveTextDocument: on("willSave"),
     applyEdit: (edit) => (applied.push(edit), Promise.resolve(true)),
     workspaceFolders: undefined,
+    createFileSystemWatcher: () => ({ onDidChange: () => ({ dispose() {} }), onDidCreate: () => ({ dispose() {} }), dispose() {} }),
     openTextDocument: async (uri) => makeDoc(fs.readFileSync(uri.fsPath, "utf8"), uri.fsPath),
   },
 };
@@ -294,6 +311,7 @@ const context = {
   subscriptions: [],
   extensionPath: path.join(__dirname, ".."),
   extensionUri: new Uri(path.join(__dirname, "..")),
+  globalStorageUri: new Uri(fs.mkdtempSync(path.join(os.tmpdir(), "dad-storage-"))),
   globalState: { get: (k) => state[k], update: (k, v) => ((state[k] = v), Promise.resolve()) },
 };
 ext.activate(context);
@@ -701,6 +719,103 @@ test("in the right-to-left editor, references, symbols and rename use pickers", 
   await panel.send({ type: "rename", line: 3, character: 12 });
   assert.strictEqual(applied.length, before + 1);
   assert.deepStrictEqual([...new Set(applied.at(-1).edits.map((e) => path.basename(e.uri.fsPath)))].sort(), ["main.dad", "نماذج.dad"]);
+});
+
+// ---------- the interface preview ----------
+
+const previewDir = fs.mkdtempSync(path.join(os.tmpdir(), "dad-preview-"));
+const previewFile = path.join(previewDir, "app.dad");
+const previewSrc = "مكون الرئيسية() {\n    حالة ع = 0\n    عنوان(\"العدد {ع}\")\n    زر(\"زد\") { ع += 1 }\n}\n";
+const until = async (fn) => {
+  for (let i = 0; i < 100 && !fn(); i++) await wait(50);
+  return fn();
+};
+
+const pageOf = (panel) => panel.posted.filter((m) => m.type === "page").at(-1);
+const noteOf = (panel) => panel.posted.filter((m) => m.type === "note").at(-1);
+
+test("the preview shows the interface beside the code, and follows it", async () => {
+  fs.writeFileSync(previewFile, previewSrc);
+  fs.writeFileSync(path.join(previewDir, "app.css"), ".خاص { color: red }\n");
+  const uri = new Uri(previewFile);
+  await commands["dad.preview"](uri);
+  const panel = webviewPanels.at(-1);
+  assert.strictEqual(panel.viewType, "dad.preview");
+  assert.strictEqual(panel.column.viewColumn, vscode.ViewColumn.Beside);
+  assert.ok(panel.options.enableScripts);
+  // the panel's page: a frame for the program, a toolbar, and a policy
+  assert.match(panel.webview.html, /<iframe id="app"/);
+  assert.match(panel.webview.html, /Content-Security-Policy/);
+  assert.match(panel.webview.html, /script-src &#39;nonce-/);
+  assert.strictEqual(pageOf(panel), undefined); // not before the page says it is ready
+  await panel.send({ type: "ready" });
+  const html = pageOf(panel).html;
+  assert.match(html, /<main id="dad-root"/);
+  assert.match(html, /parent\.dadRoute/); // keeps the page on screen
+  assert.match(html, /\.خاص \{ color: red \}/); // the program's own stylesheet
+  assert.match(html, /زد/); // the compiled program
+  const nonce = /nonce-([^&]+)&#39;/.exec(panel.webview.html)[1];
+  assert.ok(html.includes(`<script nonce="${nonce}">`));
+  const assets = context.globalStorageUri.fsPath;
+  for (const f of ["ui.js", "ui.css", "dad-runtime.js"]) assert.ok(fs.existsSync(path.join(assets, "preview-assets", f)), f);
+  // the same file again shows the same panel
+  await commands["dad.preview"](uri);
+  assert.strictEqual(webviewPanels.at(-1), panel);
+  assert.strictEqual(panel.revealed, 1);
+
+  // an error: the page stays, the problems go to it
+  const pages = panel.posted.filter((m) => m.type === "page").length;
+  fs.writeFileSync(previewFile, previewSrc.replace("ع += 1", "س += 1"));
+  events.change.forEach((fn) => fn({ document: makeDoc("", previewFile), contentChanges: [{}] }));
+  assert.ok(await until(() => panel.posted.some((m) => m.type === "problems" && m.problems.some((p) => !p.warning))), "no problems sent");
+  assert.strictEqual(panel.posted.filter((m) => m.type === "page").length, pages);
+  const p = panel.posted.find((m) => m.type === "problems").problems.find((x) => !x.warning);
+  assert.strictEqual(p.line, 4);
+  assert.match(p.where, /السطر 4/);
+
+  // a click on the problem goes to the code
+  await panel.send({ type: "goto", path: previewFile, line: 4, col: 13 });
+  const open = executed.filter((e) => e[0] === "vscode.open").at(-1);
+  assert.strictEqual(open[1].fsPath, previewFile);
+  assert.deepStrictEqual([open[2].selection.start.line, open[2].selection.start.character], [3, 12]);
+
+  // fixed: the page updates
+  fs.writeFileSync(previewFile, previewSrc.replace("زد", "أضف"));
+  events.change.forEach((fn) => fn({ document: makeDoc("", previewFile), contentChanges: [{}] }));
+  assert.ok(await until(() => /أضف/.test(pageOf(panel).html)), "not updated");
+  // if the panel's page starts over, it gets what it showed
+  const before = panel.posted.length;
+  await panel.send({ type: "ready" });
+  assert.strictEqual(panel.posted.length, before + 1);
+  assert.match(panel.posted.at(-1).html, /أضف/);
+  panel.dispose();
+});
+
+test("the preview of a program without an interface says so", async () => {
+  const file = path.join(previewDir, "plain.dad");
+  fs.writeFileSync(file, "اطبع(1)\n");
+  await commands["dad.preview"](new Uri(file));
+  const panel = webviewPanels.at(-1);
+  await panel.send({ type: "ready" });
+  assert.match(noteOf(panel).title, /لا واجهة في هذا البرنامج/);
+  await panel.send({ type: "run" });
+  assert.deepStrictEqual(executed.at(-1).slice(0, 1), ["dad.run"]);
+  // with errors from the start, it lists them
+  fs.writeFileSync(file, "مكون الرئيسية() {\n    عنوان(س)\n}\n");
+  await panel.send({ type: "reload" });
+  assert.match(noteOf(panel).title, /في الكود أخطاء/);
+  assert.match(noteOf(panel).problems[0].message, /«س»/);
+  panel.dispose();
+});
+
+test("the preview is offered in the title bar, the right-click menu and the RTL editor", () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "../package.json"), "utf8"));
+  assert.ok(pkg.contributes.menus["editor/title"].some((m) => m.command === "dad.preview"));
+  assert.ok(pkg.contributes.menus["webview/context"].some((m) => m.command === "dad.preview"));
+  assert.ok(pkg.contributes.keybindings.some((k) => k.command === "dad.preview"));
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(makeDoc(previewSrc, previewFile), panel);
+  assert.match(panel.webview.html, /id="preview"/);
 });
 
 (async () => {

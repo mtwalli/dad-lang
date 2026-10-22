@@ -141,6 +141,12 @@
         "command": "dad.rtl.back",
         "title": "Go Back",
         "category": "Ḍād"
+      },
+      {
+        "command": "dad.preview",
+        "title": "Preview Interface (معاينة)",
+        "category": "Ḍād",
+        "icon": "$(open-preview)"
       }
     ],
     "menus": {
@@ -161,6 +167,11 @@
       "explorer/context": [
         {
           "command": "dad.run",
+          "when": "resourceExtname == .dad",
+          "group": "navigation"
+        },
+        {
+          "command": "dad.preview",
           "when": "resourceExtname == .dad",
           "group": "navigation"
         }
@@ -209,9 +220,18 @@
         {
           "command": "dad.rtl.back",
           "when": "activeCustomEditorId == dad.rtlEditor && dad.rtlCanGoBack"
+        },
+        {
+          "command": "dad.preview",
+          "when": "editorLangId == dad || activeCustomEditorId == dad.rtlEditor"
         }
       ],
       "editor/title": [
+        {
+          "command": "dad.preview",
+          "when": "editorLangId == dad || activeCustomEditorId == dad.rtlEditor",
+          "group": "navigation@1"
+        },
         {
           "command": "dad.openRightToLeft",
           "when": "editorLangId == dad && activeCustomEditorId != dad.rtlEditor",
@@ -224,6 +244,11 @@
         }
       ],
       "webview/context": [
+        {
+          "command": "dad.preview",
+          "when": "webviewId == 'dad.rtlEditor'",
+          "group": "z_commands@0"
+        },
         {
           "command": "dad.rtl.definition",
           "when": "webviewId == 'dad.rtlEditor'",
@@ -302,6 +327,12 @@
         "mac": "ctrl+-",
         "linux": "ctrl+alt+-",
         "when": "activeCustomEditorId == dad.rtlEditor && !editorTextFocus && !inQuickOpen && dad.rtlCanGoBack"
+      },
+      {
+        "command": "dad.preview",
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "when": "editorLangId == dad || activeCustomEditorId == dad.rtlEditor"
       }
     ],
     "configuration": {

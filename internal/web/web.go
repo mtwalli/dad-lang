@@ -7,9 +7,13 @@ import (
 	"html"
 	"io/fs"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+// closingTag finds «</script» and «</style» in code written into a page.
+var closingTag = regexp.MustCompile(`(?i)</(script|style)`)
 
 //go:embed assets
 var assets embed.FS
@@ -42,6 +46,13 @@ type PageOptions struct {
 	Scripts []string // scripts loaded before ui.js, such as a compiled program
 	Routing string   // how pages keep their address: "history" (default), "hash" or "none"; see ui.js
 	Styles  []string // the program's own stylesheets, after ui.css
+
+	// For a page shown inside an editor (dad preview): a Content-Security-Policy,
+	// and code and styles written into the page, its scripts marked with Nonce.
+	CSP           string
+	Nonce         string
+	InlineScripts []string // after Scripts, before ui.js
+	InlineStyles  []string // after Styles
 }
 
 // Assets lists every asset by name: ui.js, ui.css and fonts/….
@@ -68,7 +79,12 @@ func Page(o PageOptions) string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>`)
+`)
+	if o.CSP != "" {
+		b.WriteString(`<meta http-equiv="Content-Security-Policy" content="` + html.EscapeString(o.CSP) + `">
+`)
+	}
+	b.WriteString(`<title>`)
 	b.WriteString(html.EscapeString(o.Title))
 	b.WriteString(`</title>
 <link rel="stylesheet" href="` + html.EscapeString(base) + `ui.css">
@@ -76,6 +92,9 @@ func Page(o PageOptions) string {
 	for _, href := range o.Styles {
 		b.WriteString(`<link rel="stylesheet" href="` + html.EscapeString(href) + `">
 `)
+	}
+	for _, css := range o.InlineStyles {
+		b.WriteString("<style>\n" + closingTag.ReplaceAllString(css, `<\/$1`) + "\n</style>\n")
 	}
 	b.WriteString(`</head>
 <body>
@@ -97,9 +116,17 @@ func Page(o PageOptions) string {
 	b.WriteString(">")
 	b.WriteString(html.EscapeString(o.Error))
 	b.WriteString("</div>\n")
-	for _, src := range o.Scripts {
-		b.WriteString("<script src=\"" + html.EscapeString(src) + "\"></script>\n")
+	nonce := ""
+	if o.Nonce != "" {
+		nonce = ` nonce="` + html.EscapeString(o.Nonce) + `"`
 	}
-	b.WriteString("<script src=\"" + html.EscapeString(base) + "ui.js\"></script>\n</body>\n</html>\n")
+	for _, src := range o.Scripts {
+		b.WriteString("<script" + nonce + " src=\"" + html.EscapeString(src) + "\"></script>\n")
+	}
+	for _, code := range o.InlineScripts {
+		// «</script» inside the code would end the element early
+		b.WriteString("<script" + nonce + ">\n" + closingTag.ReplaceAllString(code, `<\/$1`) + "\n</script>\n")
+	}
+	b.WriteString("<script" + nonce + " src=\"" + html.EscapeString(base) + "ui.js\"></script>\n</body>\n</html>\n")
 	return b.String()
 }

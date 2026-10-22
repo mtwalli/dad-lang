@@ -17,6 +17,7 @@ macOS, Windows and Linux.
 - **Run** the current file with the ▶ button in the editor title. The output appears right to
   left in the **Ḍād** panel, next to the terminal, and stays there until the next run. The
   panel has **Run again** and **Stop** buttons.
+- **Preview the interface** beside the code, live, before running it ([details](#preview-the-interface)).
 - **Keyword help.** Hover a keyword to see what it means in English.
 - **Go to definition** (<kbd>F12</kbd>, or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+click), **find all
   references** (<kbd>Shift</kbd>+<kbd>F12</kbd>) and **rename** (<kbd>F2</kbd>) for variables,
@@ -83,6 +84,26 @@ Open any `.dad` file, or a folder that contains some.
 
 If VS Code says it can't find `dad`, run `which dad` (macOS and Linux) or `where dad`
 (Windows) in a terminal and put the result in `dad.path`.
+
+## Preview the interface
+
+To see a program's interface while you write it, without running it, click
+**Preview Interface** in the editor's title bar (or **معاينة** at the bottom of the
+right-to-left editor, or press <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>V</kbd>). The
+interface opens beside the code:
+
+- **It works.** Buttons, fields, tabs, dialogs and pages respond, server functions run in the
+  preview, and tables keep their rows there. The program is compiled as by
+  [`dad build`](build.md), so routes (`مسار`) are left out.
+- **It follows the code** as you type, and when you save a file it imports or its stylesheet
+  (`app.css`). It stays on the page you were looking at.
+- **With errors**, it keeps showing the last version that worked, with the errors listed at
+  the bottom. Click one to go to it in the code.
+- **📱** shows the interface as wide as a phone, so the layout for phones applies; **↺**
+  clears the tables and starts again.
+
+A program without `مكون الرئيسية()` or `صفحة` has no interface to show: run it to see what it
+prints. The preview needs a `dad` newer than 0.2.2.
 
 ## Ḍād Mono, the coding font
 
