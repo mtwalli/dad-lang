@@ -13,6 +13,7 @@
   const current = document.getElementById("current");
   const LINE = () => parseFloat(getComputedStyle(src).lineHeight);
   let diagnostics = [];
+  let changes = []; // lines changed since git last saw the file: { kind, start, end, old }
   let lastSent = null;
   let sendTimer = null;
 
@@ -136,11 +137,23 @@
     hl.innerHTML = html + "\n ";
     const errorLines = new Map();
     diagnostics.forEach((d) => errorLines.set(d.line, Math.min(errorLines.get(d.line) ?? 9, d.severity)));
+    // git: a bar beside added and changed lines, a mark where lines were removed
+    const changed = new Map();
+    changes.forEach((c, i) => {
+      if (c.kind === "deleted") changed.set(Math.min(c.start, starts.length - 1), [c.start >= starts.length ? "g-del-end" : "g-del", i]);
+      else for (let n = c.start; n < c.end; n++) changed.set(n, [c.kind === "added" ? "g-add" : "g-mod", i]);
+    });
     gutter.innerHTML = starts.map((_, n) => {
       const sev = errorLines.get(n);
-      const cls = sev === undefined ? "" : sev === 0 ? " err" : " warn";
-      return `<div class="ln${cls}">${n + 1}</div>`;
+      let cls = sev === undefined ? "" : sev === 0 ? " err" : " warn";
+      const g = changed.get(n);
+      if (g) cls += " " + g[0];
+      return `<div class="ln${cls}"${g ? ` data-change="${g[1]}" title="${CHANGE_TITLE[g[0]]}"` : ""}>${n + 1}</div>`;
     }).join("");
+    const count = document.getElementById("changes");
+    count.hidden = changes.length === 0;
+    count.textContent = "± " + changes.length;
+    count.title = changes.length + (changes.length === 1 ? " change" : " changes") + " since the last commit — click for the next (Alt+F5)";
     size();
     caretMoved();
   }
@@ -323,6 +336,75 @@
     postCaret();
   });
 
+  // ---------- git changes ----------
+
+  const CHANGE_TITLE = { "g-add": "سطر جديد", "g-mod": "سطر تغيّر", "g-del": "حُذفت أسطر هنا", "g-del-end": "حُذفت أسطر هنا" };
+  const peek = document.getElementById("peek");
+  let peeked = -1;
+
+  /** Shows what a change replaced, under it, with buttons to undo it or open the diff. */
+  function openPeek(i) {
+    const c = changes[i];
+    if (!c) return closePeek();
+    peeked = i;
+    const label = c.kind === "added" ? "أسطر جديدة منذ آخر حفظ في git" : c.kind === "deleted" ? "أسطر حُذفت:" : "كانت هذه الأسطر:";
+    peek.innerHTML =
+      `<div class="peek-head"><span>${label}</span>` +
+      `<button data-do="prev" title="Previous change (Shift+Alt+F5)">▲</button>` +
+      `<button data-do="next" title="Next change (Alt+F5)">▼</button>` +
+      `<button data-do="revert" title="Put the old lines back">↩ تراجع</button>` +
+      `<button data-do="diff" title="Open the file's changes">الفرق</button>` +
+      `<button data-do="close" title="Close (Esc)">✕</button></div>` +
+      (c.old.length ? `<pre>${c.old.map((l) => esc(l) || " ").join("\n")}</pre>` : "");
+    const lh = LINE();
+    const pad = parseFloat(getComputedStyle(src).paddingTop);
+    peek.style.top = pad + Math.max(c.end, c.start) * lh + "px";
+    peek.hidden = false;
+    peek.querySelectorAll("button").forEach((b) => (b.onclick = (e) => {
+      e.stopPropagation();
+      const what = b.dataset.do;
+      if (what === "close") closePeek();
+      else if (what === "next" || what === "prev") goToChange(what === "next" ? 1 : -1, peeked);
+      else if (what === "revert") { flush(); vscode.postMessage({ type: "revertChange", kind: c.kind, start: c.start, end: c.end }); closePeek(); }
+      else if (what === "diff") vscode.postMessage({ type: "openChanges" });
+    }));
+    const r = peek.getBoundingClientRect(), box = scroller.getBoundingClientRect();
+    if (r.bottom > box.bottom) scroller.scrollTop += r.bottom - box.bottom + lh;
+  }
+
+  function closePeek() {
+    peek.hidden = true;
+    peeked = -1;
+  }
+
+  /** Moves to the next (by = 1) or previous (by = -1) change after the caret, or after change from. */
+  function goToChange(by, from = -1) {
+    if (!changes.length) return;
+    let i;
+    if (from >= 0) i = (from + by + changes.length) % changes.length;
+    else {
+      const line = caretLine();
+      i = by > 0 ? changes.findIndex((c) => c.start > line) : changes.map((c) => c.start < line).lastIndexOf(true);
+      if (i < 0) i = by > 0 ? 0 : changes.length - 1;
+    }
+    const starts = lineStarts(src.value);
+    const pos = starts[Math.min(changes[i].start, starts.length - 1)];
+    src.focus();
+    src.setSelectionRange(pos, pos);
+    caretMoved();
+    postCaret();
+    openPeek(i);
+  }
+
+  gutter.addEventListener("click", (e) => {
+    const ln = e.target.closest(".ln[data-change]");
+    if (!ln) return;
+    const i = Number(ln.dataset.change);
+    if (i === peeked) closePeek();
+    else openPeek(i);
+  });
+  document.getElementById("changes").addEventListener("click", () => goToChange(1));
+
   // ---------- editing ----------
   function edited() {
     render();
@@ -458,6 +540,8 @@
       vscode.postMessage(Object.assign({ type: e.shiftKey ? "references" : "definition" }, position(src.selectionStart)));
       return;
     }
+    if (e.key === "F5" && e.altKey && !mod) { e.preventDefault(); goToChange(e.shiftKey ? -1 : 1); return; }
+    if (e.key === "Escape" && !peek.hidden) { e.preventDefault(); closePeek(); return; }
     if (e.key === "F2" && !mod && !e.shiftKey && !e.altKey) {
       e.preventDefault(); flush();
       vscode.postMessage(Object.assign({ type: "rename" }, position(src.selectionStart)));
@@ -488,6 +572,10 @@
       render();
     } else if (msg.type === "diagnostics") {
       diagnostics = msg.diagnostics;
+      render();
+    } else if (msg.type === "changes") {
+      changes = msg.changes;
+      closePeek();
       render();
     } else if (msg.type === "reveal") {
       // Go to a place (a definition, a reference, a symbol), selecting it and

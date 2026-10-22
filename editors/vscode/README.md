@@ -47,7 +47,8 @@ finds `dad` on your `PATH` or in the default install folder. If yours is somewhe
 VS Code's own text editor has no right-to-left mode, so the extension opens `.dad` files in
 its own right-to-left editor. It edits VS Code's copy of the file, so saving, undo, git and
 the Problems panel work as usual, and so does moving around the code: go to definition,
-references, rename, symbols and **Go Back**, from the keyboard or the right-click menu.
+references, rename, symbols and **Go Back**, from the keyboard or the right-click menu, and
+git's changes in the gutter (click one to see the old lines or undo it).
 Completion, keyword hovers, find and AI suggestions need
 VS Code's text editor: use **Open as text** (title bar or the bar at the bottom) to switch, and
 **Ḍād: Reopen Right to Left** to come back.

@@ -294,7 +294,7 @@ const vscode = {
     onWillSaveTextDocument: on("willSave"),
     applyEdit: (edit) => (applied.push(edit), Promise.resolve(true)),
     workspaceFolders: undefined,
-    createFileSystemWatcher: () => ({ onDidChange: () => ({ dispose() {} }), onDidCreate: () => ({ dispose() {} }), dispose() {} }),
+    createFileSystemWatcher: () => ({ onDidChange: () => ({ dispose() {} }), onDidCreate: () => ({ dispose() {} }), onDidDelete: () => ({ dispose() {} }), dispose() {} }),
     openTextDocument: async (uri) => makeDoc(fs.readFileSync(uri.fsPath, "utf8"), uri.fsPath),
   },
 };
@@ -816,6 +816,84 @@ test("the preview is offered in the title bar, the right-click menu and the RTL 
   const panel = fakePanel();
   customProvider.provider.resolveCustomTextEditor(makeDoc(previewSrc, previewFile), panel);
   assert.match(panel.webview.html, /id="preview"/);
+});
+
+// ---------- git changes in the right-to-left editor ----------
+
+const gitChanges = require("../gitChanges");
+
+test("changes are found line by line, as added, changed or removed", () => {
+  const old = "أ\nب\nج\nد\nهـ\n";
+  const now = "أ\nب2\nج\nجديد\nد\n";
+  assert.deepStrictEqual(gitChanges.changes(old, now), [
+    { kind: "modified", start: 1, end: 2, old: ["ب"] },
+    { kind: "added", start: 3, end: 4, old: [] },
+    { kind: "deleted", start: 5, end: 5, old: ["هـ"] },
+  ]);
+  assert.deepStrictEqual(gitChanges.changes("أ\r\nب\r\n", "أ\nب\n"), []); // line endings are not changes
+});
+
+test("undoing a change puts the old lines back", () => {
+  const cases = [
+    ["أ\nب\nج\n", "أ\nس\nص\nج\n"], // changed in the middle
+    ["أ\nب\nج\n", "أ\nج\n"], // removed
+    ["أ\nب\n", "أ\nب\nجديد"], // added at the end, without a final newline
+    ["أ\nب", "س"], // the whole file
+    ["أ\nب\nج", "أ\nب"], // removed at the end
+  ];
+  for (const [old, now] of cases) {
+    for (const hunk of gitChanges.changes(old, now)) {
+      const doc = makeDoc(now, "/tmp/revert.dad");
+      const edit = gitChanges.revertEdit(doc, hunk);
+      const result = applyEdits(doc, edit.edits.map((e) => ({ range: e.range, newText: e.text })));
+      assert.strictEqual(result, old, JSON.stringify({ old, now, hunk }));
+    }
+  }
+});
+
+const gitDir = fs.mkdtempSync(path.join(os.tmpdir(), "dad-git-"));
+const hasGit = (() => {
+  try {
+    const run = (...args) => require("child_process").execFileSync("git", args, { cwd: gitDir, stdio: "pipe" });
+    run("init", "-q");
+    fs.writeFileSync(path.join(gitDir, "app.dad"), "ثابت أ = 1\nاطبع(أ)\n\nاطبع(\"قديم\")\n");
+    run("add", "app.dad");
+    run("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "first");
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
+test("the right-to-left editor marks the lines changed since git last saw the file, and undoes a change", async () => {
+  if (!hasGit) return console.log("     (no git here: skipped)");
+  const file = path.join(gitDir, "app.dad");
+  const doc = makeDoc("ثابت أ = 2\nاطبع(أ)\nاطبع(\"جديد\")\n", file);
+  const panel = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(doc, panel);
+  await panel.send({ type: "ready" });
+  assert.ok(await until(() => panel.posted.some((m) => m.type === "changes")), "no changes sent");
+  const { changes } = panel.posted.find((m) => m.type === "changes");
+  assert.deepStrictEqual(changes, [
+    { kind: "modified", start: 0, end: 1, old: ["ثابت أ = 1"] },
+    { kind: "modified", start: 2, end: 3, old: ["", "اطبع(\"قديم\")"] },
+  ]);
+  assert.match(panel.webview.html, /id="changes"/);
+  assert.match(panel.webview.html, /id="peek"/);
+  const before = applied.length;
+  await panel.send({ type: "revertChange", kind: "modified", start: 0, end: 1 });
+  assert.strictEqual(applied.length, before + 1);
+  const e = applied.at(-1).edits[0];
+  assert.strictEqual(applyEdits(doc, [{ range: e.range, newText: e.text }]), "ثابت أ = 1\nاطبع(أ)\nاطبع(\"جديد\")\n");
+  // a change that is no longer there is left alone
+  await panel.send({ type: "revertChange", kind: "added", start: 5, end: 6 });
+  assert.strictEqual(applied.length, before + 1);
+  // a file git doesn't know has nothing to show
+  const panel2 = fakePanel();
+  customProvider.provider.resolveCustomTextEditor(makeDoc("اطبع(1)\n", path.join(gitDir, "new.dad")), panel2);
+  await panel2.send({ type: "ready" });
+  assert.ok(await until(() => panel2.posted.some((m) => m.type === "changes")));
+  assert.deepStrictEqual(panel2.posted.find((m) => m.type === "changes").changes, []);
 });
 
 (async () => {

@@ -32,6 +32,8 @@ Each release on GitHub uses its section from this file as its notes.
 - **`dad preview`** makes the page of a program's interface for an editor, and VS Code shows
   it beside the code as you write: **Preview Interface**, live, clickable, with a phone-width
   view and the errors linked to the code.
+- VS Code's right-to-left editor marks the lines changed since git last saw the file, and
+  can show and undo each change.
 - **Moving around a program of several files** in editors: go to definition reaches the
   fields and methods of imported types, references and rename cover every file that names
   the name, the file in `استورد … من "./ملف"` is a link, and `dad lsp` answers

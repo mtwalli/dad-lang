@@ -2,6 +2,10 @@
 
 ## Next release
 
+- Git changes in the right-to-left editor's gutter, as in the text editor: new, changed and
+  removed lines compared with git's copy. A click shows the old lines, with **↩ تراجع** to
+  undo the change and **الفرق** for the diff; Alt+F5 / Shift+Alt+F5 go from change to change,
+  and the bar at the bottom counts them.
 - **Preview Interface**: the program's interface in a panel beside the code, before running
   it (title bar, **معاينة** in the right-to-left editor, the right-click menu, or Cmd/Ctrl+K V).
   It follows the code as you type and when imported files or the stylesheet are saved, keeps

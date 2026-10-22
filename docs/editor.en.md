@@ -229,6 +229,13 @@ Moving around the code works there too, across the files of a program:
 
 **Right-click** in the editor for the same commands, with **Format Document** and **Run**.
 
+**Git changes** show in the gutter, as in VS Code's text editor: a green bar beside new lines,
+a blue one beside changed lines, and a red mark where lines were removed, compared with the
+file as git last saw it. Click a mark to see the old lines, with **↩ تراجع** to put them back
+and **الفرق** to open the file's diff. <kbd>Alt</kbd>+<kbd>F5</kbd> and
+<kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F5</kbd> go to the next and previous change; the
+**± 3** at the bottom counts them.
+
 The rest of VS Code's own features need its text editor, and are only in the text view:
 completion, hovers, find and replace, multiple cursors and AI suggestions. To switch, use the
 button in the editor's title bar or at the bottom of the editor:

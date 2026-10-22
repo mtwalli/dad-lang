@@ -3,18 +3,21 @@
 // document, so saving, undo, git, the dirty indicator and the Problems panel all work.
 // Navigation (go to definition, references, rename, symbols, back) comes from dad lsp,
 // through the same client as the text editor, and leads across the files of a program.
+// The gutter marks the lines changed since git last saw the file, like the text editor's.
 "use strict";
 
 const vscode = require("vscode");
 const crypto = require("crypto");
 const path = require("path");
+const { revertEdit } = require("./gitChanges");
 
 const VIEW_TYPE = "dad.rtlEditor";
 
 const EXPECT_MS = 5000; // how long a jump into a file not open yet waits for its editor
 
 class RtlEditorProvider {
-  constructor(context, runFile, formatDocument, lsp) {
+  constructor(context, runFile, formatDocument, lsp, git) {
+    this.git = git;
     this.context = context;
     this.runFile = runFile;
     this.formatDocument = formatDocument;
@@ -25,8 +28,8 @@ class RtlEditorProvider {
     this.history = []; // { uri, line, character }: places to go back to
   }
 
-  static register(context, runFile, formatDocument, lsp) {
-    const provider = new RtlEditorProvider(context, runFile, formatDocument, lsp);
+  static register(context, runFile, formatDocument, lsp, git) {
+    const provider = new RtlEditorProvider(context, runFile, formatDocument, lsp, git);
     if (lsp) lsp.onJump = (uri, range) => provider.expect(uri, range);
     const command = (id, fn) => vscode.commands.registerCommand(id, () => provider.active && fn.call(provider, provider.active));
     const disposable = vscode.Disposable.from(
@@ -63,16 +66,31 @@ class RtlEditorProvider {
     this.active = editor;
     const sendText = () => post({ type: "update", text: document.getText() });
     const sendDiagnostics = () => post({ type: "diagnostics", diagnostics: diagnosticsFor(document.uri) });
+    // the lines changed since git last saw the file, shortly after the last edit
+    let changesTimer = null;
+    editor.sendChanges = (delay = 0) => {
+      if (!this.git) return;
+      clearTimeout(changesTimer);
+      changesTimer = setTimeout(async () => {
+        const version = document.version;
+        const changes = await this.git.changes(document);
+        if (version === document.version) post({ type: "changes", changes });
+      }, delay);
+    };
 
     const subs = [
       vscode.workspace.onDidChangeTextDocument((e) => {
-        if (e.document.uri.toString() === document.uri.toString() && e.contentChanges.length) sendText();
+        if (e.document.uri.toString() === document.uri.toString() && e.contentChanges.length) {
+          sendText();
+          editor.sendChanges(250);
+        }
       }),
       vscode.languages.onDidChangeDiagnostics((e) => {
         if (e.uris.some((u) => u.toString() === document.uri.toString())) sendDiagnostics();
       }),
       panel.webview.onDidReceiveMessage((msg) => this.onMessage(editor, msg, sendText, sendDiagnostics)),
     ];
+    if (this.git) subs.push(this.git.onDidChange(() => editor.sendChanges(100)));
     if (panel.onDidChangeViewState) {
       subs.push(panel.onDidChangeViewState(() => {
         if (panel.active) {
@@ -97,6 +115,22 @@ class RtlEditorProvider {
         sendDiagnostics();
         editor.ready = true;
         this.revealExpected(editor);
+        editor.sendChanges();
+        break;
+      case "revertChange": {
+        // the change as it is now, which must still be the one the editor showed
+        const now = this.git ? await this.git.changes(document) : [];
+        const hunk = now.find((h) => h.start === msg.start && h.end === msg.end && h.kind === msg.kind);
+        if (hunk) await vscode.workspace.applyEdit(revertEdit(document, hunk));
+        break;
+      }
+      case "openChanges":
+        // VS Code's diff of the file against git, from its git extension
+        try {
+          await vscode.commands.executeCommand("git.openChange", document.uri);
+        } catch {
+          this.say("لا يمكن فتح التغييرات: إضافة git في VS Code غير مفعّلة");
+        }
         break;
       case "edit":
         if (msg.text !== document.getText()) await replaceAll(document, msg.text);
@@ -312,12 +346,14 @@ class RtlEditorProvider {
       <div id="current"></div>
       <pre id="hl" aria-hidden="true"></pre>
       <div id="link" aria-hidden="true"></div>
+      <div id="peek" hidden></div>
       <textarea id="src" dir="rtl" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Ḍād code"></textarea>
     </div>
   </div>
 </div>
 <footer>
   <span id="status" role="status"></span>
+  <button id="changes" type="button" hidden></button>
   <button id="preview" type="button" title="Preview the interface beside the code">معاينة</button>
   <button id="run" type="button" title="Run this file (Ctrl/Cmd+Enter)">▶ شغّل</button>
   <button id="to-text" type="button" title="Open in VS Code's left-to-right text editor">Open as text</button>

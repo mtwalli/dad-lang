@@ -14,6 +14,7 @@ const { OutputView } = require("./outputView");
 const formatter = require("./formatter");
 const languageServer = require("./languageServer");
 const { Preview } = require("./preview");
+const { GitChanges } = require("./gitChanges");
 
 const INSTALL_URL = "https://mtwalli.github.io/dad-lang/install/";
 const CHECK_TIMEOUT_MS = 5000;
@@ -349,7 +350,8 @@ function activate(context) {
   const fmt = formatter.register(context, dadPath, activeDadUri);
   const lsp = languageServer.register(context, dadPath);
 
-  const rtl = RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc), lsp);
+  const git = GitChanges.register(context);
+  const rtl = RtlEditorProvider.register(context, run, (doc) => fmt.formatDocument(doc), lsp, git);
   // Shows a place in a file: in its right-to-left editor when one is open, or
   // the editor VS Code opens it in.
   const reveal = async (uri, range) => {

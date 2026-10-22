@@ -88,6 +88,31 @@ body {
 }
 
 #gutter .ln.cur { color: var(--gutter-active); }
+
+/* git: lines changed since the last commit, on the gutter's edge next to the code */
+#gutter .ln { position: relative; }
+#gutter .ln[data-change] { cursor: pointer; }
+#gutter .ln.g-add::after,
+#gutter .ln.g-mod::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.45em;
+  width: 3px;
+  background: var(--vscode-editorGutter-addedBackground, #2ea043);
+}
+#gutter .ln.g-mod::after { background: var(--vscode-editorGutter-modifiedBackground, #0078d4); }
+#gutter .ln.g-del::after,
+#gutter .ln.g-del-end::after {
+  content: "";
+  position: absolute;
+  left: -0.45em;
+  top: -4px;
+  border: 4px solid transparent;
+  border-left-color: var(--vscode-editorGutter-deletedBackground, #f85149);
+}
+#gutter .ln.g-del-end::after { top: auto; bottom: -4px; }
 #gutter .ln.err { color: var(--err); }
 #gutter .ln.warn { color: var(--warn); }
 
@@ -181,6 +206,50 @@ footer {
   border-top: 1px solid var(--vscode-editorGroup-border, rgba(127, 127, 127, 0.25));
   font: 12px var(--vscode-font-family, system-ui), sans-serif;
   direction: rtl;
+}
+
+/* what a change replaced, under it */
+#peek {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  left: 0;
+  margin: 2px 0;
+  border-top: 2px solid var(--vscode-editorGutter-modifiedBackground, #0078d4);
+  border-bottom: 2px solid var(--vscode-editorGutter-modifiedBackground, #0078d4);
+  background: var(--vscode-peekViewEditor-background, var(--ed-bg));
+  font: 12px var(--vscode-font-family, system-ui), sans-serif;
+}
+#peek[hidden] { display: none; }
+.peek-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--vscode-peekViewTitle-background, rgba(127, 127, 127, 0.12));
+}
+.peek-head span { flex: 1; }
+.peek-head button {
+  border: 0;
+  border-radius: 3px;
+  padding: 1px 7px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.peek-head button:hover { background: var(--vscode-toolbar-hoverBackground, rgba(127, 127, 127, 0.2)); }
+#peek pre {
+  margin: 0;
+  padding: 4px 0.4em 6px 24px;
+  direction: rtl;
+  text-align: right;
+  font-family: "Dad Mono", var(--vscode-editor-font-family, monospace), monospace;
+  font-size: var(--ed-size);
+  line-height: var(--ed-line);
+  white-space: pre;
+  overflow-x: auto;
+  background: var(--vscode-diffEditor-removedLineBackground, rgba(248, 81, 73, 0.15));
 }
 
 #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
