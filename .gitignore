@@ -15,7 +15,7 @@ build/
 !/fonts-src/Noto_Kufi_Arabic/static/NotoKufiArabic-Medium.ttf
 !/fonts-src/Noto_Kufi_Arabic/static/NotoKufiArabic-Bold.ttf
 # Data written by dad run / dad dev
-.dad/
+*.dad/
 # Go module bundle used to build offline
 /gomods.tgz
 dist/
